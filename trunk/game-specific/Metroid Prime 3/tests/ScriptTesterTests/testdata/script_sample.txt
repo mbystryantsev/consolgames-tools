@@ -1,0 +1,38 @@
+[@0CEBFA1FFB30CA80,3,3,3]
+
+[ID:Activate_Mii Bobble Head]
+Activate Mii Bobblehead?
+{E}
+
+[ID:Activate_On]
+On
+{E}
+
+[ID:Activate_Off]
+Off
+{E}
+
+[@460D232B4E5A60FE,1,0,1]
+
+&just=center;Press &image=SI,0.70,0.68,0x1D5EC8F5ABCC9014; to interact with objects.
+{E}
+
+[@DA1BFA4E4C3872C0,1,1,3]
+
+[ID:E3FrontEndStart]
+&just=center;PRESS &image=0x1BBAADC0DFC5D6F4; TO START
+{E}
+
+[@026EFCDA326E764A|BD2119C8D1F5B7E1,3,0,3]
+
+Activation panel is offline.
+Return generator to down position
+then touch this panel to activate.
+{E}
+
+ 
+{E}
+
+ 
+{E}
+
