@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="&quot;F:\_job\Metroid Prime 3\Tools\Paster.exe&quot;"/>
+    <OBJFILES value="paster.obj main.obj ..\..\Lib\Streams\FileStream.obj 
+      ..\..\Lib\Streams\ImageStream.obj ..\..\Lib\Streams\IsoStream.obj 
+      ..\..\Lib\Streams\MemoryStream.obj ..\..\Lib\Streams\WiiStream.obj 
+      ..\..\Lib\Streams\wii\WIIDisc.obj ..\extractor\pak.obj"/>
+    <RESFILES value="paster.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES) main.dfm"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="vclx.lib rtl.lib vcl.lib"/>
+    <SPARELIBS value="vcl.lib rtl.lib vclx.lib"/>
+    <PACKAGES value="vcl.bpi rtl.bpi dbrtl.bpi adortl.bpi vcldb.bpi vclx.bpi bdertl.bpi 
+      vcldbx.bpi ibxpress.bpi dsnap.bpi cds.bpi bdecds.bpi qrpt.bpi teeui.bpi 
+      teedb.bpi tee.bpi dss.bpi teeqr.bpi visualclx.bpi visualdbclx.bpi 
+      dsnapcrba.bpi dsnapcon.bpi bcbsmp.bpi vclie.bpi xmlrtl.bpi inet.bpi 
+      inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi webdsnap.bpi 
+      bcbie.bpi websnap.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
+      indy.bpi bcb2kaxserver.bpi"/>
+    <PATHCPP value=".;..\..\Lib\Streams;..\..\Lib\Streams\wii;..\extractor"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT"/>
+    <MAINSOURCE value="paster.cpp"/>
+    <INCLUDEPATH value="..\extractor;..\..\Lib\Streams\wii;..\..\Lib\Streams;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;&quot;D:\_job\Programming\Metroid Prime 3\paster\d&quot;;$(BCB)\include;$(BCB)\include\vcl;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl"/>
+    <LIBPATH value="..\extractor;..\..\Lib\Streams\wii;..\..\Lib\Streams;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;&quot;D:\_job\Programming\Metroid Prime 3\paster\d&quot;;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-I..\extractor -I..\..\Lib\Streams\wii -I..\..\Lib\Streams 
+      -I&quot;D:\Program Files\Borland\CBuilder6\Projects&quot; 
+      -I&quot;D:\_job\Programming\Metroid Prime 3\paster\d&quot; -I$(BCB)\include 
+      -I$(BCB)\include\vcl -I..\..\Lib\Streams\wii\include 
+      -I..\..\Lib\Streams\wii\include\openssl -src_suffix cpp -D_DEBUG -boa"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -c 
+      -tW -tWM"/>
+    <PFLAGS value="-$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj sysinit.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cp32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="paster.res" FORMNAME="" UNITNAME="paster.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="paster.cpp" FORMNAME="" UNITNAME="paster" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="main.cpp" FORMNAME="MainForm" UNITNAME="main" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\FileStream.cpp" FORMNAME="" UNITNAME="FileStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\ImageStream.cpp" FORMNAME="" UNITNAME="ImageStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\IsoStream.cpp" FORMNAME="" UNITNAME="IsoStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\MemoryStream.cpp" FORMNAME="" UNITNAME="MemoryStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\WiiStream.cpp" FORMNAME="" UNITNAME="WiiStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\WIIDisc.cpp" FORMNAME="" UNITNAME="WIIDisc.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\extractor\pak.cpp" FORMNAME="" UNITNAME="pak" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1049
+CodePage=1251
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=2
+Item0=..\extractor;..\..\Lib\Streams\wii;..\..\Lib\Streams;D:\Program Files\Borland\CBuilder6\Projects;D:\_job\Programming\Metroid Prime 3\paster\d;$(BCB)\include;$(BCB)\include\vcl;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item1=..\extractor;..\..\Lib\Streams\wii;..\..\Lib\Streams;D:\Program Files\Borland\CBuilder6\Projects;D:\_job\Programming\Metroid Prime 3\paster\d;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=..\extractor;..\..\Lib\Streams\wii;..\..\Lib\Streams;D:\Program Files\Borland\CBuilder6\Projects;D:\_job\Programming\Metroid Prime 3\paster\d;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=F:\_job\Metroid Prime 3\Tools\
+Item1=F:\_job\Metroid Prime 3\Tools
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
