@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="&quot;F:\_job\Metroid Prime 3\pak\extractor.exe&quot;"/>
+    <OBJFILES value="main.obj ..\..\Lib\Streams\FileStream.obj 
+      ..\..\Lib\Streams\ImageStream.obj ..\..\Lib\Streams\IsoStream.obj 
+      ..\..\Lib\Streams\MemoryStream.obj ..\..\Lib\Streams\WiiStream.obj 
+      ..\..\Lib\Streams\wii\WIIDisc.obj ..\..\Lib\Streams\wii\sha\sha1s.obj 
+      ..\..\Lib\Streams\wii\sha\sha1.obj ..\..\Lib\Streams\wii\sha\sha1_one.obj 
+      ..\..\Lib\Streams\wii\sha\sha1dgst.obj 
+      ..\..\Lib\Streams\wii\sha\sha256.obj ..\..\Lib\Streams\wii\sha\sha256t.obj 
+      ..\..\Lib\Streams\wii\sha\sha512.obj ..\..\Lib\Streams\wii\sha\sha512t.obj 
+      ..\..\Lib\Streams\wii\sha\sha.obj ..\..\Lib\Streams\wii\sha\sha_dgst.obj 
+      ..\..\Lib\Streams\wii\sha\sha_one.obj ..\..\Lib\Streams\wii\aes_cbc.obj 
+      ..\..\Lib\Streams\wii\aes_cfb.obj ..\..\Lib\Streams\wii\aes_core.obj 
+      ..\..\Lib\Streams\wii\aes_ctr.obj ..\..\Lib\Streams\wii\aes_ecb.obj 
+      ..\..\Lib\Streams\wii\aes_ige.obj ..\..\Lib\Streams\wii\aes_misc.obj 
+      ..\..\Lib\Streams\wii\aes_ofb.obj ..\..\Lib\Streams\iso\IsoFile.obj 
+      ..\..\Lib\Streams\iso\IsoFS.obj ..\..\Lib\Streams\iso\IsoFSCDVD.obj 
+      ..\..\Lib\FileName.obj pak.obj miniLZO\minilzo.obj"/>
+    <RESFILES value="extractor.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="Indy60.lib"/>
+    <SPARELIBS value="vcl.lib rtl.lib Indy60.lib"/>
+    <PACKAGES value="vcl.bpi rtl.bpi dbrtl.bpi adortl.bpi vcldb.bpi vclx.bpi bdertl.bpi 
+      vcldbx.bpi ibxpress.bpi dsnap.bpi cds.bpi bdecds.bpi qrpt.bpi teeui.bpi 
+      teedb.bpi tee.bpi dss.bpi teeqr.bpi visualclx.bpi visualdbclx.bpi 
+      dsnapcrba.bpi dsnapcon.bpi bcbsmp.bpi vclie.bpi xmlrtl.bpi inet.bpi 
+      inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi webdsnap.bpi 
+      bcbie.bpi websnap.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
+      bcb2kaxserver.bpi indy.bpi"/>
+    <PATHCPP value=".;..\..\Lib\Streams;..\..\Lib\Streams\wii;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\iso;..\..\Lib;miniLZO"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL;USEPACKAGES"/>
+    <MAINSOURCE value="extractor.bpf"/>
+    <INCLUDEPATH value="miniLZO;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;..\..\Lib;..\..\Lib\Streams;&quot;D:\_job\Programming\Metroid Prime 3\extractor&quot;;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl"/>
+    <LIBPATH value="miniLZO;..\..\Lib\Streams;..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;&quot;D:\_job\Programming\Metroid Prime 3\extractor&quot;;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-IminiLZO -I..\..\Lib\Streams\iso -I..\..\Lib\Streams\wii\sha 
+      -I..\..\Lib\Streams\wii -I..\..\Lib\IsoStreams -I..\..\Lib 
+      -I..\..\Lib\Streams -I&quot;D:\_job\Programming\Metroid Prime 3\extractor&quot; 
+      -ID:\_job\Programming -I$(BCB)\include -I$(BCB)\include\vcl 
+      -I$(BCB)\Source\Indy9 -I..\..\Lib\Streams\wii\include 
+      -I..\..\Lib\Streams\wii\include\openssl -src_suffix cpp -D_DEBUG -boa"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -tWC 
+      -tWM -c"/>
+    <PFLAGS value="-$Y+ -$W -$O- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(PACKAGES) $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32mt.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="extractor.res" FORMNAME="" UNITNAME="extractor.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="extractor.bpf" FORMNAME="" UNITNAME="extractor" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="main.cpp" FORMNAME="" UNITNAME="main" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\FileStream.cpp" FORMNAME="" UNITNAME="FileStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\ImageStream.cpp" FORMNAME="" UNITNAME="ImageStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\IsoStream.cpp" FORMNAME="" UNITNAME="IsoStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\MemoryStream.cpp" FORMNAME="" UNITNAME="MemoryStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\WiiStream.cpp" FORMNAME="" UNITNAME="WiiStream.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\WIIDisc.cpp" FORMNAME="" UNITNAME="WIIDisc.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha1s.cpp" FORMNAME="" UNITNAME="sha1s" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha1.c" FORMNAME="" UNITNAME="sha1.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha1_one.c" FORMNAME="" UNITNAME="sha1_one.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha1dgst.c" FORMNAME="" UNITNAME="sha1dgst.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha256.c" FORMNAME="" UNITNAME="sha256.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha256t.c" FORMNAME="" UNITNAME="sha256t.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha512.c" FORMNAME="" UNITNAME="sha512.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha512t.c" FORMNAME="" UNITNAME="sha512t.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha.c" FORMNAME="" UNITNAME="sha.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha_dgst.c" FORMNAME="" UNITNAME="sha_dgst.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\sha\sha_one.c" FORMNAME="" UNITNAME="sha_one.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_cbc.c" FORMNAME="" UNITNAME="aes_cbc.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_cfb.c" FORMNAME="" UNITNAME="aes_cfb.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_core.c" FORMNAME="" UNITNAME="aes_core.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_ctr.c" FORMNAME="" UNITNAME="aes_ctr.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_ecb.c" FORMNAME="" UNITNAME="aes_ecb.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_ige.c" FORMNAME="" UNITNAME="aes_ige.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_misc.c" FORMNAME="" UNITNAME="aes_misc.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\wii\aes_ofb.c" FORMNAME="" UNITNAME="aes_ofb.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\iso\IsoFile.cpp" FORMNAME="" UNITNAME="IsoFile.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\iso\IsoFS.cpp" FORMNAME="" UNITNAME="IsoFS.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\Streams\iso\IsoFSCDVD.cpp" FORMNAME="" UNITNAME="IsoFSCDVD.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="..\..\Lib\FileName.cpp" FORMNAME="" UNITNAME="FileName" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="pak.cpp" FORMNAME="" UNITNAME="pak" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="miniLZO\minilzo.c" FORMNAME="" UNITNAME="minilzo" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1049
+CodePage=1251
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=14
+Item0=miniLZO;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;..\..\Lib;..\..\Lib\Streams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item1=..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\Streams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item2=..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\Streams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item3=..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item4=..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item5=..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include;..\..\Lib\Streams\wii\include\openssl
+Item6=..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9;..\..\Lib\Streams\wii\include
+Item7=..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item8=D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item9=D:\_job\Programming;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item10=D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item11=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item12=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item13=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=7
+Item0=miniLZO;..\..\Lib\Streams;..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item1=..\..\Lib\Streams;..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item2=..\..\Lib;..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\Lib\Streams\iso;..\..\Lib\Streams\wii\sha;..\..\Lib\Streams\wii;..\..\Lib\IsoStreams;D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item4=D:\_job\Programming\Metroid Prime 3\extractor;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item5=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item6=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[HistoryLists\hlFinalOutputDir]
+Count=4
+Item0=F:\_job\Metroid Prime 3\pak\
+Item1=F:\_job\Metroid Prime 3\pak
+Item2=F:\_job\Metroid Prime 3\
+Item3=F:\_job\Metroid Prime 3
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=-e ..\pak_mp3\NoARAM.PAK test\ FONT TXTR
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
