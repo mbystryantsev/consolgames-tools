@@ -124,13 +124,24 @@ begin
   end;
 end;
 
-Procedure ExtractFile(FileName: String; Text: TGameTextSet);
+Procedure ExtractFile(FileName: String; LangStr: String; Text: TGameTextSet);
 var
   Buf: Pointer; Size: Integer; F: File; Header: ^THeader; IdHeader: ^TIdHeader; IDs: TIdRecArray;
   Ptr: PLongWord; Item: TGameText; i, Len: Integer; Ver: Integer; IdOffset, IdCount: LongWord;
   LangID: Integer;
 begin
   LangID := 0;
+
+  if LangStr = 'JAPN' then
+    LangId := 1
+  else if LangStr = 'GERM' then   
+    LangId := 2
+  else if LangStr = 'FREN' then
+    LangId := 3
+  else if LangStr = 'SPAN' then
+    LangId := 4
+  else if LangStr = 'ITAL' then
+    LangId := 5;
 
   AssignFile(F, FileName);
   Reset(F, 1);
@@ -190,7 +201,7 @@ begin
   FreeMem(Buf);
 end;
 
-Procedure ExtractDirectory(Dir: String; Text: TGameTextSet);
+Procedure ExtractDirectory(Dir: String; LangStr: String; Text: TGameTextSet);
 var SR: TSearchRec;
 begin
   SetSlash(Dir);
@@ -198,7 +209,7 @@ begin
   begin
     repeat
       WriteLn('Extracting: ', SR.Name, '...');
-      ExtractFile(Dir + SR.Name, Text);
+      ExtractFile(Dir + SR.Name, LangStr, Text);
     until FindNext(SR) <> 0;
     SysUtils.FindClose(SR);
   end;
@@ -404,7 +415,7 @@ begin
   FreeMem(Buf);
 end;
 
-Procedure ExtractSame(InFile, InDir, OutFile: String);
+Procedure ExtractSame(LangStr, InFile, InDir, OutFile: String);
 var Text, OutText: TGameTextSet; i: Integer; FileName: String;
 begin
   Text := TGameTextSet.Create(@FCreateError);
@@ -418,7 +429,7 @@ begin
     Write(Text.Items[i].Name, '... ');
     If FileExists(FileName) Then
     begin
-      ExtractFile(FileName, OutText);
+      ExtractFile(FileName, LangStr, OutText);
       WriteLn('yes');
     end else
       WriteLn('no');
@@ -435,10 +446,11 @@ begin
   WriteLn('Metroid Prime 3: Corruption Text Convertor by HoRRoR_X');
   WriteLn('http://consolgames.ru/');
   WriteLn('Usage:');
-  WriteLn(' -e <InSTRG/Dir> <OutFile> - extract file/directory');
-  WriteLn(' -b <InFile> <OutSTRGDir> [LangStr] - build files');
+  WriteLn(' -e <LangID> <InSTRG/Dir> <OutFile> - extract file/directory');
+  WriteLn(' -b <InFile> <OutSTRGDir> [LangID] - build files');
   WriteLn(' -d <InDir> <File1> <File2> [File3 ... FileN] - remove/merge dublicate texts');
-  WriteLn(' -es <InFile> <InSTRGDir> <OutFile> - extract the same as in the input file');
+  WriteLn(' -es <LangID> <InFile> <InSTRGDir> <OutFile> - extract the same as in the input file');
+  WriteLn('LangID: ENGL, JAPN, GERM, FREN, SPAN or ITAL.');
   WriteLn('');
 end;
 
@@ -490,16 +502,17 @@ var Text, ModText, OrText: TGameTextSet;
   TextFiles: Array of TGameTextSet; SR: TSearchRec;
 begin
 
-  If (ParamStr(1) = '-e') and (ParamCount >= 3) Then
+  If (ParamStr(1) = '-e') and (ParamCount >= 4) Then
   begin
     WriteLn('Extracting...');
-    InDir := ParamStr(2);
-    OutFile := ParamStr(3);
+    LangStr := ParamStr(2);
+    InDir := ParamStr(3);
+    OutFile := ParamStr(4);
     Text := TGameTextSet.Create(@FCreateError);
     If DirectoryExists(InDir) Then
-      ExtractDirectory(InDir, Text)
+      ExtractDirectory(InDir, LangStr, Text)
     else If FileExists(InDir) Then
-      ExtractFile(InDir, Text)
+      ExtractFile(InDir, LangStr, Text)
     else
     begin
       WriteLn('No input!');
@@ -545,12 +558,13 @@ begin
       Text.Free;
     end;
   end else
-  If (ParamStr(1) = '-es') and (ParamCount >= 4) Then
+  If (ParamStr(1) = '-es') and (ParamCount >= 5) Then
   begin
-    InFile := ParamStr(2);
-    InDir := ParamStr(3);
-    OutFile := ParamStr(4);
-    ExtractSame(InFile, InDir, OutFile);
+    LangStr := ParamStr(2);
+    InFile := ParamStr(3);
+    InDir := ParamStr(4);
+    OutFile := ParamStr(5);
+    ExtractSame(LangStr, InFile, InDir, OutFile);
   end else
 
   // Import difference
