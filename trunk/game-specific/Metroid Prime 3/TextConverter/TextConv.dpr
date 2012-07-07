@@ -64,7 +64,7 @@ end;
 
 
 Procedure ExtractText(Ptrs, TextPtr: Pointer; Count, LangID: Integer; Text: TGameText; IDs: TIdRecArray; Ver: Integer);
-var Ptr, P: PLongWord; i, j, Len: Integer; S: WideString;
+var Ptr, P: PLongWord; i, Len: Integer; S: WideString;
   LangRec: ^TLangRec; W: PWideChar;
 
   Procedure SetID(var S: WideString; Index: Integer);
@@ -72,7 +72,7 @@ var Ptr, P: PLongWord; i, j, Len: Integer; S: WideString;
   begin
       For j := 0 To High(IDs) do
       begin
-        If IDs[j].Num = Index Then
+        If IDs[j].Num = LongWord(Index) Then
         begin
           S := S + '[ID:' + IDs[j].Str { + ',' + IntToStr(j)} + ']'#$A;
           break;
@@ -87,7 +87,7 @@ begin
     For i := 0 To Count - 1 do
     begin
       Len := Endian(Ptr^);
-      P := PLongWord(LongWord(TextPtr) + Len);
+      P := PLongWord(LongWord(TextPtr) + LongWord(Len));
       Len := Endian(P^);
       Inc(P);
       //Len := WideCharToMultiByte(CP_UTF8, 0, strbuf, Length(strbuf), P, cBufferSize - (LongWord(SPtr) - LongWord(Buf)), nil, nil);
@@ -145,6 +145,8 @@ begin
   Header := Buf;
 
   Ver := Endian(Header^.Version);
+
+  IdOffset := 0;
   case Ver of
     1:
     begin
@@ -223,7 +225,7 @@ end;
 Function BuildStrings(Text: TGameText; LangString: String; Data: Pointer): Integer;
 var
   IdCount: Integer; IDs: TIdRecArray; i, k, j, n, TextLen, Ver, Pos: Integer;
-  S, ID: WideString; Ptrs, Lens: Array of LongWord; Len: PLongWord;
+  S: WideString; Ptrs, Lens: Array of LongWord; Len: PLongWord;
   TextSize, LangCount: LongWord; P: PChar; Ptr: PLongWord; LangRec: ^TLangRec;
   Header: THeader; IdHeader: TIdHeader; UserData: String;
 begin
@@ -376,7 +378,7 @@ begin
 end;
 
 Procedure BuildFiles(Text: TGameTextSet; LangString, OutDir: String);
-var Size, i, Count, Offset, Delim: Integer; Buf: Pointer; F: File; Names, FileName: String;
+var Size, i, Offset, Delim: Integer; Buf: Pointer; F: File; Names, FileName: String;
 begin
   If OutDir[Length(OutDir)] <> '\' Then OutDir := OutDir + '\';
   GetMem(Buf, 1024 * 1024);
@@ -483,7 +485,7 @@ begin
   Result := False;
 end;
 
-var Text, ModText, OrText: TGameTextSet; Buf: Pointer; F: File; Size: Integer;
+var Text, ModText, OrText: TGameTextSet;
   InFile, OutFile, InDir, OutDir, LangStr: String; i, j, n, m, k: Integer;
   TextFiles: Array of TGameTextSet; SR: TSearchRec;
 begin
