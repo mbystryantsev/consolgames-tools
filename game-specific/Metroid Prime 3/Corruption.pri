@@ -10,8 +10,10 @@ CONFIG(debug, debug|release)
 INCLUDEPATH += \
 	../ScriptTesterLib \
 	../ExtractorLib \
-	../../platform-specific/wii/streams \
-	../../core \
+	../platform-specific/wii/streams \
+	../../../core \
+	../../../core/streams \
+	../../../core/classes \
 
 QMAKE_LIBDIR += \
 	../ScriptTesterLib/$$CONFIG_NAME \

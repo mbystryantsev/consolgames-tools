@@ -1,7 +1,9 @@
-#ifndef __PAK_H
-#define __PAK_H
+#pragma once
 
-#include "Stream.h"
+namespace Consolgames
+{
+class Stream;
+}
 
 #pragma pack(push, 1)
 
@@ -10,8 +12,8 @@ typedef bool (*PProgrFunc)(int act, int val, char* str);
 
 enum
 {
-        PROGR_SET_MAX,
-        PROGR_SET_CUR
+	PROGR_SET_MAX,
+	PROGR_SET_CUR
 };
 
 typedef char ResType[4];
@@ -94,12 +96,9 @@ struct PakRec
 
 };
 
-bool PakExtract(CStream* pak, char* OutDir, ResType* types = 0, bool use_names = false);
+bool PakExtract(Consolgames::Stream* pak, char* OutDir, ResType* types = 0, bool use_names = false);
 bool PakExtract(char *InFile, char *OutDir, ResType* types = 0, bool use_names = false);
-bool PakRebuild(CStream* in, CStream* out, char* dirs[], ResType* types = 0, PProgrFunc progress = 0);
+bool PakRebuild(Consolgames::Stream* in, Consolgames::Stream* out, char* dirs[], ResType* types = 0, PProgrFunc progress = 0);
 
 #define ALIGN 0x40
 #define CHUNK 0x4000
-
-
-#endif /* __PAK_H */
