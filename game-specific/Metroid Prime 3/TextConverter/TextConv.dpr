@@ -416,28 +416,36 @@ begin
 end;
 
 Procedure ExtractSame(LangStr, InFile, InDir, OutFile: String);
-var Text, OutText: TGameTextSet; i: Integer; FileName: String;
+var Text, OutText: TGameTextSet; i: Integer; FileName, Hash: String; Success, Fails: Integer;
 begin
   Text := TGameTextSet.Create(@FCreateError);
   Text.LoadTextFromFile(InFile);
   SetSlash(InDir);
+  Success := 0;
+  Fails := 0;
 
   OutText := TGameTextSet.Create(@FCreateError);
   For i := 0 to Text.Count - 1 do
   begin
-    FileName := InDir + Text.Items[i].Name + '.STRG';
-    Write(Text.Items[i].Name, '... ');
+    Hash := LeftStr(Text.Items[i].Name, 16);
+    FileName := InDir + Hash + '.STRG';
+    Write(Hash, '... ');
     If FileExists(FileName) Then
     begin
+      Inc(Success);
       ExtractFile(FileName, LangStr, OutText);
       WriteLn('yes');
     end else
+    begin
+      Inc(Fails);
       WriteLn('no');
+    end;
   end;
 
   OutText.SaveTextToFile(OutFile);
-  OutText.Free; 
+  OutText.Free;
 
+  WriteLn('Done! ', Success, ' success, ', Fails, ' fails, ', Text.Count, ' total.');
   Text.Free;
 end;
 
