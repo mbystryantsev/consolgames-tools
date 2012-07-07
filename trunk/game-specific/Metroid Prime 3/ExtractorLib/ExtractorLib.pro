@@ -5,3 +5,5 @@ TEMPLATE = lib
 HEADERS = *.h miniLZO/*.h
 SOURCES = *.cpp miniLZO/*.c
 LIBS = core.lib
+
+include(../Corruption.pri)
