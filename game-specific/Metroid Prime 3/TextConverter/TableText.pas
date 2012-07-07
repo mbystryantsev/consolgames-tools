@@ -85,7 +85,7 @@ Type
   end;
 
   TTextSet = Array of TTextMessageSet;
-  TDataMode = (dmDec, dmHex, dmChar, dmEnum);
+  TDataMode = (dmInvalid, dmDec, dmHex, dmChar, dmEnum);
 
   TFontPropertyMode = (fvNone, fvColor, fvScale, fvTransparency);
   TFontProperty = Record
@@ -112,15 +112,15 @@ Type
     FPropertyList: Array of TFontProperty;
 
     FStringIndex: Array[Byte] of PTableRecord;
-    FDataIndex:   Array[Byte] of PTableRecord;
+    //FDataIndex:   Array[Byte] of PTableRecord;
 
     procedure SetCreateError(const Value: TCreateError);// virtual;
     procedure SetByteMask(const Mask: WideString);
     function  DrawByteMask(S: WideString): Boolean;
     function  GetTableElement(Index: WideString): TByteArray;
     procedure SetTableElement(Index: WideString; const Value: TByteArray);
-    procedure ProcessProperty(S: String);
-    procedure ProcessSearchIndexes();
+//    procedure ProcessProperty(S: String);
+//    procedure ProcessSearchIndexes();
   protected
     FError:     Boolean;
     FTable:     TCodeTable;
@@ -364,7 +364,7 @@ var
 implementation
 
 const
-  cChar: Array[TDataMode] of Char = ('d', 'x', 's', 's');
+  cChar: Array[TDataMode] of Char = (#0, 'd', 'x', 's', 's');
 
 { ETableError }
 
@@ -476,7 +476,7 @@ Function TTable.LoadTable(List: TTntStringList; Append: Boolean = False): Intege
 var
   n, P, Cur: Integer; S, SS, Str: WideString; Fmt: Boolean; _endian, BigEndian: Boolean;
   //CharsIndexes: TWordArray;
-  bCharIndex, bSetIndex: Boolean; CISize, CIStride: Integer;
+  bCharIndex: Boolean; CISize, CIStride: Integer;
   CILeft, CIBigEndian: Boolean; CIAnd: LongWord; CIAdd, CIShr: Integer;
 Type TDirectiveType = (dtNone, dtInclude, dtFormat, dtNormal, dtEndian, dtProperty, dtCharIndex, dtSetIndex);
      TLineMode = (lnNormal, lnMiniOpcode, lnOpcode);
@@ -647,9 +647,9 @@ const
       If CIBigEndian Then
         Value := ChangeEndian(Value, CISize);
       If CIShr < 0 Then
-        FTable[Cur].Indexes[n] := ((Value and CIAnd) shl -CIShr) + CIAdd
+        FTable[Cur].Indexes[n] := LongWord(Integer(((Value and CIAnd) shl -CIShr)) + CIAdd)
       else
-        FTable[Cur].Indexes[n] := ((Value and CIAnd) shr  CIShr) + CIAdd;
+        FTable[Cur].Indexes[n] := LongWord(Integer(((Value and CIAnd) shr  CIShr)) + CIAdd);
       Inc(Index, Step);
     end;
   end;
@@ -2003,11 +2003,10 @@ end;
 function TTable.IsByte(C: PWideChar; var B: Byte; var Len: Integer): Boolean;
 var n, Cur, Cnt, Cr: Integer; Ch: String; SLen: String;
 const
-  Max: Array[TDataMode] of Integer = (3,2,1,0);
-  CharSet: Array[TDataMode] of TCharSet = (['0'..'9'], ['0'..'9','a'..'f','A'..'F'],[#0..#255],[#0..#255]);
+  Max: Array[TDataMode] of Integer = (-1, 3,2,1,0);
+  CharSet: Array[TDataMode] of TCharSet = ([], ['0'..'9'], ['0'..'9','a'..'f','A'..'F'],[#0..#255],[#0..#255]);
 begin
   Result := False;
-  Cnt := 0;
   If Length(FByteLeft) + Length(FByteRight) + FByteLen > Len Then Exit;
   For Cur := 0 To Length(FByteLeft) - 1 do
     If C[Cur] <> FByteLeft[Cur + 1] Then Exit;
@@ -2055,6 +2054,7 @@ begin
   Result := False;
   FByteLen := 0;
   Mode := rmChar;
+  DMode := dmInvalid;
   For n := 1 To Length(S) do
   begin
     Case Mode of
@@ -2585,7 +2585,6 @@ begin
   Result := -1;
   If GetValues(Index, I, S, Len) >= 0 Then With FOpcodes[Index] do
   begin
-    Num := 0;
     SetLength(D, Length(Data));
     For n := 0 To High(Data) do
       D[n] := Data[n];
@@ -2601,7 +2600,7 @@ begin
 end;
 
 function TOpcodeList.GetValues(Index: Integer; var I: TIntArray; S: PWideChar; var L: Integer): Integer;
-var V, n, m, P, Cur, Cnt, ELen: Integer; Str: WideString; Mode: TDataMode;
+var V, n, P, Cur, Cnt: Integer; Str: WideString; Mode: TDataMode;
 
  Function InSpaces(C: WideChar): Boolean;
  var n: Integer;
@@ -2634,9 +2633,9 @@ var V, n, m, P, Cur, Cnt, ELen: Integer; Str: WideString; Mode: TDataMode;
  end;
 
 const
-  cMax: Array[TDataMode] of Integer = (11, 8, -1, -1);
+  cMax: Array[TDataMode] of Integer = (-1, 11, 8, -1, -1);
   cCharSet: Array[TDataMode] of TCharSet =
-  (['0'..'9'], ['0'..'9','a'..'f','A'..'F'],[],[]);
+  ([], ['0'..'9'], ['0'..'9','a'..'f','A'..'F'],[],[]);
 begin
   Result := -1;
   P := 0;
@@ -2696,7 +2695,6 @@ end;
 function TOpcodeList.GetEnumIndex(Enum: TEnum; S: PWideChar; var Len: Integer): Integer;
 var n: Integer; Str: String;
 begin
-  Result := -1;
   For n := 0 To High(Enum) do With Enum[n] do
     If (Length(Str) <= Len) and CompareMem(@Str[1], S, Length(Str) * 2) Then
       break;
@@ -2778,6 +2776,7 @@ begin
   FPropertyList[n].Value := Value;
 end;
 
+(*
 procedure TTable.ProcessProperty(S: String);
 var Mode: TFontPropertyMode; Value, Flags: Integer; Name, SS, SV: String;
 begin
@@ -2793,6 +2792,7 @@ begin
   //end;
 
 end;
+*)
 
 Function ChangeEndian(V: LongWord; Size: Integer): LongWord;
 var n: Integer; B, WB: ^Byte;
@@ -2801,7 +2801,7 @@ begin
   If Size > 4 Then Size := 4;
   Result := 0;
   B := @V;
-  WB := Pointer(LongWord(@Result) + Size - 1);
+  WB := Pointer(LongWord(@Result) + LongWord(Size) - 1);
 
   For n := 1 To Size do
   begin
@@ -2936,8 +2936,9 @@ begin
   Result := FCount;
 end;
 
+(*
 procedure TTable.ProcessSearchIndexes;
-var Dat, Str: Array of PTableRecord; i, j: Integer; CurIndex, Index: Integer; Rec: PTableRecord;
+var Dat, Str: Array of PTableRecord; i, j: Integer; Index: Integer; Rec: PTableRecord;
   S: PWideChar; SLen: Integer;
 Procedure Swap(var R1, R2: PTableRecord);
 var RT: PTableRecord;
@@ -3009,6 +3010,8 @@ begin
   end;
 
 end;
+
+*)
 
 function TTable.TableCount: Integer;
 begin
