@@ -434,6 +434,7 @@ begin
     begin
       Inc(Success);
       ExtractFile(FileName, LangStr, OutText);
+      OutText.Items[OutText.Count - 1].Name := Text.Items[i].Name;
       WriteLn('yes');
     end else
     begin
