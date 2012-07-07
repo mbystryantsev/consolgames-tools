@@ -459,6 +459,7 @@ begin
   WriteLn(' -b <InFile> <OutSTRGDir> [LangID] - build files');
   WriteLn(' -d <InDir> <File1> <File2> [File3 ... FileN] - remove/merge dublicate texts');
   WriteLn(' -es <LangID> <InFile> <InSTRGDir> <OutFile> - extract the same as in the input file');
+  WriteLn(' -diff <InFile1> <InFile2> <OutFile> - stores differences only into OutFile');
   WriteLn('LangID: ENGL, JAPN, GERM, FREN, SPAN or ITAL.');
   WriteLn('');
 end;
@@ -580,16 +581,16 @@ begin
   // For example - reformed_new.txt, translated_old.txt and original_old.txt
   // -id reformed_new.txt translated_old.txt original_old.txt
   // reformed_new.txt << translated_old.txt thats difference from original_old.txt
-  If (ParamStr(1) = '-id') and (ParamCount >= 4) Then
+  If (ParamStr(1) = '-diff') and (ParamCount >= 4) Then
   begin
 
     ModText := TGameTextSet.Create(@FCreateError);
     OrText := TGameTextSet.Create(@FCreateError);
     Text := TGameTextSet.Create(@FCreateError);
 
-    Text.LoadTextFromFile(ParamStr(2));
+    OrText.LoadTextFromFile(ParamStr(2));
     ModText.LoadTextFromFile(ParamStr(3));
-    OrText.LoadTextFromFile(ParamStr(4));
+    Text.LoadTextFromFile(ParamStr(4));
 
     For i := 0 To Text.Count - 1 do
     begin
