@@ -4,7 +4,8 @@ namespace Consolgames
 {
 
 MemoryStream::MemoryStream()
-	: m_buffer(BLOCK_SIZE)
+	: Stream()
+	, m_buffer(BLOCK_SIZE)
 	, m_externalPointer(false)
 	, m_bufferSize(BLOCK_SIZE)
 	, m_size(0)
@@ -14,7 +15,8 @@ MemoryStream::MemoryStream()
 }
 
 MemoryStream::MemoryStream(const void* data, size_t size)
-	: m_bufferSize(size)
+	: Stream()
+	, m_bufferSize(size)
 	, m_size(size)
 	, m_mode(modeRead)
 	, m_constMemory(reinterpret_cast<const u8*>(data))

@@ -7,6 +7,10 @@ namespace Consolgames
 
 const Stream::ByteOrder Stream::s_nativeByteOrder = Stream::orderLittleEndian;
 
+Stream::Stream() : m_byteOrder(Stream::s_nativeByteOrder)
+{
+}
+
 largesize_t Stream::readStream(Stream* stream, largesize_t size)
 {
     char buf[S_BUF_SIZE];
@@ -108,6 +112,38 @@ u64 Stream::read64()
 		return endian64(read<u64>());
 	}
 	return read<u64>();
+}
+
+void Stream::write8(u8 value)
+{
+	write<u8>(value);	
+}
+
+void Stream::write16(u16 value)
+{
+	if (m_byteOrder != s_nativeByteOrder)
+	{
+		value = endian16(value);
+	}
+	write<u16>(value);
+}
+
+void Stream::write32(u32 value)
+{
+	if (m_byteOrder != s_nativeByteOrder)
+	{
+		value = endian32(value);
+	}
+	return write<u32>(value);	
+}
+
+void Stream::write64(u64 value)
+{
+	if (m_byteOrder != s_nativeByteOrder)
+	{
+		value = endian64(value);
+	}
+	return write<u64>(value);	
 }
 
 }

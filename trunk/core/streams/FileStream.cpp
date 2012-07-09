@@ -9,7 +9,7 @@
 namespace Consolgames
 {
 
-FileStream::FileStream(const std::string& filename, OpenMode mode)
+FileStream::FileStream(const std::string& filename, OpenMode mode) : IFileStream()
 {
 
 #ifdef USE_WINDOWS_FILES
