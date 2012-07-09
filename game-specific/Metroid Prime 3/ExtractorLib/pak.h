@@ -1,69 +1,118 @@
 #pragma once
+#include <core.h>
+#include <Stream.h>
+#include <FileStream.h>
+#include <vector>
+#include <set>
+#include <map>
+#include <string>
+#include <memory>
 
 namespace Consolgames
 {
 class Stream;
 }
 
-#pragma pack(push, 1)
 
 typedef bool (*PProgrFunc)(int act, int val, char* str);
 // if return true then abort
 
-enum
+
+class IPakProgressHandler
 {
-	PROGR_SET_MAX,
-	PROGR_SET_CUR
+public:
+	enum Action
+	{
+		SetMax,
+		SetCur
+	};
+	virtual void progress(Action action, int value, const char* message) = 0;
 };
 
-typedef char ResType[4];
 
-typedef union
+#pragma pack(push, 1)
+
+struct ResType
 {
-   unsigned __int64 i64;
-   unsigned int i[2];
-   unsigned char c[8];
-} Hash;
+	ResType()
+	{
+		id[0] = id[1] = id[2] = id[3] = 0;
+	}
+	ResType(const char* str)
+	{
+		id[0] = str[0];
+		id[1] = str[1];
+		id[2] = str[2];
+		id[3] = str[3];
+	}
+	std::string toString() const
+	{
+		std::string result(4, '\0');
+		result[0] = id[0];
+		result[1] = id[1];
+		result[2] = id[2];
+		result[3] = id[3];
+		return result;
+	}
+	bool operator==(const ResType& r) const
+	{
+		return id[0] == r.id[0] && id[1] == r.id[1] && id[2] == r.id[2] && id[3] == r.id[3];
+	}
+	bool operator==(const char* s) const
+	{
+		return *this == ResType(s);
+	}
+	bool operator<(const ResType& r) const
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			if (id[0] < r.id[0])
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	char id[4];
+};
+
+typedef unsigned long long Hash;
+
 
 struct PakHeader
 {
-    int tag02;
-    int tag40;
-    Hash hash1;
-    Hash hash2;
+	int tag02;
+	int tag40;
+	Hash hash1;
+	Hash hash2;
 };
 
 struct SegmentRecord
 {
-    ResType res;
-    unsigned int size;
+	ResType res;
+	unsigned int size;
 };
 
 struct FileRecord
 {
-    int packed;
-    ResType res;
-    Hash hash;
-    unsigned int size;
-    unsigned int offset;
+	int packed;
+	ResType res;
+	Hash hash;
+	unsigned int size;
+	unsigned int offset;
 };
 
-struct CMPDHeader
+struct CompressedFileHeader
 {
-    ResType sign;
-    int type;
+	ResType sign;
+	int type;
 };
 
-struct CMPD1
+struct CompressedStreamHeader
 {
-    unsigned unk : 8;
-    unsigned lzo_size : 24;
-    unsigned int file_size;
-};
-
-struct CMPD2
-{
-    unsigned int unk1, unk2, packed_size, data_size;
+	u32 flags   : 8;
+	u32 lzoSize : 24;
+	u32 dataSize;
 };
 
 #pragma pack(pop)
@@ -71,34 +120,77 @@ struct CMPD2
 
 struct NameRecord
 {
-        char* name;
-        ResType res;
-        Hash hash;
+	std::string name;
+	ResType res;
+	Hash hash;
 };
 
-struct PakRec
+class PakArchive
 {
-    int seg_count;
-    int strg;
-    int rshd;
-    int data;
-    unsigned int strg_offset;
-    unsigned int rshd_offset;
-    unsigned int data_offset;
-    unsigned int file_count;
-    unsigned int name_count;
+public:
+	PakArchive();
 
-    SegmentRecord* segments;
-    PakHeader header;
-    FileRecord* files;
-    NameRecord* names;
-    char* names_buf;
+	bool open(Consolgames::Stream* pak);
+	bool open(const std::string& filename);
 
+	bool extract(const char* OutDir, const std::set<ResType>& types = std::set<ResType>(), bool useNames = false);
+
+	//! Rebuilds pak, use files for replace from input directories.
+	bool rebuild(Consolgames::Stream* out, const std::vector<std::string>& inputDirs,
+		const std::set<ResType>& types = std::set<ResType>(),
+		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
+
+	bool opened() const;
+	int fileCount() const;
+	void setProgressHandler(IPakProgressHandler* handler);
+
+protected:
+	enum CompressionFlags
+	{
+		FlagUnknown1   = 1,
+		FlagUnknown2   = 1 << 1,
+		FlagUnknown3   = 1 << 2,
+		FlagUnknown4   = 1 << 3,
+		FlagUnknown5   = 1 << 4,
+		FlagData       = 1 << 5,
+		FlagTexture    = 1 << 6,
+		FlagCompressed = 1 << 7
+	};
+
+protected:
+	CompressedStreamHeader readCmpdStreamHeader();
+
+	void extractFile(const FileRecord& file, Consolgames::Stream* out);
+	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture);
+	u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture);
+	int findSegment(ResType type) const;
+	int getSegmentOffset(int index) const;
+	static void swapFileEndian(FileRecord& fileRecord);
+	std::string findName(const Hash& hash) const;
+	void progress(IPakProgressHandler::Action action, int value, const char* message);
+	u32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out);
+	static void decompressLzo(Consolgames::Stream* lzoStream, u32 lzoSize, Consolgames::Stream* outStream);
+
+protected:
+	IPakProgressHandler* m_progressHandler;
+
+	Consolgames::Stream* m_stream;
+	std::auto_ptr<Consolgames::FileStream> m_fileStream;
+
+	int m_strgIndex;
+	int m_rshdIndex;
+	int m_dataIndex;
+	offset_t m_strgOffset;
+	offset_t m_rshdOffset;
+	offset_t m_dataOffset;
+
+	std::vector<char> m_lzoWorkMem;
+
+	std::vector<SegmentRecord> m_segments;
+	PakHeader m_header;
+	std::vector<FileRecord> m_files;
+	std::vector<NameRecord> m_names;
 };
-
-bool PakExtract(Consolgames::Stream* pak, char* OutDir, ResType* types = 0, bool use_names = false);
-bool PakExtract(char *InFile, char *OutDir, ResType* types = 0, bool use_names = false);
-bool PakRebuild(Consolgames::Stream* in, Consolgames::Stream* out, char* dirs[], ResType* types = 0, PProgrFunc progress = 0);
 
 #define ALIGN 0x40
 #define CHUNK 0x4000

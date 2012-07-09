@@ -10,496 +10,472 @@ using namespace Consolgames;
 #define endian(v) (((unsigned int)v >> 24) | (((unsigned int)v >> 8) & 0xFF00) | (((unsigned int)v << 8) & 0xFF0000) | ((unsigned int)v << 24))
 #define endianw(v) ((v >> 8) | (v << 8))
 
-int FindSegment(SegmentRecord* segments, int count, ResType type)
+int PakArchive::findSegment(ResType type) const
 {
-    for(int i = 0; i < count; i++)
-    {
-        if(strncmp(segments[i].res, type, 4) == 0) return i;
-    }
-    return -1;
+	for (size_t i = 0; i < m_segments.size(); i++)
+	{
+		if (m_segments[i].res == type)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
 
-int GetSegmentOffset(SegmentRecord* segments, int index)
+int PakArchive::getSegmentOffset(int index) const
 {
-    int result = 0;
-    for(int i = 0; i < index; i++)
-    {
-        result += segments[i].size;
-    }
-    return result;
+	int result = 0;
+	for(int i = 0; i < index; i++)
+	{
+		result += m_segments[i].size;
+	}
+	return result;
 }
 
-bool InTypes(ResType res, ResType *types)
+std::string hashToStr(const Hash& hash)
 {
-    while(*(int*)*types)
-    {
-        if(*(int*)(&res[0]) == *(int*)&types[0][0]) return true;
-        types++;
-    }
-    return false;
+	std::string str(16, '\0');
+	sprintf(&str[0], "%16.16I64X", hash);
+	return str;
 }
 
-void HashToStr(Hash hash, char* str)
+Hash hashFromData(const char* c)
 {
-    for(int i = 0; i < 8; i++)
-    {
-        sprintf(&str[i * 2], "%2.2X", hash.c[i]);
-    }
+	Hash hash = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		hash <<= 8;
+		hash |= static_cast<u8>(c[i]);
+	}
+	return hash;
 }
 
-void ExtractFile(Stream* stream, int size, bool packed, Stream* out, unsigned char *wrk_mem)
+void PakArchive::extractFile(const FileRecord& file, Stream* out)
 {
-    unsigned char *buf = wrk_mem;
-    unsigned char *u_buf = &wrk_mem[65536];
-    __int64 pos = stream->tell();
+	if (file.packed)
+	{
+		CompressedFileHeader header;
+		m_stream->read(&header, sizeof(header));
+		header.type = endian(header.type);
 
-    //packed = false;
+		switch(header.type)
+		{
+			case 1:
+			{
+				CompressedStreamHeader cmpdHeader = readCmpdStreamHeader();
+				decompressLzo(m_stream, cmpdHeader.lzoSize, out);
+				break;
+			}
+			case 2:
+			{
+				m_stream->read32(); // 12
+				m_stream->read32(); // 12
+				CompressedStreamHeader cmpdHeader = readCmpdStreamHeader();
 
-    if(packed)
-    {
-        CMPDHeader header;
-        CMPD1 cmpd1;
-        //CMPD2 cmpd2;
-        stream->read(&header, sizeof(header));
-        header.type = endian(header.type);
-        int lzo_size;
-        unsigned long size;
-        unsigned short chunk;
-        //int ololo;
-        switch(header.type)
-        {
-            case 1:
-                stream->read(&cmpd1, sizeof(cmpd1));
-                //cmpd1.lzo_size = endianw(cmpd1.lzo_size);
-                cmpd1.file_size = endian(cmpd1.file_size);
-                lzo_size = endian((unsigned int)cmpd1.lzo_size << 8) & 0xFFFFFF;
-                while(lzo_size > 0)
-                {
-                    stream->read(&chunk, 2);
-                    lzo_size -= 2;
-                    chunk = endianw(chunk);
-                    stream->read(buf, chunk);
-                    lzo_size -= chunk;
-                    lzo1x_decompress(buf, chunk, u_buf, &size, NULL);
-                    out->write(u_buf, size);
-
-                }
-                break;
-            case 2:
-                stream->read16();
-                stream->read16();
-                unsigned int lzo_size, data_size;
-                lzo_size = stream->read16();
-                lzo_size = endian(lzo_size);
-                data_size = stream->read16();
-                data_size = endian(data_size);
-                bool packed = ((lzo_size & 0x80000000) != 0);
-                out->writeStream(stream, 12);
-                if(!packed)
-                {
-                        out->writeStream(stream, data_size);
-                }
-                else
-                {
-                        unsigned char *lzo_buf = (unsigned char *)malloc(lzo_size);
-                        unsigned char *data_buf = (unsigned char *)malloc(data_size);
-                        size = data_size;
-	                lzo1x_decompress(lzo_buf, lzo_size, data_buf, &size, wrk_mem);
-                        out->write(data_buf, data_size);
-                        free(lzo_buf);
-                        free(data_buf);
-                }
-                //stream->seek(pos, 0);
-                //goto e;
-
-                //stream->read(&cmpd2, sizeof(cmpd2));
-                //break;
-        }
-    }
-    else
-    {
-        out->writeStream(stream, size);
-    }
+				const bool packed = ((cmpdHeader.flags & FlagCompressed) != 0);
+				out->writeStream(m_stream, 12);
+				
+				if (!packed)
+				{
+					out->writeStream(m_stream, cmpdHeader.dataSize);
+				}
+				else
+				{
+					decompressLzo(m_stream, cmpdHeader.lzoSize, out);
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		out->writeStream(m_stream, file.size);
+	}
 
 }
 
-unsigned int compress_lzo(Stream* in, int size, Stream *out, unsigned char* wrk_mem)
+u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 {
-    unsigned int lzo_size = 0;  
-    unsigned char *buf = &wrk_mem[0x10000], *dst = &wrk_mem[0x18000];
-    while (size > 0)
-    {
-        int chunk = min(CHUNK, size);
-        unsigned long lzo_chunk;
-        unsigned short lzo_chunk_e;
-        size -= chunk;
-        in->read(buf, chunk);
-        lzo1x_1_compress(buf, chunk, dst, &lzo_chunk, wrk_mem);
-        lzo_size += lzo_chunk + 2;
-        lzo_chunk_e = endianw(lzo_chunk);
-        out->write(&lzo_chunk_e, 2);
-        out->write(dst, lzo_chunk);
-    }
-    return lzo_size;
-        
+	unsigned int lzo_size = 0;
+	u8 buf[CHUNK];
+	std::vector<u8> compressionBuffer(CHUNK * 2);
+	while (size > 0)
+	{
+		int chunk = min(CHUNK, size);
+		lzo_uint lzoChunk = 0;
+		u16 lzoChunkStored = 0;
+		size -= chunk;
+		in->read(buf, chunk);
+		lzo1x_1_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, &m_lzoWorkMem[0]);
+		lzo_size += lzoChunk + 2;
+		lzoChunkStored = endian16(static_cast<u16>(lzoChunk));
+		out->write(&lzoChunkStored, 2);
+		out->write(&compressionBuffer[0], lzoChunk);
+	}
+	return lzo_size;
 }
 
-unsigned int StoreFile(Stream* file, Stream* stream, bool packed, bool tex, unsigned char *wrk_mem)
+void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream)
 {
-    int size = file->size();
-    if(packed)
-    {
-        CMPDHeader header;
-        CMPD1 cmpd1;
-        CMPD2 cmpd2;
-        strncpy(&header.sign[0], "CMPD", 4);
-        header.type = tex ? 0x2000000 : 0x1000000;  
-        __int64 offset = stream->tell();
-        unsigned int lzo_size = 0;    
-        unsigned char *buf = &wrk_mem[0x10000], *dst = &wrk_mem[0x18000];
-        if(!tex)
-        {              
-            cmpd1.unk = 0xA0;
-            cmpd1.file_size = endian(size);    
-            stream->seek(offset + sizeof(CMPDHeader) + sizeof(CMPD1), Stream::seekSet); 
-            //unsigned int lzo_size = 0;
-            while(size > 0)
-            {
-                int chunk = min(CHUNK, size);
-                unsigned long lzo_chunk;
-                unsigned short lzo_chunk_e;
-                size -= chunk;
-                file->read(buf, chunk);
-                lzo1x_1_compress(buf, chunk, dst, &lzo_chunk, wrk_mem);
-                lzo_size += lzo_chunk + 2;
-                lzo_chunk_e = endianw(lzo_chunk);
-                stream->write(&lzo_chunk_e, 2);
-                stream->write(dst, lzo_chunk);
-            }
-            cmpd1.lzo_size = endian((lzo_size << 8));    
-            stream->seek(offset, Stream::seekSet);
-            stream->write(&header, sizeof(header));
-            stream->write(&cmpd1, sizeof(cmpd1));  
-            lzo_size += sizeof(CMPDHeader) + sizeof(CMPD1);
-        } else
-        {
-            size -= 12;
-            cmpd2.data_size = endian(size);
-            cmpd2.unk1 = cmpd2.unk2 = 0x0C000000;
-            //unsigned char *data_buf = (unsigned char*)malloc(size);
-            //unsigned char *lzo_buf = (unsigned char*)malloc(size + size / 8);
-
-            int s[3];
-            file->read(s, 12);
-            //file->read(data_buf, size);
-            //file->seek(0, 0);
-
-
-            stream->seek(offset + sizeof(CMPDHeader) + sizeof(CMPD2) + 12, Stream::seekSet);
-            //lzo1x_1_compress(data_buf, size, lzo_buf, (unsigned long*)&lzo_size, wrk_mem);
-            lzo_size = compress_lzo(file, size, stream, wrk_mem);
-
-            cmpd2.packed_size = endian(lzo_size) | 0xC0;
-            
-            stream->seek(offset, Stream::seekSet);
-            stream->write(&header, sizeof(header));
-            stream->write(&cmpd2, sizeof(cmpd2));
-            stream->write(s, 12);
-            //stream->write(lzo_buf, lzo_size);
-
-            //free(data_buf);
-            //free(lzo_buf);
-
-            lzo_size += sizeof(CMPDHeader) + sizeof(CMPD2) + 12;
-        }
-        stream->seek(offset + lzo_size, Stream::seekSet);
-        size = ((lzo_size + (ALIGN - 1)) / ALIGN) * ALIGN;
-        size -= lzo_size;
-        lzo_size += size;
-        if(size > 0)
-        {
-            memset(buf, 0xFF, size);
-            stream->write(buf, size);
-        }
-        return lzo_size;
-    }
-    else
-    {
-        unsigned char buf[ALIGN];
-        stream->writeStream(file, size);
-        int free_size = ((size + (ALIGN - 1)) / ALIGN) * ALIGN;
-        free_size -= size;
-        if(free_size > 0)
-        {
-            memset(buf, 0xFF, free_size);
-            stream->write(buf, free_size);
-        }
-        return size;
-    }
+	//std::vector<u8> lzoBuffer(CHUNK);
+	//std::vector<u8> decompressionBuffer(0x800000);
+	u8 lzoBuffer[CHUNK];
+	u8 decompressionBuffer[0x10000];
+	while (lzoSize > 0)
+	{
+		unsigned short chunk = endian16(lzoStream->read16());
+		lzoSize -= 2;
+		lzoStream->read(&lzoBuffer[0], chunk);
+		lzoSize -= chunk;
+		unsigned long size = 0;
+		lzo1x_decompress(&lzoBuffer[0], chunk, &decompressionBuffer[0], &size, NULL);
+		outStream->write(&decompressionBuffer[0], size);
+	}
 }
 
-unsigned int StoreFile(char* filename, Stream* stream, bool packed, bool tex, unsigned char *wrk_mem)
+u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture)
 {
-    FileStream file(filename, Stream::modeRead);
-    return StoreFile(&file, stream, packed, tex, wrk_mem);
+	int size = file->size();
+	u32 totalSize = 0;
+	offset_t offset = stream->tell();
+
+	if (isPacked)
+	{
+		CompressedFileHeader header;
+		header.sign = "CMPD";
+		header.type = isTexture ? endian32(2) : endian32(1);
+
+		CompressedStreamHeader cmpdHeader;
+		cmpdHeader.flags = FlagCompressed | (isTexture ? FlagTexture : FlagData);
+		cmpdHeader.dataSize = endian32(isTexture ? (size - 12) : size);	
+		stream->seek(offset + sizeof(CompressedFileHeader) + sizeof(CompressedStreamHeader), Stream::seekSet);
+		if (isTexture)
+		{
+			size -= 12;
+			stream->seek(12, Stream::seekCur);
+		}
+
+		totalSize = compressLzo(file, size, stream);
+		cmpdHeader.lzoSize = endian32(totalSize);
+
+		stream->seek(offset, Stream::seekSet);
+		stream->write(&header, sizeof(header));
+		if (isTexture)
+		{
+			stream->write32(12);
+			stream->write32(12);
+		}
+		stream->write(&cmpdHeader, sizeof(cmpdHeader));  
+		totalSize += sizeof(CompressedFileHeader) + sizeof(CompressedStreamHeader);
+	}
+	else
+	{
+		stream->writeStream(file, size);
+		totalSize = size;
+	}
+
+	stream->seek(offset + totalSize, Stream::seekSet);
+	int padding = totalSize % ALIGN;
+	while (padding > 0)
+	{
+		stream->write8(0xFF);
+		padding--;
+	}
+	return totalSize;
 }
 
-void EndianFiles(FileRecord* files, int file_count)
+u32 PakArchive::storeFile(const std::string& filename, Stream* stream, bool isPacked, bool isTexture)
 {
-    for(int i = 0; i < file_count; i++)
-    {
-        files[i].packed = endian(files[i].packed);
-        files[i].size = endian(files[i].size);
-        files[i].offset = endian(files[i].offset);
-    }
+	FileStream file(filename, Stream::modeRead);
+	return storeFile(&file, stream, isPacked, isTexture);
 }
 
-bool OpenPak(Stream* pak, PakRec* p)
+void PakArchive::swapFileEndian(FileRecord& fileRecord)
 {
-    //char temp[1024];
-
-
-    p->names = 0;
-    p->files = 0;    
-    p->segments = 0;
-    p->names_buf = 0;
-    
-    pak->seek(0, Stream::seekSet);
-    pak->read(&p->header, sizeof(PakHeader));
-    pak->seek(ALIGN, Stream::seekSet);
-    p->seg_count = pak->read16();
-    p->seg_count = endian(p->seg_count);
-    p->segments = new SegmentRecord[p->seg_count];
-
-    //sprintf(temp, "Segments: %d", p->seg_count);
-    //MessageBox(NULL, temp, "", 0);
-
-    pak->read(p->segments, p->seg_count * sizeof(SegmentRecord));
-    for(int i = 0; i < p->seg_count; i++) p->segments[i].size = endian(p->segments[i].size);
-
-    p->strg = -1;
-    p->rshd = -1;
-    p->data = -1;
-    p->strg_offset = 0;
-    p->rshd_offset = 0;
-    p->data_offset = 0;
-
-    if((p->strg = FindSegment(p->segments, p->seg_count, "STRG")) >= 0)
-    {
-        p->strg_offset = GetSegmentOffset(p->segments, p->strg);
-    }
-    else
-    {
-        return false;
-    }
-    if((p->rshd = FindSegment(p->segments, p->seg_count, "RSHD")) < 0)
-    {
-        return false;
-    }
-    if((p->data = FindSegment(p->segments, p->seg_count, "DATA")) < 0)
-    {
-        return false;
-    }
-    p->strg_offset = GetSegmentOffset(p->segments, p->strg) + ALIGN * 2;
-    p->rshd_offset = GetSegmentOffset(p->segments, p->rshd) + ALIGN * 2;
-    p->data_offset = GetSegmentOffset(p->segments, p->data) + ALIGN * 2;
-
-	pak->seek(p->rshd_offset, Stream::seekSet);
-    p->file_count = pak->read16();
-    p->file_count = endian(p->file_count);
-
-
-    //sprintf(temp, "Files: %d", p->file_count);
-    //MessageBox(NULL, temp, "", 0);
-
-    p->files = new FileRecord[p->file_count];
-    pak->read(p->files, sizeof(FileRecord) * p->file_count);
-    EndianFiles(p->files, p->file_count);
-
-    pak->seek(p->strg_offset, Stream::seekSet);
-    p->name_count = pak->read16();
-    p->name_count = endian(p->name_count);
-    if(p->name_count > 0)
-    {
-        p->names = new NameRecord[p->name_count];
-        p->names_buf = (char*)malloc(p->segments[p->strg].size);
-        pak->read(p->names_buf, p->segments[p->strg].size - 4);
-        char* c = p->names_buf;
-        for(int i = 0; i < p->name_count; i++)
-        {
-                p->names[i].name = c;
-                c += strlen(c) + 1;
-                *(int*)(&p->names[i].res[0]) = *(int*)c;
-                c += 4;
-                memcpy(&p->names[i].hash, c, 8);
-                c += 8;
-        }
-    }
-
-    return true;
+	fileRecord.packed = endian32(fileRecord.packed);
+	fileRecord.size   = endian32(fileRecord.size);
+	fileRecord.offset = endian32(fileRecord.offset);
+	fileRecord.hash = endian64(fileRecord.hash);
 }
 
-void FreePak(PakRec* p)
+bool PakArchive::open(Stream* pak)
 {
-        if(p->segments) delete []p->segments;
-        if(p->files)    delete []p->files;
-        if(p->names)    delete []p->names;
-        if(p->names_buf) free(p->names_buf);
+	m_stream = NULL;
+
+	pak->seek(0, Stream::seekSet);
+	pak->read(&m_header, sizeof(PakHeader));
+	pak->seek(ALIGN, Stream::seekSet);
+	m_segments.resize(endian32(pak->read32()));
+
+	if (m_segments.empty())
+	{
+		return false;
+	}
+
+	pak->read(&m_segments[0], m_segments.size() * sizeof(SegmentRecord));
+	for (size_t i = 0; i < m_segments.size(); i++)
+	{
+		m_segments[i].size = endian32(m_segments[i].size);
+	}
+
+	m_strgIndex = -1;
+	m_rshdIndex = -1;
+	m_dataIndex = -1;
+	m_strgOffset = 0;
+	m_rshdOffset = 0;
+	m_dataOffset = 0;
+
+	m_strgIndex = findSegment("STRG");
+	if (m_strgIndex == -1)
+	{
+		return false;
+	}
+	
+	m_rshdIndex = findSegment("RSHD");
+	if (m_rshdIndex == -1)
+	{
+		return false;
+	}
+
+	m_dataIndex = findSegment("DATA");
+	if (m_dataIndex == -1)
+	{
+		return false;
+	}
+
+
+	m_strgOffset = getSegmentOffset(m_strgIndex) + ALIGN * 2;
+	m_rshdOffset = getSegmentOffset(m_rshdIndex) + ALIGN * 2;
+	m_dataOffset = getSegmentOffset(m_dataIndex) + ALIGN * 2;
+
+	pak->seek(m_rshdOffset, Stream::seekSet);
+	m_files.resize(endian32(pak->read32()));
+
+	if (m_files.empty())
+	{
+		return false;
+	}
+
+	pak->read(&m_files[0], sizeof(FileRecord) * m_files.size());
+	
+	std::for_each(m_files.begin(), m_files.end(), swapFileEndian);
+
+	if (m_strgIndex != -1)
+	{
+		pak->seek(m_strgOffset, Stream::seekSet);
+		m_names.resize(endian32(pak->read32()));
+		
+		if (!m_names.empty())
+		{
+			std::vector<char> buffer(m_segments[m_strgIndex].size - 4);
+			pak->read(&buffer[0], buffer.size());
+			
+			const char* c = &buffer[0];
+			for (size_t i = 0; i < m_names.size(); i++)
+			{
+				m_names[i].name = c;
+				c += m_names[i].name.size() + 1;
+				m_names[i].res = c;
+				c += 4;
+				m_names[i].hash = hashFromData(c);
+				c += 8;
+			}
+		}
+	}
+
+	m_stream = pak;
+	return true;
 }
 
-char* FindName(Hash hash, PakRec* p)
+bool PakArchive::open(const std::string& filename)
 {
-        for(int i = 0; i < p->name_count; i++)
-        {
-                if(strncmp((char*)&hash, (char*)&p->names[i].hash, 8) == 0)
-                {
-                        return p->names[i].name;
-                }
-        }
+	m_fileStream.reset(new FileStream(filename));
+	if (!m_fileStream->opened())
+	{
+		return false;
+	}
 
-        return NULL;
+	return open(m_fileStream.get());
 }
 
-bool PakExtract(Stream* pak, char* OutDir, ResType* types, bool use_names)
+std::string PakArchive::findName(const Hash& hash) const
 {
-    unsigned char *wrk_mem = (unsigned char*)malloc(1024 * 1024 + 65536);
-    char path[MAX_PATH];
+	for (size_t i = 0; i < m_names.size(); i++)
+	{
+		if(m_names[i].hash == hash)
+		{
+			return m_names[i].name;
+		}
+	}
+	return std::string();
+}
 
-    PakRec p;
-    OpenPak(pak, &p);
+bool PakArchive::extract(const char* outDir, const std::set<ResType>& types, bool useNames)
+{
+	if (!opened())
+	{
+		return false;
+	}
 
-    for(int i = 0; i < p.file_count; i++)
-    {
-        //files[i].packed = endian(files[i].packed);
-        //files[i].size = endian(files[i].size);
-        //files[i].offset = endian(files[i].offset);
-        if(types == NULL || InTypes(p.files[i].res, types))
-        {
-            char hash_str[17];
-            char res_str[5];
-            for(int j = 0; j < 8; j++)
-            {
-                sprintf(&hash_str[j * 2], "%2.2X", p.files[i].hash.c[j]);
-            }
-            strncpy(res_str, p.files[i].res, 4);
-            res_str[4] = hash_str[16] = 0;
-            printf("[%d/%d] %s.%s\n", i + 1, p.file_count, hash_str, res_str);
+	progress(IPakProgressHandler::SetMax, m_files.size(), NULL);
 
-            pak->seek(p.data_offset + p.files[i].offset, Stream::seekSet);
-            char *name;
-            if(use_names && (name = FindName(p.files[i].hash, &p)))
-                sprintf(path, "%s%s.%s", OutDir, name, res_str);
-            else
-                sprintf(path, "%s%s.%s", OutDir, hash_str, res_str);
-          
+	for (size_t i = 0; i < m_files.size(); i++)
+	{
+		if (types.empty() || types.find(m_files[i].res) != types.end())
+		{
+			std::string filename = hashToStr(m_files[i].hash) + "." + m_files[i].res.toString();
+			progress(IPakProgressHandler::SetCur, i, filename.c_str());
+
+			m_stream->seek(m_dataOffset + m_files[i].offset, Stream::seekSet);
+			
+			std::string path;
+
+			bool nameFound = false;
+			if (useNames)
+			{
+				std::string name = findName(m_files[i].hash);
+				if (!name.empty())
+				{
+					path = outDir + std::string(PATH_SEPARATOR_STR) + name + std::string(".") + m_files[i].res.toString();
+					nameFound = true;
+				}
+			}
+			if (!nameFound)
+			{
+				path = outDir + std::string(PATH_SEPARATOR_STR) + filename;
+			}
+		  
 			FileStream stream(path, Stream::modeWrite);
-            ExtractFile(pak, p.files[i].size, p.files[i].packed, &stream, wrk_mem);
-          }
-    }
+			if (!stream.opened())
+			{
+				return false;
+			}
 
-    free(wrk_mem);
-    //delete []files;
-    //delete []segments;
-    FreePak(&p);
-    return true;
+			progress(IPakProgressHandler::SetCur, i, filename.c_str());
+			extractFile(m_files[i], &stream);
+		  }
+	}
+	
+	progress(IPakProgressHandler::SetCur, m_files.size(), NULL);
+
+	return true;
 }
 
-bool FindFile(char* dirs[], Hash hash, ResType res, char* filename)
+std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res)
 {
-    char path[MAX_PATH];
-    int i = 0;
-    while(dirs[i])
-    {
-        strcpy(path, dirs[i]);
-        HashToStr(hash, &path[strlen(path)]);
-        strncat(path, ".", 1);
-        strncat(path, &res[0], 4);
-        if(access(path, 0) == 0)
-        {
-            strcpy(filename, path);
-            return true;
-        }
-        i++;
-    }
-    return false;
+	const std::string filename = hashToStr(hash) + "." + res.toString();
+	for (size_t i = 0; i < inputDirs.size(); i++)
+	{
+		std::string path = inputDirs[i] + PATH_SEPARATOR_STR + filename;
+		if(_access(path.c_str(), 0) == 0)
+		{
+			return path;
+		}
+	}
+	return std::string();
 }
 
-bool PakRebuild(Stream* in, Stream* out, char* dirs[], ResType* types, PProgrFunc progress)
+bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::string>& inputDirs,
+		const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
-    PakRec p;
-    if(!OpenPak(in, &p))
-    {
-        FreePak(&p);
-        return false;
-    }
+	progress(IPakProgressHandler::SetMax, fileCount(), NULL);
 
-    //MessageBox(NULL, "Pak opened", "", 0);
+	unsigned int offset = m_dataOffset;
 
-    if(progress) progress(PROGR_SET_MAX, p.file_count, NULL);
-    unsigned char *wrk_mem = (unsigned char*)malloc(0x20000);
+	std::vector<FileRecord> files(fileCount());
 
-    unsigned int offset = p.data_offset;
+	for (size_t i = 0; i < files.size(); i++)
+	{	 
+		progress(IPakProgressHandler::SetCur, i, NULL);
+		files[i] = m_files[i];
+		files[i].offset = offset - m_dataOffset;
+		outStream->seek(offset, Stream::seekSet);
 
-    FileRecord *files = new FileRecord[p.file_count];
-    char filename[MAX_PATH];
+		bool fileReplaced = false;
+		if(types.empty() || types.find(files[i].res) != types.end())
+		{
+			std::string filename = findFile(inputDirs, files[i].hash, files[i].res);
+			if (!filename.empty())
+			{
+				files[i].size = storeFile(filename, outStream, files[i].packed, files[i].res == "TXTR");
+				fileReplaced = true;
+			}
+		}
+		
+		if (!fileReplaced)
+		{
+			m_stream->seek(m_dataOffset + m_files[i].offset, Stream::seekSet);
+			outStream->writeStream(m_stream, files[i].size);
+		}
+		offset += files[i].size;
+		offset = ((offset + (ALIGN - 1)) / ALIGN) * ALIGN;
+	}
 
+	outStream->seek(0, Stream::seekSet);
+	outStream->write(&m_header, sizeof(m_header));
+	outStream->seek(ALIGN, Stream::seekSet);
+	int segmentCount = endian(m_segments.size());
+	outStream->write(&segmentCount, 4);
+	
+	std::vector<SegmentRecord> segments(m_segments.size());
+	for (size_t i = 0; i < m_segments.size(); i++)
+	{
+		segments[i].res = m_segments[i].res;
+		segments[i].size = endian(m_segments[i].size);
+	}
+	segments[m_dataIndex].size = endian32(offset - m_dataOffset);
+	outStream->write(&segments[0], segments.size() * sizeof(SegmentRecord)); 
+								 
+	outStream->seek(m_rshdOffset, Stream::seekSet);
+	u32 fileCount = endian32(files.size());
+	outStream->write(&fileCount, 4);
+	
+	std::for_each(files.begin(), files.end(), swapFileEndian);
+	outStream->write(&files[0], files.size() * sizeof(FileRecord));
 
-    for(int i = 0; i < p.file_count; i++)
-    {     
-        if(progress) progress(PROGR_SET_CUR, i, NULL);
-        files[i] = p.files[i];
-        files[i].offset = offset - p.data_offset;
-        out->seek(offset, Stream::seekSet);
-        if((types == NULL || InTypes(files[i].res, types)) && FindFile(dirs, files[i].hash, files[i].res, filename))
-        {
-            files[i].size = StoreFile(filename, out, files[i].packed, strncmp(&files[i].res[0], "TXTR", 4) == 0, wrk_mem);
-        }
-        else
-        {
-            in->seek(p.files[i].offset + p.data_offset, Stream::seekSet);
-            out->writeStream(in, files[i].size);
-        }
-        offset += files[i].size;
-        offset = ((offset + (ALIGN - 1)) / ALIGN) * ALIGN;
-    }
-    free(wrk_mem);
+	m_stream->seek(m_strgOffset, Stream::seekSet);
+	outStream->seek(m_strgOffset, Stream::seekSet);
+	outStream->writeStream(m_stream, m_segments[m_strgIndex].size); 
 
-    out->seek(0, Stream::seekSet);
-    out->write(&p.header, sizeof(p.header));
-    out->seek(ALIGN, Stream::seekSet);
-    int seg_count = endian(p.seg_count);
-    out->write(&seg_count, 4);
-    SegmentRecord* segments = new SegmentRecord[p.seg_count];
-    for(int i = 0; i < p.seg_count; i++)
-    {
-        *(int*)&segments[i].res = *(int*)&p.segments[i].res;
-        segments[i].size = endian(p.segments[i].size);
-    }
-    segments[p.data].size = endian(offset - p.data_offset);
-    out->write(segments, p.seg_count * sizeof(SegmentRecord)); 
-    delete []segments; 
+	progress(IPakProgressHandler::SetCur, this->fileCount(), NULL);
 
-                                     
-    out->seek(p.rshd_offset, Stream::seekSet);
-    int file_count = endian(p.file_count);
-    out->write(&file_count, 4);
-    EndianFiles(files, p.file_count);
-    out->write(files, p.file_count * sizeof(FileRecord));
-    delete []files;
-
-    in->seek(p.strg_offset, Stream::seekSet);
-    out->seek(p.strg_offset, Stream::seekSet);
-    out->writeStream(in, p.segments[p.strg].size); 
-
-    FreePak(&p);
-
-    if(progress) progress(PROGR_SET_CUR, p.file_count, NULL);
-
-    return true;
+	return true;
 }
 
-bool PakExtract(char *InFile, char *OutDir, ResType* types, bool use_names)
+void PakArchive::progress(IPakProgressHandler::Action action, int value, const char* message)
 {
-    FileStream stream(InFile, Stream::modeRead);
-    return PakExtract(&stream, OutDir, types, use_names);
+	if (m_progressHandler != NULL)
+	{
+		m_progressHandler->progress(action, value, message);
+	}
+}
+
+bool PakArchive::opened() const
+{
+	return (m_stream != NULL);
+}
+
+PakArchive::PakArchive()
+	: m_lzoWorkMem(65536)
+	, m_stream(NULL)
+{
+}
+
+int PakArchive::fileCount() const
+{
+	return static_cast<int>(m_files.size());
+}
+
+CompressedStreamHeader PakArchive::readCmpdStreamHeader()
+{
+	CompressedStreamHeader cmpdHeader;
+	m_stream->read(&cmpdHeader, sizeof(cmpdHeader));
+	cmpdHeader.lzoSize = endian32(cmpdHeader.lzoSize << 8);
+	cmpdHeader.dataSize = endian32(cmpdHeader.dataSize);
+	return cmpdHeader;
+}
+
+void PakArchive::setProgressHandler(IPakProgressHandler* handler)
+{
+	m_progressHandler = handler;
 }
