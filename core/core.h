@@ -12,6 +12,15 @@
 #include <windows.h>
 #endif
 
+typedef unsigned int u32;
+typedef unsigned short u16;
+typedef unsigned __int64 u64;
+typedef unsigned char u8;
+typedef char s8;
+typedef short s16;
+typedef int s32;
+typedef __int64 s64;
+
 namespace Consolgames
 {
 
@@ -22,15 +31,6 @@ namespace Consolgames
 #define PATH_SEPARATOR '/'
 #define PATH_SEPARATOR_STR "/"
 #endif
-
-typedef unsigned int u32;
-typedef unsigned short u16;
-typedef unsigned __int64 u64;
-typedef unsigned char u8;
-typedef char s8;
-typedef short s16;
-typedef int s32;
-typedef __int64 s64;
 
 inline u16 endian16(u16 v)
 {
