@@ -1,69 +1,66 @@
+#include <pak.h>
+#include <set>
 #include <iostream>
-#include "Stream.h"
-#include "FileStream.h"
-#include "pak.h"
-#pragma hdrstop
 
-//---------------------------------------------------------------------------
+void printUsage()
+{
+	std::cout << "Metroid Prime 3: Corruption PAK Extractor by consolgames.ru" << std::endl;
+	std::cout << "Usage:" << std::endl;
+	std::cout << "  -e <InFile> <OutDir> [Type1 Type2 ... TypeN]" << std::endl;
+	std::cout << "  Type: resource type (TXTR, STRG, FONT, etc.)";
+}
 
-#pragma argsused
-
-ResType types[256];// = {"TXTR", "FONT", 0};
+class ProgressHandler : public IPakProgressHandler
+{
+public:
+	virtual void progress(Action action, int value, const char* message) override
+	{
+		if (action == SetMax)
+		{
+			m_max = value;
+			return;
+		}
+		if (value != m_max)
+		{
+			std::cout << "[" << value << "/" << m_max << "] " << (message != NULL ? message : "") << "..." << std::endl;
+		}
+	}
+protected:
+	int m_max;
+};
 
 int main(int argc, char* argv[])
 {
-/*
-        char* dirs[] = {"F:\\_job\\Metroid Prime 3\\test\\", NULL};
-        CFileStream* in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\FrontEnd.pak", false);
-        CFileStream* out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\FrontEnd.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
+	if (argc >= 4 && strcmp(argv[1], "-e") == 0)
+	{															 
+		std::cout << "Extracting..." << std::endl;
+		std::set<ResType> types;
+		for(int i = 4; i < argc; i++)
+		{
+			types.insert(argv[i]);
+		}
 
-        in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\GuiDVD.pak", false);
-        out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\GuiDVD.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
-
-        in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\GuiNAND.pak", false);
-        out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\GuiNAND.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
-
-        in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\NoARAM.pak", false);
-        out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\NoARAM.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
-
-        in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\InGameNAND.pak", false);
-        out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\InGameNAND.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
-
-        in = new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\RS5.pak", false);
-        out= new CFileStream("F:\\_job\\Metroid Prime 3\\pak\\new\\RS5.pak", true);
-        PakRebuild(in, out, dirs, NULL);
-        delete in;
-        delete out;
-
-        return 0;
-*/
-        //NoARAM.pak NoARAM\ STRG
-        if(strcmp(argv[1], "-e") == 0)
-        {                                                             
-                std::cout << "Extracting..." << std::endl;
-                for(int i = 4; i < argc; i++) strncpy(types[i - 4], argv[i], 4);
-                //PakExtract("F:\\_job\\Metroid Prime 3\\pak\\RS5.PAK", "F:\\_job\\Metroid Prime 3\\pak\\RS5\\", 0);
-                if(PakExtract(argv[2], argv[3], argc > 4 ? types : NULL, true))
-                        std::cout << "Done!" << std::endl;
-                else
-                        std::cout << "Error!" << std::endl;
-        }
-        return 0;
+		PakArchive pak;
+		ProgressHandler handler;
+		pak.setProgressHandler(&handler);
+		if (!pak.open(argv[2]))
+		{
+			std::cout << "Unable to open file!" << std::endl;
+			return -1;
+		}
+		if (pak.extract(argv[3], types, true))
+		{
+			std::cout << "Done!" << std::endl;
+		}
+		else
+		{
+			std::cout << "Error occured during extracting!" << std::endl;
+			return -2;
+		}
+	}
+	else
+	{
+		printUsage();
+	}
+	return 0;
 }
-//---------------------------------------------------------------------------
- 
