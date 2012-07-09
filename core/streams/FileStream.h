@@ -1,5 +1,4 @@
-#ifndef __CG_FILESTREAM_H
-#define __CG_FILESTREAM_H
+#pragma once
 
 #include "Stream.h"
 #include <io.h>
@@ -44,5 +43,3 @@ protected:
 
 
 }
-
-#endif /* __CG_FILESTREAM_H */

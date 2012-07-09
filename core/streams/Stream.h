@@ -31,6 +31,7 @@ public:
 	};
 
 public:
+	Stream();
 	virtual ~Stream(){}
 	
 	template <typename T>
@@ -39,6 +40,12 @@ public:
 		T value;
 		read(&value, sizeof(T));
 		return value;
+	}
+
+	template <typename T>
+	void write(const T& value)
+	{
+		write(&value, sizeof(T));
 	}
 	
     virtual largesize_t read(void* buf, largesize_t size) = 0;
@@ -59,6 +66,10 @@ public:
 	virtual u16 read16();
 	virtual u32 read32();
 	virtual u64 read64();
+	virtual void write8(u8 value);
+	virtual void write16(u16 value);
+	virtual void write32(u32 value);
+	virtual void write64(u64 value);
 
 protected:
 	ByteOrder m_byteOrder;
@@ -69,6 +80,7 @@ protected:
 class IFileStream: public Stream
 {
 public:
+	IFileStream() : Stream(){}
     virtual bool opened() const = 0;
 	virtual bool eof() const = 0;
 	virtual offset_t size() const = 0;
