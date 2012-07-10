@@ -50,8 +50,10 @@ Hash hashFromData(const char* c)
 	return hash;
 }
 
-void PakArchive::extractFile(const FileRecord& file, Stream* out)
+bool PakArchive::extractFile(const FileRecord& file, Stream* out)
 {
+	m_stream->seek(m_dataOffset + file.offset, Stream::seekSet);
+
 	if (file.packed)
 	{
 		CompressedFileHeader header;
@@ -91,9 +93,21 @@ void PakArchive::extractFile(const FileRecord& file, Stream* out)
 	{
 		out->writeStream(m_stream, file.size);
 	}
-
+	
+	return true;
 }
 
+bool PakArchive::extractFile(Hash filenameHash, Consolgames::Stream* out)
+{
+	for (size_t i = 0; i < m_files.size(); i++)
+	{
+		if (m_files[i].hash == filenameHash)
+		{
+			return extractFile(m_files[i], out);
+		}
+	}
+	return false;
+}
 u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 {
 	unsigned int lzo_size = 0;
@@ -325,8 +339,6 @@ bool PakArchive::extract(const char* outDir, const std::set<ResType>& types, boo
 		{
 			std::string filename = hashToStr(m_files[i].hash) + "." + m_files[i].res.toString();
 			progress(IPakProgressHandler::SetCur, i, filename.c_str());
-
-			m_stream->seek(m_dataOffset + m_files[i].offset, Stream::seekSet);
 			
 			std::string path;
 
@@ -478,4 +490,14 @@ CompressedStreamHeader PakArchive::readCmpdStreamHeader()
 void PakArchive::setProgressHandler(IPakProgressHandler* handler)
 {
 	m_progressHandler = handler;
+}
+
+std::vector<Hash> PakArchive::fileNamehashesList() const
+{
+	std::vector<Hash> hashes;
+	for (size_t i = 0; i < m_files.size(); i++)
+	{
+		hashes.push_back(m_files[i].hash);
+	}
+	return hashes;
 }
