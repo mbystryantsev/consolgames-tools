@@ -170,7 +170,7 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		}
 
 		totalSize = compressLzo(file, size, stream);
-		cmpdHeader.lzoSize = endian32(totalSize);
+		cmpdHeader.lzoSize = endian32(totalSize) >> 8;
 
 		stream->seek(offset, Stream::seekSet);
 		stream->write(&header, sizeof(header));
