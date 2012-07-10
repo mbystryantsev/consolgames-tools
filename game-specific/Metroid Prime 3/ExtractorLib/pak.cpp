@@ -470,6 +470,7 @@ bool PakArchive::opened() const
 PakArchive::PakArchive()
 	: m_lzoWorkMem(65536)
 	, m_stream(NULL)
+	, m_progressHandler(NULL)
 {
 }
 
