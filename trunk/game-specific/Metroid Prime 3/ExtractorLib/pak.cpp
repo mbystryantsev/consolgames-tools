@@ -324,7 +324,7 @@ std::string PakArchive::findName(const Hash& hash) const
 	return std::string();
 }
 
-bool PakArchive::extract(const char* outDir, const std::set<ResType>& types, bool useNames)
+bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& types, bool useNames)
 {
 	if (!opened())
 	{
@@ -452,6 +452,16 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	progress(IPakProgressHandler::SetCur, this->fileCount(), NULL);
 
 	return true;
+}
+
+bool PakArchive::rebuild(const std::string& destName, const std::vector<std::string>& inputDirs, const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
+{
+	FileStream stream(destName);
+	if (!stream.opened())
+	{
+		return false;
+	}
+	return rebuild(&stream, inputDirs, types, mergeMap);
 }
 
 void PakArchive::progress(IPakProgressHandler::Action action, int value, const char* message)
