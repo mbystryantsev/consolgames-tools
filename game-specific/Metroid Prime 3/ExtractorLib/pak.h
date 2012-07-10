@@ -133,10 +133,14 @@ public:
 	bool open(Consolgames::Stream* pak);
 	bool open(const std::string& filename);
 
-	bool extract(const char* OutDir, const std::set<ResType>& types = std::set<ResType>(), bool useNames = false);
+	bool extract(const std::string& OutDir, const std::set<ResType>& types = std::set<ResType>(), bool useNames = false);
 
 	//! Rebuilds pak, use files for replace from input directories.
 	bool rebuild(Consolgames::Stream* out, const std::vector<std::string>& inputDirs,
+		const std::set<ResType>& types = std::set<ResType>(),
+		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
+
+	bool rebuild(const std::string& destName, const std::vector<std::string>& inputDirs,
 		const std::set<ResType>& types = std::set<ResType>(),
 		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
 
