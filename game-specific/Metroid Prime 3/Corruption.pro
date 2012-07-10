@@ -10,5 +10,6 @@ SUBDIRS = \
 	Patcher \
 	externals/core \
 	externals/WiiStreams \
-	tests/ScriptTesterTests
+	tests/ScriptTesterTests \
+	tests/ExtractorTests \
 	

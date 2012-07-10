@@ -144,6 +144,9 @@ public:
 	int fileCount() const;
 	void setProgressHandler(IPakProgressHandler* handler);
 
+	std::vector<Hash> fileNamehashesList() const;
+	bool extractFile(Hash filenameHash, Consolgames::Stream* out);
+
 protected:
 	enum CompressionFlags
 	{
@@ -160,7 +163,7 @@ protected:
 protected:
 	CompressedStreamHeader readCmpdStreamHeader();
 
-	void extractFile(const FileRecord& file, Consolgames::Stream* out);
+	bool extractFile(const FileRecord& file, Consolgames::Stream* out);
 	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture);
 	u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture);
 	int findSegment(ResType type) const;

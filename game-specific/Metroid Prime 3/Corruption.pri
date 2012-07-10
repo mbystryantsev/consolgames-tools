@@ -8,15 +8,15 @@ CONFIG(debug, debug|release)
 }
 
 INCLUDEPATH += \
-	../ScriptTesterLib \
-	../ExtractorLib \
-	../platform-specific/wii/streams \
-	../../../core \
-	../../../core/streams \
-	../../../core/classes \
+	$$PWD/ScriptTesterLib \
+	$$PWD/ExtractorLib \
+	$$PWD/platform-specific/wii/streams \
+	$$PWD/../../core \
+	$$PWD/../../core/streams \
+	$$PWD/../../core/classes \
 
 QMAKE_LIBDIR += \
-	../ScriptTesterLib/$$CONFIG_NAME \
-	../ExtractorLib/$$CONFIG_NAME \
-	../externals/core/$$CONFIG_NAME \
-	../externals/WiiStreams/$$CONFIG_NAME \
+	$$PWD/ScriptTesterLib/$$CONFIG_NAME \
+	$$PWD/ExtractorLib/$$CONFIG_NAME \
+	$$PWD/externals/core/$$CONFIG_NAME \
+	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
