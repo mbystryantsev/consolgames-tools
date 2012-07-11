@@ -187,9 +187,9 @@ protected:
 	int m_strgIndex;
 	int m_rshdIndex;
 	int m_dataIndex;
-	offset_t m_strgOffset;
-	offset_t m_rshdOffset;
-	offset_t m_dataOffset;
+	u32 m_strgOffset;
+	u32 m_rshdOffset;
+	u32 m_dataOffset;
 
 	std::vector<char> m_lzoWorkMem;
 

@@ -35,7 +35,11 @@ int PakArchive::getSegmentOffset(int index) const
 std::string hashToStr(const Hash& hash)
 {
 	std::string str(16, '\0');
+#ifdef _MSC_VER
+	sprintf_s(&str[0], str.size() + 1, "%16.16I64X", hash);
+#else
 	sprintf(&str[0], "%16.16I64X", hash);
+#endif
 	return str;
 }
 
@@ -149,7 +153,7 @@ void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream
 
 u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture)
 {
-	int size = file->size();
+	int size = static_cast<int>(file->size());
 	u32 totalSize = 0;
 	offset_t offset = stream->tell();
 
@@ -388,8 +392,10 @@ std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResTy
 }
 
 bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::string>& inputDirs,
-		const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
+		const std::set<ResType>& types, const std::map<Hash,Hash>&)
 {
+	// TODO: Implement mergeMap usage
+
 	progress(IPakProgressHandler::SetMax, fileCount(), NULL);
 
 	unsigned int offset = m_dataOffset;
@@ -409,7 +415,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 			std::string filename = findFile(inputDirs, files[i].hash, files[i].res);
 			if (!filename.empty())
 			{
-				files[i].size = storeFile(filename, outStream, files[i].packed, files[i].res == "TXTR");
+				files[i].size = storeFile(filename, outStream, (files[i].packed != 0), (files[i].res == "TXTR"));
 				fileReplaced = true;
 			}
 		}
