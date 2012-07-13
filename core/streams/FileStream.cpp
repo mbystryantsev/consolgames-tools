@@ -18,7 +18,7 @@ FileStream::FileStream(const std::string& filename, OpenMode mode) : IFileStream
 	{
 		desiredAccess |= GENERIC_WRITE;
 	}
-	m_handle = CreateFileA(static_cast<LPCSTR>(filename.c_str()), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	m_handle = CreateFileA(static_cast<LPCSTR>(filename.c_str()), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS | (mode == modeWrite ? TRUNCATE_EXISTING : 0), FILE_ATTRIBUTE_NORMAL, NULL);
     //m_ofstruct.cBytes = sizeof(m_ofstruct);
     //m_handle = OpenFile(filename.c_str(), &m_ofstruct, static_cast<int>(mode));
 #else
