@@ -27,6 +27,28 @@ void ExtractorTests::rebuildTest()
 	testRebuild(m_pakArchive, hashes, dirs);
 }
 
+void ExtractorTests::rebuildTestMerged()
+{
+	QMap<Hash, QByteArray> hashes = m_hashes;
+	loadHashDatabase("testdata/Worlds_rebuilded.hashdb", hashes);
+	loadHashDatabase("testdata/Worlds_rebuilded_merged.hashdb", hashes);
+	std::vector<std::string> dirs(1, "testdata");
+
+	std::map<Hash,Hash> mergeMap;
+	mergeMap[0x0129F5BFB15311E3] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x015FFC59DF162302] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x01718C2F4C5E2C02] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x0186558498F41E3C] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x02DCB521DE4674B5] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x03759A7C14CED0D4] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x03B7CF6D0F2467F9] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x03C82F2EA130D594] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x04103F903B11D9E0] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x043C2CD8DA48E564] = 0x009A7BEE0B63A3B8;
+	mergeMap[0x05630E8EB047656B] = 0x009A7BEE0B63A3B8;
+	testRebuild(m_pakArchive, hashes, dirs, mergeMap);
+}
+
 void ExtractorTests::loadHashDatabase(const QString& hashesFile, QMap<Hash, QByteArray>& hashes)
 {
 	QFile file(hashesFile);
@@ -71,14 +93,15 @@ void ExtractorTests::compareHashes(PakArchive& pak, const QMap<Hash, QByteArray>
 	}
 }
 
-void ExtractorTests::testRebuild(PakArchive& pak, const QMap<Hash, QByteArray>& hashes, const std::vector<std::string>& inputDirs)
+void ExtractorTests::testRebuild(PakArchive& pak, const QMap<Hash, QByteArray>& hashes,
+								 const std::vector<std::string>& inputDirs, const std::map<Hash,Hash>& mergeMap)
 {
 	const QString rebuildedFile = "pak.rebuilded";
-	pak.rebuild(rebuildedFile.toStdString(), inputDirs);
+	pak.rebuild(rebuildedFile.toStdString(), inputDirs, std::set<ResType>(), mergeMap);
 	{
 		PakArchive rebuildedPak;
 		QVERIFY(rebuildedPak.open(rebuildedFile.toStdString()));
 		compareHashes(rebuildedPak, hashes);
 	}
-	QVERIFY(QFile::remove(rebuildedFile));
+	//QVERIFY(QFile::remove(rebuildedFile));
 }

@@ -179,6 +179,9 @@ protected:
 	static void decompressLzo(Consolgames::Stream* lzoStream, u32 lzoSize, Consolgames::Stream* outStream);
 
 protected:
+	static FileRecord* findFileRecord(Hash hash, std::vector<FileRecord>& files);
+
+protected:
 	IPakProgressHandler* m_progressHandler;
 
 	Consolgames::Stream* m_stream;

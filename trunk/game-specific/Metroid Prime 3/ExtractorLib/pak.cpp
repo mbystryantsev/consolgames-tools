@@ -307,7 +307,7 @@ bool PakArchive::open(Stream* pak)
 
 bool PakArchive::open(const std::string& filename)
 {
-	m_fileStream.reset(new FileStream(filename));
+	m_fileStream.reset(new FileStream(filename, Stream::modeRead));
 	if (!m_fileStream->opened())
 	{
 		return false;
@@ -392,9 +392,16 @@ std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResTy
 }
 
 bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::string>& inputDirs,
-		const std::set<ResType>& types, const std::map<Hash,Hash>&)
+		const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
-	// TODO: Implement mergeMap usage
+	for (std::map<Hash,Hash>::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
+	{
+		if (mergeMap.find(it->second) != mergeMap.end())
+		{
+			// Possible recursive or dead-end mapping
+			return false;
+		}
+	}
 
 	progress(IPakProgressHandler::SetMax, fileCount(), NULL);
 
@@ -403,9 +410,13 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	std::vector<FileRecord> files(fileCount());
 
 	for (size_t i = 0; i < files.size(); i++)
-	{	 
+	{	
 		progress(IPakProgressHandler::SetCur, i, NULL);
 		files[i] = m_files[i];
+		if (!mergeMap.empty() && mergeMap.find(files[i].hash) != mergeMap.end())
+		{
+			continue;
+		}
 		files[i].offset = offset - m_dataOffset;
 		outStream->seek(offset, Stream::seekSet);
 
@@ -427,6 +438,19 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 		}
 		offset += files[i].size;
 		offset = ((offset + (ALIGN - 1)) / ALIGN) * ALIGN;
+	}
+
+	for (std::map<Hash,Hash>::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
+	{
+		FileRecord* mappedRecord = findFileRecord(it->first, files);
+		const FileRecord* sourceRecord = findFileRecord(it->second, files);
+		if (mappedRecord == NULL || sourceRecord == NULL)
+		{
+			return false;
+		}
+		mappedRecord->offset = sourceRecord->offset;
+		mappedRecord->size = sourceRecord->size;
+		mappedRecord->packed = sourceRecord->packed;
 	}
 
 	outStream->seek(0, Stream::seekSet);
@@ -462,7 +486,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 
 bool PakArchive::rebuild(const std::string& destName, const std::vector<std::string>& inputDirs, const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
-	FileStream stream(destName);
+	FileStream stream(destName, Stream::modeWrite);
 	if (!stream.opened())
 	{
 		return false;
@@ -517,4 +541,16 @@ std::vector<Hash> PakArchive::fileNamehashesList() const
 		hashes.push_back(m_files[i].hash);
 	}
 	return hashes;
+}
+
+FileRecord* PakArchive::findFileRecord(Hash hash, std::vector<FileRecord>& files)
+{
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		if (files[i].hash == hash)
+		{
+			return &files[i];
+		}
+	}
+	return NULL;
 }
