@@ -14,7 +14,7 @@ MemoryStream::MemoryStream()
 	m_memory = &m_buffer[0];
 }
 
-MemoryStream::MemoryStream(const void* data, size_t size)
+MemoryStream::MemoryStream(const void* data, ptrdiff_t size)
 	: Stream()
 	, m_bufferSize(size)
 	, m_size(size)

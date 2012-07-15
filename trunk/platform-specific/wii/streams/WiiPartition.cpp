@@ -8,6 +8,7 @@ Tree<FileInfo>::Node* WiiPartition::addFilesystemObject(Tree<FileInfo>::Node* pa
 	Tree<FileInfo>::Node& node = *(parentNode->addChild());
 	DLOG << "Added file: " << name.c_str();
 	node->name = name;
+	node->partition = m_index;
 	node->offset = offset;
 	node->size = size;
 	node->fstReference = fstReference;
@@ -22,7 +23,7 @@ Tree<FileInfo>::Node* WiiPartition::addFilesystemObject(const std::string& name,
 
 u32 WiiPartition::parseFst(u8* fstData, int index, Tree<FileInfo>::Node* node)
 {
-	const char* names = reinterpret_cast<const char*>(&fstData[12 * m_fileCount]);
+	const char* names = reinterpret_cast<const char*>(&fstData[12 * fileCount]);
 
 	node = (node == NULL) ? &m_filesystem.root() : node;
 	const char* name = names + (be32(&fstData[12 * index]) & 0x00ffffff);
@@ -51,7 +52,7 @@ u32 WiiPartition::parseFst(u8* fstData, int index, Tree<FileInfo>::Node* node)
 	else
 	{
 		offset_t offset = be32(&fstData[12 * index + 4]);
-		if (m_header.isWii())
+		if (header.isWii())
 		{
 			offset *= 4;
 		}

@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS 1
+#endif
+
 #include <core.h>
 #include "aes.h"
 #include <Nullable.h>
@@ -10,14 +14,14 @@
 namespace Consolgames
 {
 
-#define SIZE_H0						0x0026CUL
-#define SIZE_H1						0x000A0UL
-#define SIZE_H2						0x000A0UL
-#define SIZE_H3						0x18000UL
-#define SIZE_H4						0x00014UL
-#define SIZE_PARTITION_HEADER		0x20000UL
-#define SIZE_CLUSTER				0x08000UL
-#define SIZE_CLUSTER_HEADER			0x00400UL
+#define SIZE_H0						0x0026C
+#define SIZE_H1						0x000A0
+#define SIZE_H2						0x000A0
+#define SIZE_H3						0x18000
+#define SIZE_H4						0x00014
+#define SIZE_PARTITION_HEADER		0x20000
+#define SIZE_CLUSTER				0x08000
+#define SIZE_CLUSTER_HEADER			0x00400
 #define SIZE_CLUSTER_DATA			(SIZE_CLUSTER - SIZE_CLUSTER_HEADER)
 
 	// ADDRESSES

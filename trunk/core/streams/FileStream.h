@@ -13,7 +13,7 @@
 namespace Consolgames
 {
 
-class FileStream: public IFileStream
+class FileStream: public Stream
 {
 public:
 	FileStream(const std::string& filename, OpenMode mode);
@@ -27,6 +27,7 @@ public:
     virtual offset_t size() const override;
 	virtual bool opened() const override;
 	virtual bool eof() const override;
+	OpenMode openMode() const;
     static bool fileExists(const char *path);
 	static bool fileExists(const std::string& path);
 
@@ -38,7 +39,7 @@ protected:
 #else
 	int m_descriptor;
 #endif
-	bool m_writeMode;
+	OpenMode m_openMode;
 };
 
 

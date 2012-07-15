@@ -1,9 +1,9 @@
-#ifndef __WIIIMAGE_H
-#define __WIIIMAGE_H
+#pragma once
 
 #include "WiiTypes.h"
 #include "Tmd.h"
 #include "openssl/aes.h"
+#include "WiiPartition.h"
 #include <FileStream.h>
 #include <Nullable.h>
 #include <vector>
@@ -17,7 +17,7 @@ protected:
 
 
 public:
-	bool open(const std::string& filename);
+	bool open(const std::string& filename, Stream::OpenMode mode);
 	void close();
 	bool readHeader();
 	bool checkAndLoadKey(bool loadCrypto);
@@ -27,6 +27,7 @@ public:
 	bool parseImage();
 	Tree<FileInfo>::Node* searchFile(const std::string& name, Tree<FileInfo>::Node* folder = NULL);
 	Tree<FileInfo>::Node* findFile(const std::string& path, Tree<FileInfo>::Node* folder = NULL);
+	Consolgames::Stream* openFile(const std::string& path, Stream::OpenMode mode);
 
 public:
 	bool setPartition(int partition);
@@ -47,9 +48,9 @@ public:
 
 
 	void readDirect(offset_t offset, void* data, largesize_t size);
-	void writeDirect(offset_t offset, const void* data, largesize_t size);
-	void writeDirect(offset_t offset, Stream* stream, largesize_t size){};
-	bool loadDecryptedFile(const std::string& filename, u32 partition, u64 offset, u64 size, int fstReference);
+	bool writeDirect(offset_t offset, const void* data, largesize_t size);
+	bool writeDirect(offset_t offset, Stream* stream, largesize_t size){offset;stream;size;return false;};
+	bool loadDecryptedFile(const std::string& filename, u32 partition, offset_t offset, largesize_t size, int fstReference);
 	bool wii_trucha_signing(int partition);
 
 	// TO REFACTORING:
@@ -60,19 +61,28 @@ public:
 	//u32			parse_fst (u8 *fst, const char *names, u32 i, struct tree *tree, struct ImageFile *image, u32 part, PNode hParent);
 	//u8			get_partitions (struct ImageFile *image);
 	//void			tmd_load (struct ImageFile *image, u32 part);
-	bool wii_write_clusters(int partition, int cluster,  u8 *in, u32 nClusterOffset, u32 nBytesToWrite, Stream* stream){return false;};
-	//void aes_cbc_dec(u8 *in, u8 *out, u32 len, u8 *key, u8 *iv);
-	//void aes_cbc_enc(u8 *in, u8 *out, u32 len, u8 *key, u8 *iv);
-	void sha1(u8 *data, u32 len, u8 *hash){};
 
-	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, u8 *in){return false;}
-	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, Stream* stream){return false;}
-	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, u8 *in, Stream* stream);
+	int wii_nb_cluster(int partition) const;
+	bool wii_read_cluster(int partition, int cluster, u8 *data, u8 *header);
+	bool wii_read_cluster_hashes(int partition, int cluster, u8 *h0, u8 *h1, u8 *h2);
+	bool wii_calc_group_hash(int partition, int cluster);
+	bool wii_write_cluster(int partition, int cluster, const u8* in);
+	bool wii_write_clusters(int partition, int cluster, const u8 *in, u32 nClusterOffset, u32 nBytesToWrite, Stream* stream);
+	bool wii_write_clusters(int partition, int cluster, int nClusterOffset, int nBytesToWrite, Stream* inStream);
+
+	// AES
+	static void aes_cbc_dec(const u8* in, u8* out, u32 len, const u8* key, u8* iv);
+	static void aes_cbc_enc(const u8 *in, u8* out, u32 len, const u8* key, u8* iv);
+	static void sha1(const u8 *data, u32 len, u8 *hash);
+
+	bool wii_write_data_file(int partition, offset_t offset, Stream* file, largesize_t size);
+	bool wii_write_data_file(int partition, offset_t offset, void* data, largesize_t size);
+	bool wii_write_data(int partition, offset_t offset, Stream* file, largesize_t size);
 
 	bool checkForFreeSpace(int partition, offset_t offset, int blockCount) const;
 
 
-	largesize_t findRequiredFreeSpaceInPartition(int partition, largesize_t requiredSize){return 0;};
+	largesize_t findRequiredFreeSpaceInPartition(int partition, largesize_t requiredSize){partition;requiredSize;return 0;};
 
 	static void store32(void* data, u32 value);
 
@@ -92,7 +102,7 @@ public:
 	static const u8 s_truchaSignature[256];
 
 	int m_generalPartitionCount;
-	std::vector<Partition> m_partitions;
+	std::vector<WiiPartition> m_partitions;
 
 	//       struct tree *tree;
 
@@ -119,5 +129,3 @@ public:
 };
 
 }
-
-#endif // __WIIIMAGE_H

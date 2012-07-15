@@ -146,4 +146,14 @@ void Stream::write64(u64 value)
 	return write<u64>(value);	
 }
 
+bool Stream::opened() const
+{
+	return true;
+}
+
+bool Stream::eof() const
+{
+	return false;
+}
+
 }

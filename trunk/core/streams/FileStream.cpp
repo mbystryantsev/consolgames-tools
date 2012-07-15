@@ -9,8 +9,9 @@
 namespace Consolgames
 {
 
-FileStream::FileStream(const std::string& filename, OpenMode mode) : IFileStream()
+FileStream::FileStream(const std::string& filename, OpenMode mode) : Stream()
 {
+	m_openMode = mode;
 
 #ifdef USE_WINDOWS_FILES
 	DWORD desiredAccess = GENERIC_READ;
@@ -151,6 +152,11 @@ bool FileStream::eof() const
 #else
 	return feof(m_descriptor);
 #endif
+}
+
+Stream::OpenMode FileStream::openMode() const
+{
+	return m_openMode;
 }
 
 }

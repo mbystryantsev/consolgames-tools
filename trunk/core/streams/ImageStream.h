@@ -1,6 +1,4 @@
-#ifndef __IMAGESTREAM_H
-#define __IMAGESTREAM_H
-
+#pragma once
 #include "Stream.h"
 
 namespace Consolgames
@@ -8,7 +6,7 @@ namespace Consolgames
 
 class ImageFileStream;
 
-class ImageStream: public IFileStream
+class ImageStream: public Stream
 {
 public:
     virtual bool seekToFile(const char* path) = 0;
@@ -16,5 +14,3 @@ public:
 };
 
 }
-
-#endif /* __IMAGESTREAM_H */
