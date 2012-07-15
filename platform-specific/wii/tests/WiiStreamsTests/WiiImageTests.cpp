@@ -1,8 +1,13 @@
 #include "WiiImageTests.h"
 #include <QTest>
 #include <QCryptographicHash>
+#include <QDir>
+#include <QFile>
+#include <memory>
 
 using namespace Consolgames;
+
+const std::string WiiImageTests::s_imageFilename = "D:/rev/corruption/Metroid_3_cor[pal].iso";
 
 struct FileRecord
 {
@@ -37,7 +42,7 @@ FileRecord records[] =
 
 void WiiImageTests::initTestCase()
 {
-	QVERIFY(m_image.open("D:/rev/corruption/Metroid_3_cor[pal].iso"));
+	QVERIFY(m_image.open(s_imageFilename, Stream::modeRead));
 }
 
 void WiiImageTests::filesTest()
@@ -72,8 +77,89 @@ void WiiImageTests::filesTest()
 	}
 }
 
+void WiiImageTests::fileStreamsTest()
+{
+	m_image.setDataPartition();
+	for (int i = 0; i < _countof(records); i++)
+	{
+		std::auto_ptr<Stream> file(m_image.openFile(records[i].name.toStdString(), Stream::modeRead));
+		QVERIFY2(file.get() != NULL, records[i].name.toLatin1().constData());
+		if (file.get() != NULL)
+		{
+			QCOMPARE(file->size(), records[i].size);
+			if (!records[i].hash.isEmpty())
+			{
+				QByteArray expectedHash = QByteArray::fromHex(records[i].hash);
+				QByteArray actualHash = calcHash(file.get());
+
+				QVERIFY2(actualHash == expectedHash, QString("Hash mistmatch: %1").arg(records[i].name).toLatin1().constData());
+			}
+		}
+	}
+}
+
 void WiiImageTests::cleanupTestCase()
 {
 	m_image.close();
+}
 
+void WiiImageTests::writeFileTest()
+{
+	const QString filename = QDir::tempPath() + QDir::separator() + "mp3c_test.pak";
+	if (!QFile::exists(filename))
+	{
+		QVERIFY(QFile::copy(QString::fromStdString(s_imageFilename), filename));
+	}
+
+	WiiImage image;
+	QVERIFY(image.open(filename.toStdString(), Stream::modeReadWrite));
+	image.setDataPartition();
+	std::auto_ptr<Stream> file(image.openFile("Worlds.txt", Stream::modeWrite));
+	QVERIFY(file.get() != NULL);
+
+	FileStream testFile("testdata/World_replace.txt", Stream::modeRead);
+	QVERIFY(testFile.opened());
+	QCOMPARE(testFile.size(), file->size());
+
+	QCOMPARE(file->writeStream(&testFile, testFile.size()), testFile.size());
+	file->seek(0, FileStream::seekSet);
+
+	QByteArray expectedHash = calcHash(file.get());
+	QByteArray actualHash = calcHash(&testFile);
+	QCOMPARE(actualHash, expectedHash);
+}
+
+QByteArray WiiImageTests::calcHash(Stream* file)
+{
+	qint64 size = file->size();
+	char data[1024 * 64];
+	file->seek(0, Stream::seekSet);
+
+	QCryptographicHash hash(QCryptographicHash::Md5);
+	while (size > 0)
+	{
+		int readed = file->read(data, qMin<qint64>(size, sizeof(data)));
+		hash.addData(data, readed);
+		size -= readed;
+	}
+	return hash.result();
+}
+
+quint64 WiiImageTests::getFreeSpace()
+{
+#if !defined(_WIN32) && !defined(_WIN64)
+	return 0;
+#else
+	MEMORYSTATUSEX memoryStatus;
+	ZeroMemory(&memoryStatus, sizeof(MEMORYSTATUSEX));
+	memoryStatus.dwLength = sizeof(MEMORYSTATUSEX);
+	if (GlobalMemoryStatusEx(&memoryStatus))
+	{
+		return memoryStatus.ullTotalPhys;
+	}
+	else
+	{
+		return 0;
+	}
+#endif
 }

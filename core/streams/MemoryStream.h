@@ -1,5 +1,4 @@
-#ifndef __MEMORY_STREAM_H
-#define __MEMORY_STREAM_H
+#pragma once
 
 //#include "ImageStream.h"
 #include "FileStream.h"
@@ -16,7 +15,7 @@ class MemoryStream: public Stream
 {
 public:
 	MemoryStream();
-    MemoryStream(const void* data, size_t size); 
+    MemoryStream(const void* data, ptrdiff_t size); 
     virtual ~MemoryStream(){}
 
     virtual largesize_t read(void* buf, largesize_t size) override;
@@ -38,6 +37,3 @@ private:
 };
 
 }
-
-#endif /* __MEMORY_STREAM_H */
- 

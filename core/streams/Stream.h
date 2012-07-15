@@ -1,5 +1,4 @@
-#ifndef __STREAM_H
-#define __STREAM_H
+#pragma once
 
 #include "core.h"
 #include <iostream>
@@ -54,6 +53,8 @@ public:
 	virtual offset_t tell() const = 0;
 	virtual void flush() = 0;
 	virtual offset_t size() const = 0;
+	virtual bool opened() const;
+	virtual bool eof() const;
 
 	virtual largesize_t readStream(Stream *stream, largesize_t size);
 	virtual largesize_t writeStream(Stream *stream, largesize_t size);
@@ -77,17 +78,5 @@ protected:
 
 };
 
-class IFileStream: public Stream
-{
-public:
-	IFileStream() : Stream(){}
-	virtual bool opened() const = 0;
-	virtual bool eof() const = 0;
-	virtual offset_t size() const = 0;
-};
-
 }
-
-#endif /* __STREAM_H */
-
 

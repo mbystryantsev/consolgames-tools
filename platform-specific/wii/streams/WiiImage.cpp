@@ -2,13 +2,15 @@
 #include <core.h>
 #include <sha.h>
 #include <sstream>
+#include <MemoryStream.h>
+#include "WiiFileStream.h"
 
 namespace Consolgames
 {
 	
-bool WiiImage::open(const std::string& filename)
+bool WiiImage::open(const std::string& filename, Stream::OpenMode mode)
 {
-	m_stream.reset(new FileStream(filename));
+	m_stream.reset(new FileStream(filename, mode));
 	ASSERT(m_stream->opened());
 
 	VERIFY(m_stream->seek(0, Stream::seekSet) == 0);
@@ -49,40 +51,40 @@ bool WiiImage::readHeader()
 
 bool WiiImage::checkAndLoadKey(bool loadCrypto)
 {
-    static const u8 key[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
+	static const u8 key[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
 
-    if (!loadCrypto)
-    {
-        // now check to see if it's the right key
-        // as we don't want to embed the key value in here then lets cheat a little ;)
-        // by checking the Xor'd difference values
-        if	((0x0F!=(key[0]^key[1]))||
-                (0xCE!=(key[1]^key[2]))||
-                (0x08!=(key[2]^key[3]))||
-                (0x7C!=(key[3]^key[4]))||
-                (0xDB!=(key[4]^key[5]))||
-                (0x16!=(key[5]^key[6]))||
-                (0x77!=(key[6]^key[7]))||
-                (0xAC!=(key[7]^key[8]))||
-                (0x91!=(key[8]^key[9]))||
-                (0x1C!=(key[9]^key[10]))||
-                (0x80!=(key[10]^key[11]))||
-                (0x36!=(key[11]^key[12]))||
-                (0xF2!=(key[12]^key[13]))||
-                (0x2B!=(key[13]^key[14]))||
-                (0x5D!=(key[14]^key[15])))
-        {
-            // handle the Korean key, in case it ever gets found
-            DLOG << "Doesn't seem to be the correct key";
+	if (!loadCrypto)
+	{
+		// now check to see if it's the right key
+		// as we don't want to embed the key value in here then lets cheat a little ;)
+		// by checking the Xor'd difference values
+		if	((0x0F!=(key[0]^key[1]))||
+				(0xCE!=(key[1]^key[2]))||
+				(0x08!=(key[2]^key[3]))||
+				(0x7C!=(key[3]^key[4]))||
+				(0xDB!=(key[4]^key[5]))||
+				(0x16!=(key[5]^key[6]))||
+				(0x77!=(key[6]^key[7]))||
+				(0xAC!=(key[7]^key[8]))||
+				(0x91!=(key[8]^key[9]))||
+				(0x1C!=(key[9]^key[10]))||
+				(0x80!=(key[10]^key[11]))||
+				(0x36!=(key[11]^key[12]))||
+				(0xF2!=(key[12]^key[13]))||
+				(0x2B!=(key[13]^key[14]))||
+				(0x5D!=(key[14]^key[15])))
+		{
+			// handle the Korean key, in case it ever gets found
+			DLOG << "Doesn't seem to be the correct key";
 			return false;
-        }
-    }
-    else
-    {
-        AES_set_decrypt_key(key, 128, &m_key);
-    }
+		}
+	}
+	else
+	{
+		AES_set_decrypt_key(key, 128, &m_key);
+	}
 
-    return true;
+	return true;
 }
 
 bool WiiImage::loadParitions()
@@ -113,6 +115,8 @@ bool WiiImage::loadParitions()
 	{
 		if (i < m_generalPartitionCount - m_channelCount)
 		{
+			m_partitions[i].m_index = i;
+
 			io_read(buffer, 8, part_tbl_offset + i * 8);
 
 			switch (be32(&buffer[4]))
@@ -233,9 +237,9 @@ void WiiImage::loadTmd(int partition)
 
 	// TODO: ninty way?
 
-	//     if (cert_size)
-	//             image->parts[part].tmd_size =
-	//                     cert_off - image->parts[part].tmd_offset + cert_size;
+	//	 if (cert_size)
+	//			 image->parts[part].tmd_size =
+	//					 cert_off - image->parts[part].tmd_offset + cert_size;
 
 
 	offset += tmdOffset;
@@ -312,7 +316,7 @@ void WiiImage::loadTmd(int partition)
 
 		tmd.contents[i].cid = be32(buffer);
 		tmd.contents[i].index = be16(&buffer[4]);
-		tmd.contents[i].type = static_cast<PartitionType>(be16(&buffer[6]));
+		tmd.contents[i].type = static_cast<WiiPartitionType>(be16(&buffer[6]));
 		tmd.contents[i].size = be64(&buffer[8]);
 		memcpy(tmd.contents[i].hash, &buffer[16], 20);
 	}
@@ -441,9 +445,9 @@ void WiiImage::decryptBlock(int partition, int block)
 
 largesize_t WiiImage::io_read_part(void* ptr, largesize_t size, int partition, offset_t offset)
 {
-    if (!m_partitions[partition].isEncrypted)
+	if (!m_partitions[partition].isEncrypted)
 	{
-        return io_read(ptr, size, m_partitions[partition].offset + offset);
+		return io_read(ptr, size, m_partitions[partition].offset + offset);
 	}
 
 	u32 block = static_cast<u32>(offset / 0x7C00ULL);
@@ -451,28 +455,28 @@ largesize_t WiiImage::io_read_part(void* ptr, largesize_t size, int partition, o
 	u32 cache_size = 0;
 	unsigned char* dst = static_cast<unsigned char*>(ptr);
 
-    while (size)
-    {
-        decryptBlock(partition, block);
+	while (size)
+	{
+		decryptBlock(partition, block);
 
-        cache_size = static_cast<u32>(size);
-        if (cache_size + cache_offset > 0x7c00)
+		cache_size = static_cast<u32>(size);
+		if (cache_size + cache_offset > 0x7c00)
 		{
-            cache_size = 0x7c00 - cache_offset;
+			cache_size = 0x7c00 - cache_offset;
 		}
 
-        memcpy(dst, m_partitions[partition].cache + cache_offset, cache_size);
-        dst += cache_size;
-        size -= cache_size;
-        cache_offset = 0;
+		memcpy(dst, m_partitions[partition].cache + cache_offset, cache_size);
+		dst += cache_size;
+		size -= cache_size;
+		cache_offset = 0;
 
-        block++;
-    }
+		block++;
+	}
 
-    return static_cast<u32>(dst - reinterpret_cast<unsigned char*>(ptr));
+	return static_cast<u32>(dst - reinterpret_cast<unsigned char*>(ptr));
 }
 
-bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64 offset, u64 size, int fstReference)
+bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, offset_t offset, largesize_t size, int fstReference)
 {
 	u8 bootBin[0x440];
 
@@ -513,10 +517,10 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 				store32(&fstData[0] + fstReference + 0x08L , static_cast<u32>(imageSize));
 
 				// write out the FST.BIN
-				wii_write_data_file(partition, m_partitions[partition].header.fstOffset, m_partitions[partition].header.fstSize, &fstData[0]);
+				wii_write_data_file(partition, m_partitions[partition].header.fstOffset, &fstData[0], m_partitions[partition].header.fstSize);
 
 				// write it out
-				wii_write_data_file(partition, offset, imageSize, &inStream);
+				wii_write_data_file(partition, offset, &inStream, imageSize);
 
 			}
 			else
@@ -540,7 +544,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 					store32(&bootBin[0x428], static_cast<u32>(imageSize >> 2));
 					store32(&bootBin[0x42C], static_cast<u32>(imageSize >> 2));
 					// now write it out
-					wii_write_data_file(partition, 0, 0x440, &bootBin[0]);
+					wii_write_data_file(partition, 0, &bootBin[0], 0x440);
 
 					break;
 				case -2:
@@ -565,7 +569,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 					return false;
 				}
 				// now write it out
-				wii_write_data_file(partition, offset, imageSize, &inStream);
+				wii_write_data_file(partition, offset, &inStream, imageSize);
 			}
 		}
 		else
@@ -579,7 +583,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 				case -2:
 				case -3:
 					// simple write as files are the same size
-					wii_write_data_file(partition, offset, imageSize, &inStream);
+					wii_write_data_file(partition, offset, &inStream, imageSize);
 					break;
 				case refPartition:
 					// Partition.bin
@@ -600,7 +604,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 			else
 			{
 				// simple write as files are the same size
-				wii_write_data_file(partition, offset, imageSize, &inStream);
+				wii_write_data_file(partition, offset, &inStream, imageSize);
 			}
 		}
 
@@ -642,10 +646,10 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 			store32(&fstData[0] + fstReference + 0x08L , static_cast<u32>(imageSize));
 
 			// write out the FST.BIN
-			wii_write_data_file(partition, m_partitions[partition].header.fstOffset, m_partitions[partition].header.fstSize, &fstData[0]);
+			wii_write_data_file(partition, m_partitions[partition].header.fstOffset, &fstData[0], m_partitions[partition].header.fstSize);
 
 			// now write data file out
-			wii_write_data_file(partition, freeSpaceStart, imageSize, &inStream);
+			wii_write_data_file(partition, freeSpaceStart, &inStream, imageSize);
 
 		}
 		else
@@ -670,10 +674,10 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 				store32(bootBin + 0x42CL, (u32)(imageSize >> 2));
 
 				// now write it out
-				wii_write_data_file(partition, 0, 0x440, bootBin);
+				wii_write_data_file(partition, 0, bootBin, 0x440);
 
 				// now write it out
-				wii_write_data_file( partition, freeSpaceStart, imageSize, &inStream);
+				wii_write_data_file( partition, freeSpaceStart, &inStream, imageSize);
 
 
 				break;
@@ -685,10 +689,10 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 				store32(bootBin + 0x420L, u32 (freeSpaceStart >> 2));
 
 				// now write it out
-				wii_write_data_file(partition, 0, 0x440, bootBin);
+				wii_write_data_file(partition, 0, bootBin, 0x440);
 
 				// now write main.dol out
-				wii_write_data_file(partition, freeSpaceStart, imageSize, &inStream);
+				wii_write_data_file(partition, freeSpaceStart, &inStream, imageSize);
 
 
 				break;
@@ -710,7 +714,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 				{
 					// we have enough space after the current apploader - already moved the main.dol?
 					// so just need to write it out.
-					wii_write_data_file(partition, 0x2440, imageSize, &inStream);
+					wii_write_data_file(partition, 0x2440, &inStream, imageSize);
 
 				}
 				else
@@ -739,7 +743,7 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 					if (freeSpaceStart > 0 && checkForFreeSpace(partition, m_partitions[partition].appldrSize + 0x2440 ,nExtraDataBlocks))
 					{
 						// got space so write it out
-						wii_write_data_file(partition, freeSpaceStart, m_partitions[partition].header.dolSize, &mainDolData[0]);
+						wii_write_data_file(partition, freeSpaceStart, &mainDolData[0], m_partitions[partition].header.dolSize);
 
 						// now do the boot.bin file too
 						io_read_part(bootBin, 0x440, partition, 0);
@@ -748,11 +752,11 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 						store32(bootBin + 0x420L, static_cast<u32>(freeSpaceStart >> 2));
 
 						// now write it out
-						wii_write_data_file(partition, 0, 0x440, bootBin);
+						wii_write_data_file(partition, 0, bootBin, 0x440);
 
 						// now write out the apploader - we don't need to change any other data
 						// as the size is inside the apploader
-						wii_write_data_file(partition, 0x2440, imageSize, &inStream);
+						wii_write_data_file(partition, 0x2440, &inStream, imageSize);
 
 					}
 					else
@@ -775,104 +779,6 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, u64
 	}
 
 	return true;
-}
-
-
-bool WiiImage::wii_write_data_file(int partition, offset_t offset, largesize_t size, u8 *in, Stream* inStream)
-{
-    u32 cluster_start, clusters, offset_start;
-
-    u64 i;
-
-    u32 nClusterCount;
-    u32 nWritten = 0;
-    //MSG msg;
-
-
-    /* Calculate some needed information */
-    cluster_start = (u32)(offset / (u64)(SIZE_CLUSTER_DATA));
-    clusters = (u32)(((offset + size) / (u64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
-    offset_start = (u32)(offset - (cluster_start * (u64)(SIZE_CLUSTER_DATA)));
-
-
-    // read the H3 and H4
-    io_read(m_h3, SIZE_H3, m_partitions[partition].offset + m_partitions[partition].h3_offset);
-
-    /* Write clusters */
-    i = 0;
-    nClusterCount = 0;
-
-/*
-    if(_ProgressBox)
-    {
-        _ProgressBox->setPosition(0);
-        _ProgressBox->setRange(0, clusters - 1);
-    }
-*/
-
-
-    //if(_ProgressBox) _ProgressBox->setText("Replacing file: please wait");
-    while(i < size)
-    {
-        //if(_ProgressBox) _ProgressBox->setPosition(nClusterCount);
-
-		// now the fun bit as we need to cater for the start position changing as well as the
-        // wrap over
-        if ((0!=((cluster_start+nClusterCount)%64))||
-                (0!=offset_start))
-        {
-            // not at the start so our max size is different
-            // and also our cluster offset
-            nWritten = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
-            nWritten = nWritten - offset_start;
-
-            // max check
-            if (nWritten > size)
-            {
-                nWritten = (u32)size;
-            }
-
-            VERIFY(wii_write_clusters(partition, cluster_start, in, offset_start, nWritten, inStream));
-
-            // round up the cluster count
-            nClusterCount = NB_CLUSTER_GROUP - (cluster_start % NB_CLUSTER_GROUP);
-        }
-        else
-        {
-            // potentially full block
-            nWritten = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
-
-            // max check
-            if (nWritten > (size-i))
-            {
-                nWritten = (u32)(size-i);
-            }
-
-            VERIFY(wii_write_clusters(partition, cluster_start + nClusterCount, in, offset_start, nWritten, inStream));
-
-            // we simply add a full cluster block
-            nClusterCount = nClusterCount + NB_CLUSTER_GROUP;
-
-        }
-        offset_start = 0;
-        i += nWritten;
-
-
-    }
-
-    // write out H3 and H4
-    writeDirect(m_partitions[partition].h3_offset + m_partitions[partition].offset, m_h3, SIZE_H3);
-
-    /* Calculate H4 */
-    sha1(m_h3, SIZE_H3, m_h4);
-
-    /* Write H4 */
-    writeDirect(m_partitions[partition].tmdOffset + OFFSET_TMD_HASH + m_partitions[partition].offset, m_h4, SIZE_H4);
-
-    // sign it
-    wii_trucha_signing(partition);
-
-    return true;
 }
 
 bool WiiImage::wii_trucha_signing(int partition)
@@ -917,10 +823,17 @@ void WiiImage::readDirect(offset_t offset, void* data, largesize_t size)
 	VERIFY(m_stream->read(data, size) == size);
 }
 
-void WiiImage::writeDirect(offset_t offset, const void* data, largesize_t size)
+bool WiiImage::writeDirect(offset_t offset, const void* data, largesize_t size)
 {
-	VERIFY(m_stream->seek(offset, Stream::seekSet) == offset);
-	VERIFY(m_stream->write(data, size) == size);
+	if (m_stream->seek(offset, Stream::seekSet) != offset)
+	{
+		return false;
+	}
+	if (m_stream->write(data, size) != size)
+	{
+		return false;
+	}
+	return true;
 }
 
 void WiiImage::store32(void* data, u32 value)
@@ -929,44 +842,44 @@ void WiiImage::store32(void* data, u32 value)
 	p[0] = (value >> 24) & 0xFF;
 	p[1] = (value >> 16) & 0xFF;
 	p[2] = (value >>  8) & 0xFF;
-	p[3] = (value      ) & 0xFF;
+	p[3] = (value	  ) & 0xFF;
 }
 
 
 const u8 WiiImage::s_truchaSignature[256] =
 {
-    0x57, 0x61, 0x4E, 0x69, 0x4E, 0x4B, 0x6F, 0x4B,
-    0x4F, 0x57, 0x61, 0x53, 0x48, 0x65, 0x52, 0x65,
-    0x21, 0x8A, 0xB5, 0xBC, 0x89, 0x00, 0x8E, 0x5C,
-    0x2B, 0xB6, 0x3E, 0x4D, 0x0A, 0xD7, 0xD2, 0xC4,
-    0x97, 0x36, 0x82, 0xDF, 0x57, 0x06, 0x37, 0x27,
-    0x96, 0xF1, 0x40, 0xD6, 0xCD, 0x36, 0xE4, 0xEE,
-    0xC0, 0x99, 0xAA, 0x49, 0x99, 0x38, 0xA5, 0xC5,
-    0xEE, 0xE3, 0x12, 0xF8, 0xBB, 0xE4, 0xBC, 0x52,
-    0x1A, 0x3F, 0x31, 0x71, 0x45, 0x68, 0x98, 0xDB,
-    0x5A, 0xD9, 0xB2, 0x27, 0x0F, 0x96, 0x15, 0xCF,
-    0x2F, 0xBF, 0x18, 0xC8, 0xF7, 0xBD, 0x8D, 0xE5,
-    0xA1, 0x9F, 0xDE, 0x5C, 0x83, 0x9A, 0xAE, 0x9D,
-    0xD9, 0xDF, 0x0F, 0x1E, 0x47, 0xA7, 0xFA, 0xA1,
-    0x80, 0xAC, 0xC8, 0x8F, 0x42, 0xDD, 0x5E, 0x71,
-    0x9C, 0x76, 0x39, 0x93, 0x34, 0xC7, 0x79, 0xD5,
-    0x66, 0x57, 0x31, 0xEA, 0xF1, 0xDF, 0x87, 0xCB,
-    0xBE, 0x96, 0xE9, 0x05, 0x3E, 0xE3, 0xA7, 0xBE,
-    0x8F, 0x6F, 0x4E, 0xD1, 0x4D, 0xAC, 0x42, 0xE9,
-    0x23, 0x7C, 0x7D, 0x57, 0x43, 0xF6, 0x2C, 0xA9,
-    0x4D, 0x5D, 0x93, 0x3E, 0x3C, 0x1B, 0x09, 0xFA,
-    0xB1, 0xF3, 0xFF, 0xEF, 0xD6, 0xA6, 0xAE, 0x66,
-    0x16, 0xFC, 0x37, 0x63, 0xA8, 0x7A, 0x4C, 0xCB,
-    0xF6, 0xC9, 0x22, 0x39, 0xBF, 0x4E, 0xE2, 0x0C,
-    0xAB, 0x76, 0x4B, 0xE7, 0x91, 0x54, 0xE1, 0x42,
-    0x47, 0xE1, 0x32, 0x1E, 0x87, 0xE0, 0x84, 0x9D,
-    0xDC, 0xBB, 0x00, 0x84, 0x35, 0x4D, 0x50, 0x2B,
-    0x16, 0x72, 0x64, 0xD6, 0xC1, 0x47, 0xE2, 0x6C,
-    0xBD, 0x2D, 0x54, 0x4E, 0x82, 0x35, 0x90, 0xC9,
-    0x16, 0xC2, 0xE7, 0x9E, 0xA2, 0x6B, 0x3B, 0x7E,
-    0x27, 0x3C, 0x03, 0x5C, 0x89, 0x53, 0x88, 0x9F,
-    0xC5, 0xEC, 0x75, 0x86, 0x33, 0x58, 0xF3, 0xF0,
-    0x85, 0x47, 0x3E, 0x07, 0x7C, 0xCF, 0xD1, 0x93
+	0x57, 0x61, 0x4E, 0x69, 0x4E, 0x4B, 0x6F, 0x4B,
+	0x4F, 0x57, 0x61, 0x53, 0x48, 0x65, 0x52, 0x65,
+	0x21, 0x8A, 0xB5, 0xBC, 0x89, 0x00, 0x8E, 0x5C,
+	0x2B, 0xB6, 0x3E, 0x4D, 0x0A, 0xD7, 0xD2, 0xC4,
+	0x97, 0x36, 0x82, 0xDF, 0x57, 0x06, 0x37, 0x27,
+	0x96, 0xF1, 0x40, 0xD6, 0xCD, 0x36, 0xE4, 0xEE,
+	0xC0, 0x99, 0xAA, 0x49, 0x99, 0x38, 0xA5, 0xC5,
+	0xEE, 0xE3, 0x12, 0xF8, 0xBB, 0xE4, 0xBC, 0x52,
+	0x1A, 0x3F, 0x31, 0x71, 0x45, 0x68, 0x98, 0xDB,
+	0x5A, 0xD9, 0xB2, 0x27, 0x0F, 0x96, 0x15, 0xCF,
+	0x2F, 0xBF, 0x18, 0xC8, 0xF7, 0xBD, 0x8D, 0xE5,
+	0xA1, 0x9F, 0xDE, 0x5C, 0x83, 0x9A, 0xAE, 0x9D,
+	0xD9, 0xDF, 0x0F, 0x1E, 0x47, 0xA7, 0xFA, 0xA1,
+	0x80, 0xAC, 0xC8, 0x8F, 0x42, 0xDD, 0x5E, 0x71,
+	0x9C, 0x76, 0x39, 0x93, 0x34, 0xC7, 0x79, 0xD5,
+	0x66, 0x57, 0x31, 0xEA, 0xF1, 0xDF, 0x87, 0xCB,
+	0xBE, 0x96, 0xE9, 0x05, 0x3E, 0xE3, 0xA7, 0xBE,
+	0x8F, 0x6F, 0x4E, 0xD1, 0x4D, 0xAC, 0x42, 0xE9,
+	0x23, 0x7C, 0x7D, 0x57, 0x43, 0xF6, 0x2C, 0xA9,
+	0x4D, 0x5D, 0x93, 0x3E, 0x3C, 0x1B, 0x09, 0xFA,
+	0xB1, 0xF3, 0xFF, 0xEF, 0xD6, 0xA6, 0xAE, 0x66,
+	0x16, 0xFC, 0x37, 0x63, 0xA8, 0x7A, 0x4C, 0xCB,
+	0xF6, 0xC9, 0x22, 0x39, 0xBF, 0x4E, 0xE2, 0x0C,
+	0xAB, 0x76, 0x4B, 0xE7, 0x91, 0x54, 0xE1, 0x42,
+	0x47, 0xE1, 0x32, 0x1E, 0x87, 0xE0, 0x84, 0x9D,
+	0xDC, 0xBB, 0x00, 0x84, 0x35, 0x4D, 0x50, 0x2B,
+	0x16, 0x72, 0x64, 0xD6, 0xC1, 0x47, 0xE2, 0x6C,
+	0xBD, 0x2D, 0x54, 0x4E, 0x82, 0x35, 0x90, 0xC9,
+	0x16, 0xC2, 0xE7, 0x9E, 0xA2, 0x6B, 0x3B, 0x7E,
+	0x27, 0x3C, 0x03, 0x5C, 0x89, 0x53, 0x88, 0x9F,
+	0xC5, 0xEC, 0x75, 0x86, 0x33, 0x58, 0xF3, 0xF0,
+	0x85, 0x47, 0x3E, 0x07, 0x7C, 0xCF, 0xD1, 0x93
 };
 
 const PartitionHeader& WiiImage::firstPartitionHeader()
@@ -1060,7 +973,7 @@ bool WiiImage::parseImage()
 		}
 		nvp++;
 
-		Partition& partition = m_partitions[i];
+		WiiPartition& partition = m_partitions[i];
 		partition.header = PartitionHeader::parse(buffer);
 
 		if (partition.type != PART_UNKNOWN)
@@ -1158,7 +1071,7 @@ bool WiiImage::parseImage()
 
 			partition.fileCount = be32(&fstData[8]);
 
-			if (partition.fileCount * 12 > partition.header.fstSize)
+			if (static_cast<u32>(partition.fileCount * 12) > partition.header.fstSize)
 			{
 				DLOG << "invalid fst for partition " << i;
 			}
@@ -1246,6 +1159,9 @@ u32 WiiImage::calcDolSize(const u8* header)
 
 bool WiiImage::checkForFreeSpace(int partition, offset_t offset, int blockCount) const
 {
+	partition;
+	offset;
+	blockCount;
 	return true;
 #if 0
 	// convert offset to block representation
@@ -1317,7 +1233,7 @@ Tree<FileInfo>::Node* WiiImage::findFile(const std::string& path, Tree<FileInfo>
 	}
 
 	std::istringstream f(path);
-	std::string name;    
+	std::string name;	
 	while (std::getline(f, name, '/'))
 	{
 		Tree<FileInfo>::Node* node = folder->firstChild();
@@ -1339,6 +1255,684 @@ Tree<FileInfo>::Node* WiiImage::findFile(const std::string& path, Tree<FileInfo>
 		}
 		folder = node;
 	}
+
+	return NULL;
 }
+
+Consolgames::Stream* WiiImage::openFile(const std::string& path, Stream::OpenMode mode)
+{
+	if (m_stream->openMode() != Stream::modeReadWrite && m_stream->openMode() != mode)
+	{
+		return NULL;
+	}
+
+	Tree<FileInfo>::Node* info = findFile(path);
+	if (info == NULL)
+	{
+		return NULL;
+	}
+
+	return new WiiFileStream(*this, info->data().partition, info->data().offset, info->data().size);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CLUSTERS
+//////////////////////////////////////////////////////////////////////////
+
+bool WiiImage::wii_read_cluster(int partition, int cluster, u8 *data, u8 *header)
+{
+	u8 buf[SIZE_CLUSTER];
+	u8  iv[16];
+
+	/* Jump to the specified cluster and copy it to memory */
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + cluster * SIZE_CLUSTER;
+
+	// read the correct location block in
+	io_read(buf, SIZE_CLUSTER, offset);
+
+	/* Set title key */
+	u8* title_key =  &m_partitions[partition].title_key[0];
+
+	/* Copy header if required*/
+	if (header)
+	{
+		/* Set IV key to all 0's*/
+		memset(iv, 0, sizeof(iv));
+
+		/* Decrypt cluster header */
+		aes_cbc_dec(buf, header, SIZE_CLUSTER_HEADER, title_key, iv);
+	}
+
+	/* Copy data if required */
+	if (data)
+	{
+		/* Set IV key to correct location*/
+		memcpy(iv, &buf[OFFSET_CLUSTER_IV], 16);
+
+		/* Decrypt cluster data */
+		aes_cbc_dec(&buf[0x400], data, SIZE_CLUSTER_DATA, title_key,  &iv[0]);
+
+	}
+
+	return true;
+}
+
+bool WiiImage::wii_read_cluster_hashes(int partition, int cluster, u8 *h0, u8 *h1, u8 *h2)
+{
+	u8 buf[SIZE_CLUSTER_HEADER];
+
+	/* Read cluster header */
+	if (!wii_read_cluster(partition, cluster, NULL, buf))
+	{
+		return false;
+	}
+
+	if (NULL!=h0)
+		memcpy(h0, buf + OFFSET_H0, SIZE_H0);
+	if (NULL!=h1)
+		memcpy(h1, buf + OFFSET_H1, SIZE_H1);
+	if (NULL!=h2)
+		memcpy(h2, buf + OFFSET_H2, SIZE_H2);
+
+	return true;
+}
+
+// calculate the group hash for a cluster
+bool WiiImage::wii_calc_group_hash(int partition, int cluster)
+{
+	u8 h2[SIZE_H2];
+	u8 h3[SIZE_H3];
+	u8 h4[SIZE_H4];
+
+	/* Calculate cluster group */
+	u32 group = cluster / NB_CLUSTER_GROUP;
+
+	/* Get H2 hash of the group */
+	if (!wii_read_cluster_hashes(partition, cluster, NULL, NULL, h2))
+	{
+		return false;
+	}
+
+	/* read the H3 table offset */
+	io_read(h3, SIZE_H3, m_partitions[partition].offset + m_partitions[partition].h3_offset);
+
+
+	/* Calculate SHA-1 hash */
+	sha1(h2, SIZE_H2, &h3[group * 0x14]);
+
+	/* Write new H3 table */
+	if (!writeDirect(m_partitions[partition].h3_offset + m_partitions[partition].offset, h3, SIZE_H3))
+	{
+		return false;
+	}
+
+
+	/* Calculate H4 */
+	sha1(h3, SIZE_H3, h4);
+
+	/* Write H4 */
+	if (!writeDirect(m_partitions[partition].tmdOffset + OFFSET_TMD_HASH + m_partitions[partition].offset, h4, SIZE_H4))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset, int bytesToWrite, Stream* inStream)
+{
+	// TODO: Refactor
+
+	u8 h0[SIZE_H0];
+	u8 h1[SIZE_H1];
+	u8 h2[SIZE_H2];
+
+	u8 iv[16];
+
+	int clusterGroup = cluster / NB_CLUSTER_GROUP;
+	int firstCluster = clusterGroup * NB_CLUSTER_GROUP;
+
+	/* Get number of clusters in this group */
+	int clustersInGroup = wii_nb_cluster(partition) - firstCluster;
+	if (clustersInGroup > NB_CLUSTER_GROUP)
+	{
+		clustersInGroup = NB_CLUSTER_GROUP;
+	}
+
+	std::vector<u8> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
+	std::vector<u8> header(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP);
+	
+	// if we are replacing a full set of clusters then we don't
+	// need to do any reading as we just need to overwrite the
+	// blanked data
+
+
+	int clusterCount = ((bytesToWrite -1)/ SIZE_CLUSTER_DATA)+1;
+
+	if (bytesToWrite != (NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA))
+	{
+		/* Read group clusters and headers */
+		for (int i = 0; i < clustersInGroup; i++)
+		{
+			u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+			u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+			if (!wii_read_cluster(partition, firstCluster + i, d_ptr, h_ptr))
+			{
+				return false;
+			}
+		}
+	}
+
+	// now overwrite the data in the correct location
+	// be it from file data or from the memory location
+	/* Write new cluster and H0 table */
+	int pos_header  = ((cluster - firstCluster) * SIZE_CLUSTER_HEADER);
+	int pos_cluster = ((cluster - firstCluster) * SIZE_CLUSTER_DATA);
+
+	inStream->read(&data[pos_cluster + clusterOffset], bytesToWrite);
+
+	for(int j = 0; j < clusterCount; j++)
+	{
+		memset(h0, 0, SIZE_H0);
+
+		/* Calculate new clusters H0 table */
+		for (int i = 0; i < SIZE_CLUSTER_DATA; i += 0x400)
+		{
+			const u32 index = (i / 0x400) * 20;
+			sha1(&data[pos_cluster + (j * SIZE_CLUSTER_DATA) + i], 0x400, &h0[index]);
+		}
+
+		memcpy(&header[pos_header + (j * SIZE_CLUSTER_HEADER)], h0, SIZE_H0);
+
+		sha1(&header[pos_header + (j * SIZE_CLUSTER_HEADER)], SIZE_H0, h1);
+
+		// now copy to all the sub cluster locations
+		for (int k = 0; k < NB_CLUSTER_SUBGROUP; k++)
+		{
+			// need to get the position of the first block we are changing
+			// which is the start of the subgroup for the current cluster
+			const u32 subGroup = ((cluster + j) % NB_CLUSTER_GROUP) / NB_CLUSTER_SUBGROUP;
+
+			u32 pos = (SIZE_CLUSTER_HEADER * subGroup * NB_CLUSTER_SUBGROUP) + (0x14 * ((cluster +j)%NB_CLUSTER_SUBGROUP));
+
+			memcpy(&header[pos + (k * SIZE_CLUSTER_HEADER) + OFFSET_H1], h1, 20);
+		}
+
+	}
+
+	// now we need to calculate the H2's for all subgroups
+	/* Calculate H2 */
+	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
+	{
+		int pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
+
+		/* Cluster exists? */
+		if ((pos / SIZE_CLUSTER_HEADER) > clustersInGroup)
+		{
+			break;
+		}
+
+		/* Calculate SHA-1 hash */
+		sha1(&header[pos + OFFSET_H1], SIZE_H1, &h2[20 * i]);
+	}
+
+	/* Write H2 table */
+	for (int i = 0; i < clustersInGroup; i++)
+	{
+		/* Write H2 table */
+		memcpy(&header[(SIZE_CLUSTER_HEADER * i) + OFFSET_H2], h2, SIZE_H2);
+	}
+
+	// update the H3 key table here
+	/* Calculate SHA-1 hash */
+	sha1(h2, SIZE_H2, &m_h3[clusterGroup * 0x14]);
+
+
+	// now encrypt and write
+
+	/* Set title key */
+	const u8* title_key = &(m_partitions[partition].title_key[0]);
+
+	/* Encrypt headers */
+	for (int i = 0; i < clustersInGroup; i++)
+	{
+		u8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		u8 phData[SIZE_CLUSTER_HEADER];
+
+		/* Set IV key */
+		memset(iv, 0, 16);
+
+		/* Encrypt */
+		aes_cbc_enc(ptr, (u8*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
+		memcpy(ptr, (u8*)phData, SIZE_CLUSTER_HEADER);
+	}
+
+	/* Encrypt clusters */
+	for (int i = 0; i < clustersInGroup; i++)
+	{
+		u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		u8 phData[SIZE_CLUSTER_DATA];
+
+
+		/* Set IV key */
+		memcpy(iv, &h_ptr[OFFSET_CLUSTER_IV], 16);
+
+		/* Encrypt */
+		aes_cbc_enc(d_ptr, (u8*) phData, SIZE_CLUSTER_DATA, title_key, iv);
+		memcpy(d_ptr, (u8*)phData, SIZE_CLUSTER_DATA);
+	}
+
+	/* Jump to first cluster in the group */
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + (u64)((u64)firstCluster * (u64)SIZE_CLUSTER);
+
+	for (int i = 0; i < clustersInGroup; i++)
+	{
+		const u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		if (writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
+		{
+			// written ok, add value to offset
+			offset += SIZE_CLUSTER_HEADER;
+
+			if (writeDirect(offset, d_ptr, SIZE_CLUSTER_DATA))
+			{
+				offset += SIZE_CLUSTER_DATA;
+			}
+			else
+			{
+				return false;
+
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
+	// already calculated the H3 and H4 hashes - rely on surrounding code to
+	// read and write those out
+
+	return true;
+}
+
+void WiiImage::sha1(const u8 *data, u32 len, u8 *hash)
+{
+	SHA1(data, len, hash);
+}
+
+void WiiImage::aes_cbc_enc(const u8 *in, u8 *out, u32 len, const u8 *key, u8 *iv)
+{
+	AES_KEY aes_key;
+
+	/* Set encryption key */
+	AES_set_encrypt_key(key, 128, &aes_key);
+
+	/* Decrypt data */
+	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_ENCRYPT);
+}
+
+void WiiImage::aes_cbc_dec(const u8* in, u8* out, u32 len, const u8* key, u8 *iv)
+{
+	AES_KEY aes_key;
+
+	/* Set decryption key */
+	AES_set_decrypt_key(key, 128, &aes_key);
+
+	/* Decrypt data */
+	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_DECRYPT);
+}
+
+bool WiiImage::wii_write_cluster(int partition, int cluster, const u8* in)
+{
+	// TODO: Delegate to wii_read_clusters
+
+	u8 h0[SIZE_H0];
+	u8 h1[SIZE_H1];
+	u8 h2[SIZE_H2];
+
+	u8 iv[16];
+
+	/* Calculate cluster group and subgroup */
+	int group = cluster / NB_CLUSTER_GROUP;
+	int subgroup = (cluster % NB_CLUSTER_GROUP) / NB_CLUSTER_SUBGROUP;
+
+	/* First cluster in the group */
+	int f_cluster = group * NB_CLUSTER_GROUP;
+
+	/* Get number of clusters in this group */
+	int nb_cluster = wii_nb_cluster(partition) - f_cluster;
+	if (nb_cluster > NB_CLUSTER_GROUP)
+	{
+		nb_cluster = NB_CLUSTER_GROUP;
+	}
+
+	/* Allocate memory */
+	std::vector<u8> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
+	std::vector<u8> header(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP);
+
+	/* Read group clusters and headers */
+	for (int i = 0; i < nb_cluster; i++)
+	{
+		u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		/* Read cluster */
+		if (!wii_read_cluster(partition, f_cluster + i, d_ptr, h_ptr))
+		{
+			return false;
+		}
+	}
+
+	/* Calculate new cluster H0 table */
+	for (int i = 0; i < SIZE_CLUSTER_DATA; i += 0x400)
+	{
+		int index = (i / 0x400) * 20;
+
+		/* Calculate SHA-1 hash */
+		sha1(&in[i], 0x400, &h0[index]);
+	}
+
+	/* Write new cluster and H0 table */
+	int pos_header  = ((cluster - f_cluster) * SIZE_CLUSTER_HEADER);
+	int pos_cluster = ((cluster - f_cluster) * SIZE_CLUSTER_DATA);
+
+	memcpy(&data[pos_cluster], in, SIZE_CLUSTER_DATA);
+	memcpy(&header[pos_header + OFFSET_H0], h0, SIZE_H0);
+
+	/* Calculate H1 */
+	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
+	{
+		const int pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
+		u8 tmp[SIZE_H0];
+
+		/* Cluster exists? */
+		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
+		{
+			break;
+		}
+
+		/* Get H0 */
+		memcpy(tmp, &header[pos + OFFSET_H0], SIZE_H0);
+
+		/* Calculate SHA-1 hash */
+		sha1(tmp, SIZE_H0, &h1[20 * i]);
+	}
+
+	/* Write H1 table */
+	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
+	{
+		const int pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
+
+		/* Cluster exists? */
+		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
+		{
+			break;
+		}
+
+		/* Write H1 table */
+		memcpy(&header[pos + OFFSET_H1], h1, SIZE_H1);
+	}
+
+	/* Calculate H2 */
+	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
+	{
+		const int pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
+		u8 tmp[SIZE_H1];
+
+		/* Cluster exists? */
+		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
+		{
+			break;
+		}
+
+		/* Get H1 */
+		memcpy(tmp, &header[pos + OFFSET_H1], SIZE_H1);
+
+		/* Calculate SHA-1 hash */
+		sha1(tmp, SIZE_H1, &h2[20 * i]);
+	}
+
+	/* Write H2 table */
+	for (int i = 0; i < nb_cluster; i++)
+	{
+		u32 nb = SIZE_CLUSTER_HEADER * i;
+
+		/* Write H2 table */
+		memcpy(&header[nb + OFFSET_H2], h2, SIZE_H2);
+	}
+
+	/* Set title key */
+	const u8* title_key = &(m_partitions[partition].title_key[0]);
+
+	/* Encrypt headers */
+	for (int i = 0; i < nb_cluster; i++)
+	{
+		u8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
+		u8 phData[SIZE_CLUSTER_HEADER];
+
+		/* Set IV key */
+		memset(iv, 0, 16);
+
+		/* Encrypt */
+		aes_cbc_enc(ptr, phData, SIZE_CLUSTER_HEADER, title_key, iv);
+		memcpy(ptr, phData, SIZE_CLUSTER_HEADER);
+	}
+
+	/* Encrypt clusters */
+	for (int i = 0; i < nb_cluster; i++)
+	{
+		u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		u8 phData[SIZE_CLUSTER_DATA];
+
+
+		/* Set IV key */
+		memcpy(iv, &h_ptr[OFFSET_CLUSTER_IV], 16);
+
+		/* Encrypt */
+		aes_cbc_enc(d_ptr, phData, SIZE_CLUSTER_DATA, title_key, iv);
+		memcpy(d_ptr, phData, SIZE_CLUSTER_DATA);
+	}
+
+	/* Jump to first cluster in the group */
+	largesize_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + static_cast<largesize_t>(f_cluster) * SIZE_CLUSTER;
+
+	/* Write new clusters */
+	for (int i = 0; i < nb_cluster; i++)
+	{
+		const u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+
+		/* Write cluster header */
+		if (writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
+		{
+			// written ok, add value to offset
+			offset += SIZE_CLUSTER_HEADER;
+
+			if (writeDirect(offset, d_ptr, SIZE_CLUSTER_DATA))
+			{
+				offset += SIZE_CLUSTER_DATA;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	if (!wii_calc_group_hash(partition, cluster))
+	{
+		return false;
+	}
+	return true;
+}
+
+int WiiImage::wii_nb_cluster(int partition) const
+{
+	return static_cast<int>(m_partitions[partition].dataSize / SIZE_CLUSTER);
+}
+
+bool WiiImage::wii_write_data_file(int partition, offset_t offset, Stream* file, largesize_t size)
+{
+	/* Calculate some needed information */
+	u32 cluster_start = (u32)(offset / (u64)(SIZE_CLUSTER_DATA));
+	u32 clusters = (u32)(((offset + size) / (u64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
+	u32 offset_start = (u32)(offset - (cluster_start * (u64)(SIZE_CLUSTER_DATA)));
+
+
+	// read the H3 and H4
+	io_read(m_h3, SIZE_H3, m_partitions[partition].offset + m_partitions[partition].h3_offset);
+
+	/* Write clusters */
+	largesize_t nWritten = 0;
+	int i = 0;
+	int clusterCount = 0;
+	while (i < size)
+	{
+		if (((cluster_start + clusterCount) % 64) != 0 || offset_start != 0)
+		{
+			// not at the start so our max size is different
+			// and also our cluster offset
+			nWritten = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
+			nWritten = nWritten - offset_start;
+
+			// max check
+			if (nWritten > size)
+			{
+				nWritten = (u32)size;
+			}
+
+			if (!wii_write_clusters(partition, cluster_start, offset_start, nWritten, file))
+			{
+				DLOG << "Error writing clusters";
+				return false;
+			}
+			// round up the cluster count
+			clusterCount = NB_CLUSTER_GROUP - (cluster_start % NB_CLUSTER_GROUP);
+		}
+		else
+		{
+			// potentially full block
+			nWritten = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
+
+			// max check
+			if (nWritten > (size-i))
+			{
+				nWritten = (u32)(size-i);
+			}
+
+			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, nWritten, file))
+			{
+				DLOG << "Error writing clusters";
+				return false;
+			}
+			// we simply add a full cluster block
+			clusterCount = clusterCount + NB_CLUSTER_GROUP;
+
+		}
+		offset_start = 0;
+		i += nWritten;
+
+
+	}
+
+	if (!writeDirect(m_partitions[partition].h3_offset + m_partitions[partition].offset, m_h3, SIZE_H3))
+	{
+		DLOG << "Unable to write H3 table";
+		return false;
+	}
+
+	sha1(m_h3, SIZE_H3, m_h4);
+	if (!writeDirect(m_partitions[partition].tmdOffset + OFFSET_TMD_HASH + m_partitions[partition].offset, m_h4, SIZE_H4))
+	{
+		DLOG << "Unable to write H4 value";
+		return false;
+	}
+
+	wii_trucha_signing(partition);
+
+	return true;
+}
+
+bool WiiImage::wii_write_data_file(int partition, offset_t offset, void* data, largesize_t size)
+{
+	MemoryStream stream(data, size);
+	return wii_write_data_file(partition, offset, &stream, size);
+}
+
+bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, largesize_t size)
+{
+	/* Calculate some needed information */
+	u32 cluster_start = (u32)(offset / (u64)(SIZE_CLUSTER_DATA));
+	u32 clusters = (u32)(((offset + size) / (u64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
+	u32 offset_start = (u32)(offset - (cluster_start * (u64)(SIZE_CLUSTER_DATA)));
+
+	/* Write clusters */
+	largesize_t nWritten = 0;
+	int i = 0;
+	int clusterCount = 0;
+	while (i < size)
+	{
+		if (((cluster_start + clusterCount) % 64) != 0 || offset_start != 0)
+		{
+			// not at the start so our max size is different
+			// and also our cluster offset
+			nWritten = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
+			nWritten = nWritten - offset_start;
+
+			// max check
+			if (nWritten > size)
+			{
+				nWritten = (u32)size;
+			}
+
+			if (!wii_write_clusters(partition, cluster_start, offset_start, nWritten, file))
+			{
+				DLOG << "Error writing clusters";
+				return false;
+			}
+			// round up the cluster count
+			clusterCount = NB_CLUSTER_GROUP - (cluster_start % NB_CLUSTER_GROUP);
+		}
+		else
+		{
+			// potentially full block
+			nWritten = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
+
+			// max check
+			if (nWritten > (size-i))
+			{
+				nWritten = (u32)(size-i);
+			}
+
+			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, nWritten, file))
+			{
+				DLOG << "Error writing clusters";
+				return false;
+			}
+			// we simply add a full cluster block
+			clusterCount = clusterCount + NB_CLUSTER_GROUP;
+
+		}
+		offset_start = 0;
+		i += nWritten;
+
+
+	}
+	return true;
+}
+
 
 }

@@ -8,7 +8,7 @@
 namespace Consolgames
 {
 
-class ImageFileStream: public IFileStream
+class ImageFileStream: public Stream
 {
 public:
     ImageFileStream(Stream* stream, offset_t size, OpenMode mode = modeReadWrite);
