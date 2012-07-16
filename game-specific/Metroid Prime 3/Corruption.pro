@@ -7,6 +7,7 @@ SUBDIRS = \
 	ScriptTester \
 	ExtractorLib \
 	Extractor \
+	PasterLib \
 	Patcher \
 	externals/core \
 	externals/WiiStreams \
