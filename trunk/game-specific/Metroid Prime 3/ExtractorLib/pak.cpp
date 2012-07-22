@@ -167,14 +167,18 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		cmpdHeader.flags = FlagCompressed | (isTexture ? FlagTexture : FlagData);
 		cmpdHeader.dataSize = endian32(isTexture ? (size - 12) : size);	
 		stream->seek(offset + sizeof(CompressedFileHeader) + sizeof(CompressedStreamHeader), Stream::seekSet);
+
 		if (isTexture)
 		{
 			size -= 12;
-			stream->seek(12, Stream::seekCur);
+			stream->seek(8, Stream::seekCur);
+			stream->writeStream(file, 12);
+			totalSize += 12;
 		}
 
-		totalSize = compressLzo(file, size, stream);
-		cmpdHeader.lzoSize = endian32(totalSize) >> 8;
+		const u32 lzoSize = compressLzo(file, size, stream);
+		cmpdHeader.lzoSize = endian32(lzoSize) >> 8;
+		totalSize += lzoSize;
 
 		stream->seek(offset, Stream::seekSet);
 		stream->write(&header, sizeof(header));
@@ -182,8 +186,9 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		{
 			stream->write32(12);
 			stream->write32(12);
+			totalSize += 8;
 		}
-		stream->write(&cmpdHeader, sizeof(cmpdHeader));  
+		stream->write(&cmpdHeader, sizeof(cmpdHeader)); 
 		totalSize += sizeof(CompressedFileHeader) + sizeof(CompressedStreamHeader);
 	}
 	else
