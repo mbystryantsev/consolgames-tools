@@ -418,7 +418,8 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	{	
 		progress(IPakProgressHandler::SetCur, i, NULL);
 		files[i] = m_files[i];
-		if (!mergeMap.empty() && mergeMap.find(files[i].hash) != mergeMap.end())
+		if (!mergeMap.empty() && mergeMap.find(files[i].hash) != mergeMap.end()
+			&& findFileRecord(mergeMap.find(files[i].hash)->second, m_files) != NULL)
 		{
 			continue;
 		}
@@ -448,10 +449,14 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	for (std::map<Hash,Hash>::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
 	{
 		FileRecord* mappedRecord = findFileRecord(it->first, files);
-		const FileRecord* sourceRecord = findFileRecord(it->second, files);
-		if (mappedRecord == NULL || sourceRecord == NULL)
+		if (mappedRecord == NULL)
 		{
-			return false;
+			continue;
+		}
+		const FileRecord* sourceRecord = findFileRecord(it->second, files);
+		if (sourceRecord == NULL)
+		{
+			continue;
 		}
 		mappedRecord->offset = sourceRecord->offset;
 		mappedRecord->size = sourceRecord->size;
