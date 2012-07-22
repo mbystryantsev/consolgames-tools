@@ -42,6 +42,7 @@ public:
 	static ErrorType exec(const QString& filename);
 	static const char* errorString(ErrorType error);
 	static QString lastErrorData();
+	static QMap<QByteArray,QByteArray> generateMergeMap(const QString& inputDir);
 
 protected:
 	const MessageSet* findMessageSet(QByteArray hash);

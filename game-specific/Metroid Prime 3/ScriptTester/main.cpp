@@ -1,6 +1,10 @@
 #include "ScriptTester.h"
 #include <QStringList>
 #include <QCoreApplication>
+#include <QFile>
+#include <QMap>
+#include <QByteArray>
+#include <QPair>
 #include <iostream>
 
 void printUsage()
@@ -15,6 +19,8 @@ void printUsage()
 	std::cout << "    Create list of identifiers.\n";
 	std::cout << "  -e, --exec <filename>:\n";
 	std::cout << "    Execute batch csv (script;testdata;ignoredata;identifiers).\n";
+	std::cout << "  -gm, --generate-mergemap <inputdir> <filename>:\n";
+	std::cout << "    Generate merge map.\n";
 }
 
 void parseArgument(const QByteArray& name, const QString& argName, const QStringList& args, QMap<QByteArray, QString>& out)
@@ -98,6 +104,28 @@ int main(int argc, char** argv)
 	{
 		const QString batchFile = app.arguments()[2];
 		TESTER_VERIFY(ScriptTester::exec(batchFile));
+	}
+	else if (QCoreApplication::arguments().size() == 4 && (QCoreApplication::arguments()[1] == "-gm" || QCoreApplication::arguments()[1] == "--generate-mergemap"))
+	{
+		const QString inputDir = app.arguments()[2];
+		const QString filename = app.arguments()[3];
+		std::cout << "Generating merge map..." << std::endl;
+		QMap<QByteArray,QByteArray> mergeMap = ScriptTester::generateMergeMap(inputDir);
+		QFile file(filename);
+		if (!file.open(QIODevice::WriteOnly))
+		{
+			std::cout << "Unable to open file!" <<  std::endl;
+			return -1;
+		}
+		foreach (const QByteArray& baseHash, mergeMap.keys())
+		{
+			const QByteArray& resultHash = mergeMap[baseHash];
+			Q_ASSERT(baseHash.size() == 8);
+			Q_ASSERT(resultHash.size() == 8);
+			file.write(baseHash);
+			file.write(resultHash);
+		}
+		std::cout << "Done!" << std::endl;
 	}
 	else
 	{
