@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QString>
+#include <QDir>
 #include <iostream>
 
 QString ScriptTester::s_lastErrorData;
@@ -385,4 +386,27 @@ ScriptTester::ErrorType ScriptTester::exec(const QString& filename)
 QString ScriptTester::lastErrorData()
 {
 	return s_lastErrorData;
+}
+
+QMap<QByteArray,QByteArray> ScriptTester::generateMergeMap(const QString& inputDir)
+{
+	QDir dir(inputDir);
+	QMap<QByteArray,QByteArray> mergeMap;
+	foreach (const QString& filename, dir.entryList(QStringList("*.txt"), QDir::Files))
+	{
+		const QVector<MessageSet> script = ScriptParser::loadFromFile(inputDir + "/" + filename);
+		if (script.isEmpty())
+		{
+			continue;
+		}
+		foreach (const MessageSet& messageSet, script)
+		{
+			for (int i = 1; i < messageSet.nameHashes.size(); i++)
+			{
+				mergeMap[messageSet.nameHashes[i]] = messageSet.nameHashes[0];
+			}
+		}
+	}
+
+	return mergeMap;
 }
