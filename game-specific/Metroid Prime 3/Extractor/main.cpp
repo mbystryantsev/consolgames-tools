@@ -13,20 +13,19 @@ void printUsage()
 class ProgressHandler : public IPakProgressHandler
 {
 public:
-	virtual void progress(Action action, int value, const char* message) override
+	virtual void init(int count) override
 	{
-		if (action == SetMax)
-		{
-			m_max = value;
-			return;
-		}
-		if (value != m_max)
-		{
-			std::cout << "[" << value << "/" << m_max << "] " << (message != NULL ? message : "") << "..." << std::endl;
-		}
+		m_count = count;
+	}
+	virtual void progress(int value, const char* message) override
+	{
+		std::cout << "[" << (value + 1) << "/" << m_count << "] " << (message != NULL ? message : "") << "..." << std::endl;
+	}
+	virtual void finish() override
+	{
 	}
 protected:
-	int m_max;
+	int m_count;
 };
 
 int main(int argc, char* argv[])
@@ -43,9 +42,10 @@ int main(int argc, char* argv[])
 		PakArchive pak;
 		ProgressHandler handler;
 		pak.setProgressHandler(&handler);
-		if (!pak.open(argv[2]))
+		const std::string filename = argv[2];
+		if (!pak.open(filename))
 		{
-			std::cout << "Unable to open file!" << std::endl;
+			std::cout << "Unable to open file: " << filename << "!" << std::endl;
 			return -1;
 		}
 		if (pak.extract(argv[3], types, true))

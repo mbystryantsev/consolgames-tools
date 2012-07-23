@@ -21,14 +21,10 @@ typedef bool (*PProgrFunc)(int act, int val, char* str);
 class IPakProgressHandler
 {
 public:
-	enum Action
-	{
-		SetMax,
-		SetCur
-	};
-	virtual void progress(Action action, int value, const char* message) = 0;
+	virtual void init(int size) = 0;
+	virtual void progress(int value, const char* message) = 0;
+	virtual void finish() = 0;
 };
-
 
 #pragma pack(push, 1)
 
@@ -93,6 +89,9 @@ struct SegmentRecord
 	unsigned int size;
 };
 
+std::string hashToStr(const Hash& hash);
+Hash hashFromData(const char* c);
+
 struct FileRecord
 {
 	int packed;
@@ -100,6 +99,11 @@ struct FileRecord
 	Hash hash;
 	unsigned int size;
 	unsigned int offset;
+
+	std::string name() const
+	{
+		return hashToStr(hash) + "." + res.toString();
+	}
 };
 
 struct CompressedFileHeader
@@ -149,7 +153,10 @@ public:
 	void setProgressHandler(IPakProgressHandler* handler);
 
 	std::vector<Hash> fileNamehashesList() const;
+	const std::vector<FileRecord>& files() const;
 	bool extractFile(Hash filenameHash, Consolgames::Stream* out);
+
+	Consolgames::Stream* openFileDirect(Hash hash);
 
 protected:
 	enum CompressionFlags
@@ -174,28 +181,33 @@ protected:
 	int getSegmentOffset(int index) const;
 	static void swapFileEndian(FileRecord& fileRecord);
 	std::string findName(const Hash& hash) const;
-	void progress(IPakProgressHandler::Action action, int value, const char* message);
 	u32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out);
 	static void decompressLzo(Consolgames::Stream* lzoStream, u32 lzoSize, Consolgames::Stream* outStream);
+
+protected:
+	void initProgress(int count);
+	void progress(int value, const char* message);
+	void finishProgress();
+
 
 protected:
 	static FileRecord* findFileRecord(Hash hash, std::vector<FileRecord>& files);
 
 protected:
 	IPakProgressHandler* m_progressHandler;
-
+	
 	Consolgames::Stream* m_stream;
 	std::auto_ptr<Consolgames::FileStream> m_fileStream;
-
+	
 	int m_strgIndex;
 	int m_rshdIndex;
 	int m_dataIndex;
 	u32 m_strgOffset;
 	u32 m_rshdOffset;
 	u32 m_dataOffset;
-
+	
 	std::vector<char> m_lzoWorkMem;
-
+	
 	std::vector<SegmentRecord> m_segments;
 	PakHeader m_header;
 	std::vector<FileRecord> m_files;
