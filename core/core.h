@@ -1,9 +1,14 @@
-#ifndef __COMMON_H
-#define __COMMON_H
+#ifndef __CONSOLGAMES_COMMON_H
+#define __CONSOLGAMES_COMMON_H
 
 #ifdef _DEBUG
 #include <iostream>
 #include <iomanip>
+#include <string>
+#endif
+
+#ifdef QT_CORE_LIB
+#include <QString>
 #endif
 
 #ifdef _MSC_VER
@@ -54,6 +59,7 @@ inline u64 endian64(u64 v)
 		| ((v << 8) & (0xFFULL << 32));
 }
 
+#ifdef _DEBUG
 class AssertException
 {
 public:
@@ -94,6 +100,7 @@ public:
 #endif
 	}
 };
+#endif
 
 }
 
@@ -130,8 +137,12 @@ public:
 	~DLog(){std::cout << std::endl;}
 	DLog& operator ()(const char* s, ...){std::cout << s; return *this;}
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
+	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
 	DLog& operator <<(__int64 v){if(modifier == LogModifiers::modHex) std::cout << std::hex; std::cout << v; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
+#ifdef QT_CORE_LIB
+	DLog& operator <<(const QString& s){std::cout << s.toStdString(); return *this;}
+#endif
 	void setModifier(const LogModifiers& m)
 	{
 		modifier = m.type;
@@ -141,16 +152,18 @@ protected:
 
 public:
 #else
-	DLog& operator ()(const char* s){return *this;}
-	DLog& operator <<(const char* s){return *this;}
-	DLog& operator <<(__int64 v){return *this;}
-	DLog& operator <<(const LogModifiers& m){return *this;}
+	DLog& operator ()(const char*){return *this;}
+	template<typename T>
+	DLog& operator <<(const T&){return *this;}
 #endif
 };
 
 const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 
-#define DLOG DLog()
+#define DLOG \
+	__if_not_exists(__s_consolgames_log_category){ DLog()} \
+	__if_exists(__s_consolgames_log_category){ (DLog() << __s_consolgames_log_category << ": ") }
+#define LOG_CATEGORY(category) static const char* __s_consolgames_log_category = category;
 
 #ifndef _MSC_VER
 #define override
@@ -159,4 +172,4 @@ const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 typedef __int64 offset_t;
 typedef __int64 largesize_t;
 
-#endif // __COMMON_H
+#endif // __CONSOLGAMES_COMMON_H
