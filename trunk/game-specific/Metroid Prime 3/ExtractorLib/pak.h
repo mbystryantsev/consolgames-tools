@@ -66,7 +66,7 @@ struct ResType
 	{
 		for (int i = 0; i < 4; i++)
 		{
-			if (id[0] < r.id[0])
+			if (id[i] < r.id[i])
 			{
 				return true;
 			}
