@@ -1,6 +1,7 @@
 #include "pak.h"
 #include "miniLZO/minilzo.h"
 #include <FileStream.h>
+#include <ImageFileStream.h>
 #include <stdio.h>
 #include <io.h>
 #include <algorithm>
@@ -9,28 +10,6 @@ using namespace Consolgames;
 
 #define endian(v) (((unsigned int)v >> 24) | (((unsigned int)v >> 8) & 0xFF00) | (((unsigned int)v << 8) & 0xFF0000) | ((unsigned int)v << 24))
 #define endianw(v) ((v >> 8) | (v << 8))
-
-int PakArchive::findSegment(ResType type) const
-{
-	for (size_t i = 0; i < m_segments.size(); i++)
-	{
-		if (m_segments[i].res == type)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-int PakArchive::getSegmentOffset(int index) const
-{
-	int result = 0;
-	for(int i = 0; i < index; i++)
-	{
-		result += m_segments[i].size;
-	}
-	return result;
-}
 
 std::string hashToStr(const Hash& hash)
 {
@@ -52,6 +31,29 @@ Hash hashFromData(const char* c)
 		hash |= static_cast<u8>(c[i]);
 	}
 	return hash;
+}
+
+
+int PakArchive::findSegment(ResType type) const
+{
+	for (size_t i = 0; i < m_segments.size(); i++)
+	{
+		if (m_segments[i].res == type)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+int PakArchive::getSegmentOffset(int index) const
+{
+	int result = 0;
+	for(int i = 0; i < index; i++)
+	{
+		result += m_segments[i].size;
+	}
+	return result;
 }
 
 bool PakArchive::extractFile(const FileRecord& file, Stream* out)
@@ -340,14 +342,14 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 		return false;
 	}
 
-	progress(IPakProgressHandler::SetMax, m_files.size(), NULL);
+	initProgress(m_files.size());
 
 	for (size_t i = 0; i < m_files.size(); i++)
 	{
 		if (types.empty() || types.find(m_files[i].res) != types.end())
 		{
-			std::string filename = hashToStr(m_files[i].hash) + "." + m_files[i].res.toString();
-			progress(IPakProgressHandler::SetCur, i, filename.c_str());
+			std::string filename = m_files[i].name();
+			progress(i, filename.c_str());
 			
 			std::string path;
 
@@ -372,12 +374,11 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 				return false;
 			}
 
-			progress(IPakProgressHandler::SetCur, i, filename.c_str());
 			extractFile(m_files[i], &stream);
 		  }
 	}
 	
-	progress(IPakProgressHandler::SetCur, m_files.size(), NULL);
+	finishProgress();
 
 	return true;
 }
@@ -408,7 +409,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 		}
 	}
 
-	progress(IPakProgressHandler::SetMax, fileCount(), NULL);
+	initProgress(fileCount());
 
 	unsigned int offset = m_dataOffset;
 
@@ -416,7 +417,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 
 	for (size_t i = 0; i < files.size(); i++)
 	{	
-		progress(IPakProgressHandler::SetCur, i, NULL);
+		progress(i, NULL);
 		files[i] = m_files[i];
 		if (!mergeMap.empty() && mergeMap.find(files[i].hash) != mergeMap.end()
 			&& findFileRecord(mergeMap.find(files[i].hash)->second, m_files) != NULL)
@@ -489,7 +490,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	outStream->seek(m_strgOffset, Stream::seekSet);
 	outStream->writeStream(m_stream, m_segments[m_strgIndex].size); 
 
-	progress(IPakProgressHandler::SetCur, this->fileCount(), NULL);
+	finishProgress();
 
 	return true;
 }
@@ -504,11 +505,28 @@ bool PakArchive::rebuild(const std::string& destName, const std::vector<std::str
 	return rebuild(&stream, inputDirs, types, mergeMap);
 }
 
-void PakArchive::progress(IPakProgressHandler::Action action, int value, const char* message)
+void PakArchive::initProgress(int count)
 {
 	if (m_progressHandler != NULL)
 	{
-		m_progressHandler->progress(action, value, message);
+		m_progressHandler->init(count);
+	}
+}
+
+void PakArchive::progress(int value, const char* message)
+{
+	if (m_progressHandler != NULL)
+	{
+		m_progressHandler->progress(value, message);
+	}
+}
+
+
+void PakArchive::finishProgress()
+{
+	if (m_progressHandler != NULL)
+	{
+		m_progressHandler->finish();
 	}
 }
 
@@ -563,4 +581,19 @@ FileRecord* PakArchive::findFileRecord(Hash hash, std::vector<FileRecord>& files
 		}
 	}
 	return NULL;
+}
+
+const std::vector<FileRecord>& PakArchive::files() const
+{
+	return m_files;
+}
+
+Stream* PakArchive::openFileDirect(Hash hash)
+{
+	const FileRecord* file = findFileRecord(hash, m_files);
+	if (file == NULL)
+	{
+		return NULL;
+	}
+	return new ImageFileStream(m_stream, m_dataOffset + file->offset, file->size, Stream::modeRead);
 }
