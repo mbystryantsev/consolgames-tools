@@ -137,10 +137,8 @@ u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 
 void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream)
 {
-	//std::vector<u8> lzoBuffer(CHUNK);
-	//std::vector<u8> decompressionBuffer(0x800000);
-	u8 lzoBuffer[CHUNK];
-	u8 decompressionBuffer[0x10000];
+	u8 lzoBuffer[0x10000];
+	u8 decompressionBuffer[0x40000];
 	while (lzoSize > 0)
 	{
 		unsigned short chunk = endian16(lzoStream->read16());
