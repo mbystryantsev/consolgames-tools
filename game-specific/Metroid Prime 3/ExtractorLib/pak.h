@@ -229,6 +229,3 @@ protected:
 	std::vector<FileRecord> m_files;
 	std::vector<NameRecord> m_names;
 };
-
-#define ALIGN 0x40
-#define CHUNK 0x4000
