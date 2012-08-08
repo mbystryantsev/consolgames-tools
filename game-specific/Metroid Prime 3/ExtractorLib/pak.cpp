@@ -62,19 +62,17 @@ bool PakArchive::extractFile(const FileRecord& file, Stream* out)
 
 	if (file.packed)
 	{
-		CompressedFileHeader header;
-		m_stream->read(&header, sizeof(header));
-		header.type = endian(header.type);
+		CompressedFileHeader header = readCmpdFileHeader();
 
-		switch(header.type)
+		switch (header.type)
 		{
-			case 1:
+			case CompressedFileHeader::Normal:
 			{
 				CompressedStreamHeader cmpdHeader = readCmpdStreamHeader();
 				decompressLzo(m_stream, cmpdHeader.lzoSize, out);
 				break;
 			}
-			case 2:
+			case CompressedFileHeader::Texture:
 			{
 				m_stream->read32(); // 12
 				m_stream->read32(); // 12
@@ -151,7 +149,7 @@ void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream
 	}
 }
 
-u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture)
+u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture, u8 flags)
 {
 	int size = static_cast<int>(file->size());
 	u32 totalSize = 0;
@@ -164,7 +162,7 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		header.type = isTexture ? endian32(2) : endian32(1);
 
 		CompressedStreamHeader cmpdHeader;
-		cmpdHeader.flags = FlagCompressed | (isTexture ? FlagTexture : FlagData);
+		cmpdHeader.flags = (flags == 0xFF) ? (FlagCompressed | (isTexture ? FlagTexture : FlagData)) : flags;
 		cmpdHeader.dataSize = endian32(isTexture ? (size - 12) : size);	
 		stream->seek(offset + sizeof(CompressedFileHeader) + sizeof(CompressedStreamHeader), Stream::seekSet);
 
@@ -176,9 +174,19 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 			totalSize += 12;
 		}
 
-		const u32 lzoSize = compressLzo(file, size, stream);
-		cmpdHeader.lzoSize = endian32(lzoSize) >> 8;
-		totalSize += lzoSize;
+		const bool dataPacked = ((cmpdHeader.flags & FlagCompressed) != 0);
+
+		if (dataPacked)
+		{
+			const u32 lzoSize = compressLzo(file, size, stream);
+			cmpdHeader.lzoSize = endian32(lzoSize) >> 8;
+			totalSize += lzoSize;
+		}
+		else
+		{
+			stream->writeStream(file, size);
+			totalSize += size;
+		}
 
 		stream->seek(offset, Stream::seekSet);
 		stream->write(&header, sizeof(header));
@@ -198,7 +206,13 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 	}
 
 	stream->seek(offset + totalSize, Stream::seekSet);
-	int padding = totalSize % ALIGN;
+	int padding = (ALIGN - (totalSize % ALIGN)) % ALIGN;
+	
+	if (isPacked)
+	{
+		totalSize += padding;
+	}
+
 	while (padding > 0)
 	{
 		stream->write8(0xFF);
@@ -207,10 +221,10 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 	return totalSize;
 }
 
-u32 PakArchive::storeFile(const std::string& filename, Stream* stream, bool isPacked, bool isTexture)
+u32 PakArchive::storeFile(const std::string& filename, Stream* stream, bool isPacked, bool isTexture, u8 flags)
 {
 	FileStream file(filename, Stream::modeRead);
-	return storeFile(&file, stream, isPacked, isTexture);
+	return storeFile(&file, stream, isPacked, isTexture, flags);
 }
 
 void PakArchive::swapFileEndian(FileRecord& fileRecord)
@@ -431,7 +445,20 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 			std::string filename = findFile(inputDirs, files[i].hash, files[i].res);
 			if (!filename.empty())
 			{
-				files[i].size = storeFile(filename, outStream, (files[i].packed != 0), (files[i].res == "TXTR"));
+				bool isTexture = false;
+				u8 flags = 0xFF;
+				// read flags
+				if (files[i].packed != 0)
+				{
+					m_stream->seek(m_dataOffset + m_files[i].offset, Stream::seekSet);
+					CompressedFileHeader fileHeader = readCmpdFileHeader();
+					isTexture = fileHeader.isTexture();
+					
+					m_stream->seek(m_dataOffset + m_files[i].offset + sizeof(CompressedFileHeader) + (isTexture ? 8 : 0), Stream::seekSet);
+					flags = m_stream->read8();
+				}
+
+				files[i].size = storeFile(filename, outStream, (files[i].packed != 0), isTexture, flags);
 				fileReplaced = true;
 			}
 		}
@@ -543,6 +570,14 @@ PakArchive::PakArchive()
 int PakArchive::fileCount() const
 {
 	return static_cast<int>(m_files.size());
+}
+
+CompressedFileHeader PakArchive::readCmpdFileHeader()
+{
+	CompressedFileHeader fileHeader;
+	m_stream->read(&fileHeader, sizeof(fileHeader));
+	fileHeader.type = endian32(fileHeader.type);
+	return fileHeader;
 }
 
 CompressedStreamHeader PakArchive::readCmpdStreamHeader()
