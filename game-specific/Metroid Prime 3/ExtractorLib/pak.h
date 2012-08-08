@@ -66,6 +66,10 @@ struct ResType
 			{
 				return true;
 			}
+			if (id[i] > r.id[i])
+			{
+				return false;
+			}
 		}
 		return false;
 	}
