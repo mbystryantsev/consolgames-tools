@@ -114,6 +114,17 @@ struct CompressedFileHeader
 {
 	ResType sign;
 	int type;
+
+	enum Type
+	{
+		Normal = 1,
+		Texture = 2
+	};
+
+	bool isTexture() const
+	{
+		return (type == Texture);
+	}
 };
 
 struct CompressedStreamHeader
@@ -176,11 +187,12 @@ protected:
 	};
 
 protected:
+	CompressedFileHeader readCmpdFileHeader();
 	CompressedStreamHeader readCmpdStreamHeader();
 
 	bool extractFile(const FileRecord& file, Consolgames::Stream* out);
-	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture);
-	u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture);
+	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
+	u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture,  u8 flags = 0xFF);
 	int findSegment(ResType type) const;
 	int getSegmentOffset(int index) const;
 	static void swapFileEndian(FileRecord& fileRecord);
