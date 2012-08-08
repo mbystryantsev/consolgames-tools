@@ -1,15 +1,20 @@
 #include "pak.h"
-#include "miniLZO/minilzo.h"
+#include "lzo/lzoconf.h"
+#include "lzo/lzo1x.h"
 #include <FileStream.h>
 #include <ImageFileStream.h>
 #include <stdio.h>
 #include <io.h>
 #include <algorithm>
 
+static int lzo1x_init_code = lzo_init();
+
 using namespace Consolgames;
 
-#define endian(v) (((unsigned int)v >> 24) | (((unsigned int)v >> 8) & 0xFF00) | (((unsigned int)v << 8) & 0xFF0000) | ((unsigned int)v << 24))
-#define endianw(v) ((v >> 8) | (v << 8))
+#define ALIGN 0x40
+#define CHUNK 0x4000
+#define MAX_CHUNK 0x10000
+#define MAX_LZO_SIZE(size) (size + size / 16 + 64 + 3)
 
 std::string hashToStr(const Hash& hash)
 {
@@ -112,19 +117,21 @@ bool PakArchive::extractFile(Hash filenameHash, Consolgames::Stream* out)
 	}
 	return false;
 }
+
 u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 {
 	unsigned int lzo_size = 0;
-	u8 buf[CHUNK];
-	std::vector<u8> compressionBuffer(CHUNK * 2);
+	const int cChunk = 0x4000;
+	u8 buf[cChunk];
+	std::vector<u8> compressionBuffer(MAX_LZO_SIZE(cChunk));
 	while (size > 0)
 	{
-		int chunk = min(CHUNK, size);
+		int chunk = min(cChunk, size);
 		lzo_uint lzoChunk = 0;
 		u16 lzoChunkStored = 0;
 		size -= chunk;
 		in->read(buf, chunk);
-		lzo1x_1_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, &m_lzoWorkMem[0]);
+		VERIFY(lzo1x_999_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, &m_lzoWorkMem[0]) == LZO_E_OK);
 		lzo_size += lzoChunk + 2;
 		lzoChunkStored = endian16(static_cast<u16>(lzoChunk));
 		out->write(&lzoChunkStored, 2);
@@ -135,8 +142,8 @@ u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 
 void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream)
 {
-	u8 lzoBuffer[0x10000];
-	u8 decompressionBuffer[0x40000];
+	u8 lzoBuffer[MAX_CHUNK];
+	u8 decompressionBuffer[MAX_LZO_SIZE(MAX_CHUNK)];
 	while (lzoSize > 0)
 	{
 		unsigned short chunk = endian16(lzoStream->read16());
@@ -144,7 +151,7 @@ void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream
 		lzoStream->read(&lzoBuffer[0], chunk);
 		lzoSize -= chunk;
 		unsigned long size = 0;
-		lzo1x_decompress(&lzoBuffer[0], chunk, &decompressionBuffer[0], &size, NULL);
+		VERIFY(lzo1x_decompress(&lzoBuffer[0], chunk, &decompressionBuffer[0], &size, NULL) == LZO_E_OK);
 		outStream->write(&decompressionBuffer[0], size);
 	}
 }
@@ -241,8 +248,16 @@ bool PakArchive::open(Stream* pak)
 
 	pak->seek(0, Stream::seekSet);
 	pak->read(&m_header, sizeof(PakHeader));
+	if (m_header.tag02 != 0x02000000 && m_header.tag40 != 0x40000000)
+	{
+		DLOG << "Invalid signature!";
+		return false;
+	}
+
 	pak->seek(ALIGN, Stream::seekSet);
-	m_segments.resize(endian32(pak->read32()));
+	const int fileCount = endian32(pak->read32());
+	ASSERT(fileCount < 10000);
+	m_segments.resize(fileCount);
 
 	if (m_segments.empty())
 	{
@@ -492,14 +507,14 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	outStream->seek(0, Stream::seekSet);
 	outStream->write(&m_header, sizeof(m_header));
 	outStream->seek(ALIGN, Stream::seekSet);
-	int segmentCount = endian(m_segments.size());
+	int segmentCount = endian32(m_segments.size());
 	outStream->write(&segmentCount, 4);
 	
 	std::vector<SegmentRecord> segments(m_segments.size());
 	for (size_t i = 0; i < m_segments.size(); i++)
 	{
 		segments[i].res = m_segments[i].res;
-		segments[i].size = endian(m_segments[i].size);
+		segments[i].size = endian32(m_segments[i].size);
 	}
 	segments[m_dataIndex].size = endian32(offset - m_dataOffset);
 	outStream->write(&segments[0], segments.size() * sizeof(SegmentRecord)); 
@@ -561,7 +576,7 @@ bool PakArchive::opened() const
 }
 
 PakArchive::PakArchive()
-	: m_lzoWorkMem(65536)
+	: m_lzoWorkMem(LZO1X_999_MEM_COMPRESS)
 	, m_stream(NULL)
 	, m_progressHandler(NULL)
 {

@@ -1,7 +1,10 @@
-/* minilzo.h -- mini subset of the LZO real-time data compression library
+/* lzo1x_1l.c -- LZO1X-1(12) compression
 
    This file is part of the LZO real-time data compression library.
 
+   Copyright (C) 2011 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 2010 Markus Franz Xaver Johannes Oberhumer
+   Copyright (C) 2009 Markus Franz Xaver Johannes Oberhumer
    Copyright (C) 2008 Markus Franz Xaver Johannes Oberhumer
    Copyright (C) 2007 Markus Franz Xaver Johannes Oberhumer
    Copyright (C) 2006 Markus Franz Xaver Johannes Oberhumer
@@ -37,70 +40,31 @@
    http://www.oberhumer.com/opensource/lzo/
  */
 
-/*
- * NOTE:
- *   the full LZO package can be found at
- *   http://www.oberhumer.com/opensource/lzo/
- */
 
-
-#ifndef __MINILZO_H
-#define __MINILZO_H
-
-#define MINILZO_VERSION         0x2030
-
-#ifdef __LZOCONF_H
-#  error "you cannot use both LZO and miniLZO"
+#include "lzo_conf.h"
+#if 1 && defined(UA_GET32)
+#undef  LZO_DICT_USE_PTR
+#define LZO_DICT_USE_PTR 0
+#undef  lzo_dict_t
+#define lzo_dict_t unsigned short
 #endif
 
-#undef LZO_HAVE_CONFIG_H
-#include "lzoconf.h"
+#define LZO_NEED_DICT_H 1
+#ifndef D_BITS
+#define D_BITS          12
+#endif
+#define D_INDEX1(d,p)       d = DM(DMUL(0x21,DX2(p,4,5)) >> 5)
+#define D_INDEX2(d,p)       d = d ^ D_MASK
+#if 1
+#define DINDEX(dv,p)        DM(((DMUL(0x1824429d,dv)) >> (32-D_BITS)))
+#else
+#define DINDEX(dv,p)        DM((dv) + ((dv) >> (32-D_BITS)))
+#endif
+#include "config1x.h"
+#define LZO_DETERMINISTIC !(LZO_DICT_USE_PTR)
 
-#if !defined(LZO_VERSION) || (LZO_VERSION != MINILZO_VERSION)
-#  error "version mismatch in header files"
+#ifndef DO_COMPRESS
+#define DO_COMPRESS     lzo1x_1_12_compress
 #endif
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-/***********************************************************************
-//
-************************************************************************/
-
-/* Memory required for the wrkmem parameter.
- * When the required size is 0, you can also pass a NULL pointer.
- */
-
-#define LZO1X_MEM_COMPRESS      LZO1X_1_MEM_COMPRESS
-#define LZO1X_1_MEM_COMPRESS    ((lzo_uint32) (16384L * lzo_sizeof_dict_t))
-#define LZO1X_MEM_DECOMPRESS    (0)
-
-
-/* compression */
-LZO_EXTERN(int)
-lzo1x_1_compress        ( const lzo_bytep src, lzo_uint  src_len,
-                                lzo_bytep dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem );
-
-/* decompression */
-LZO_EXTERN(int)
-lzo1x_decompress        ( const lzo_bytep src, lzo_uint  src_len,
-                                lzo_bytep dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem /* NOT USED */ );
-
-/* safe decompression with overrun testing */
-LZO_EXTERN(int)
-lzo1x_decompress_safe   ( const lzo_bytep src, lzo_uint  src_len,
-                                lzo_bytep dst, lzo_uintp dst_len,
-                                lzo_voidp wrkmem /* NOT USED */ );
-
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#endif /* already included */
-
+#include "lzo1x_c.ch"
