@@ -184,8 +184,8 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		stream->write(&header, sizeof(header));
 		if (isTexture)
 		{
-			stream->write32(12);
-			stream->write32(12);
+			stream->write32(endian32(12));
+			stream->write32(endian32(12));
 			totalSize += 8;
 		}
 		stream->write(&cmpdHeader, sizeof(cmpdHeader)); 
