@@ -217,12 +217,6 @@ Type
   B: Byte;
  end;
 
- TSizeData = Packed Record
-  L: ShortInt;
-  W: Byte;
-  R: ShortInt;
- end;
-
   TFloatRect = Packed Record
     Left, Top, Right, Bottom: Single;
   end;
@@ -394,7 +388,7 @@ begin
   DIB.UpdatePalette;
   For n := 0 To FontData.TexHeader.Height * LayerCount - 1 do
   begin
-    Move(Pointer(LongWord(FontPixels) + FontData.TexHeader.Width * n)^, DIB.ScanLine[n]^, FontData.TexHeader.Width);
+    Move(Pointer(LongWord(FontPixels) + LongWord(FontData.TexHeader.Width * n))^, DIB.ScanLine[n]^, FontData.TexHeader.Width);
   end;
   DIB.SaveToFile(FileName);
   DIB.Free;
@@ -441,7 +435,7 @@ begin
 
 end;
 
-
+{$WARN FOR_LOOP_VAR_UNDEF OFF}
 
 Function GetLeft(Tile: TTile): Integer;   // Парам-пам-пам
 var n: Integer;
@@ -453,7 +447,6 @@ end;
 Function GetRBound(C: TTile): Integer;
 var m: Integer;
 begin
-  Result := 0;
   For Result := CharWidth - 1 downto 0 do
     For m := 0 To CharHeight - 1 do If C[m,Result]>0 Then Exit;
 end;
@@ -461,7 +454,6 @@ end;
 Function GetUBound(C: TTile): Integer;
 var m: Integer;
 begin
-  Result := 0;
   For Result := 0 to FontData.FontHeader.Height - 1 do
     For m := 0 To CharWidth - 1 do If C[Result, m] > 0 Then Exit;
 end;
@@ -469,10 +461,11 @@ end;
 Function GetDBound(C: TTile): Integer;
 var m: Integer;
 begin
-  Result := 0;
   For Result := CharHeight - 1 downto 0 do
     For m := 0 To CharWidth - 1 do If C[Result, m] > 0 Then Exit;
 end;
+
+{$WARN FOR_LOOP_VAR_UNDEF ON}
 
 procedure TMainForm.PaletteSaveActionExecute(Sender: TObject);
 Var F: File; I: Byte; Pal: Array[Byte] of TRGB; GBAPal: Array[0..15] of DWord;
@@ -510,7 +503,7 @@ end;
 
 
 Procedure TMainForm.Save(const FileName: String);
-var Stream: TFileStream; n, i: Integer; Buf: Pointer; P, LP: PByte;
+var Stream: TFileStream; i: Integer;
 begin
   Try
     Stream := TFileStream.Create(FileName, fmCreate);
@@ -836,7 +829,6 @@ begin
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
-var n: Integer;
 begin
 
 
@@ -1097,7 +1089,7 @@ end;
 
 procedure TMainForm.CharsImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var SelChar: Integer;
+//var SelChar: Integer;
 begin
  If Button = mbLeft then
  begin
@@ -1109,8 +1101,8 @@ begin
  end else
  If Button = mbRight Then
  begin
-  X := X div 16;
-  Y := Y div 16;
+//  X := X div 16;
+//  Y := Y div 16;
   {
   SelChar := Y * 16 + X + CurChars;
   If SelChar <= High(Chars) Then
@@ -1123,11 +1115,11 @@ end;
 
 procedure TMainForm.CharImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var WW: Integer;
+//var WW: Integer;
 begin
  If ssCtrl in Shift then With Chars[CurChar] do
  begin
-  WW := FontData.CharData[CurChar].W;
+  //WW := FontData.CharData[CurChar].W;
   If X > 256 - 8 then
    FontData.CharData[CurChar].W := CharWidth Else
    FontData.CharData[CurChar].W := X div (256 div CharWidth);
@@ -1537,7 +1529,7 @@ begin
 end;
 
 procedure TMainForm.FileNewActionExecute(Sender: TObject);
-var H,B: Byte; C: Word;
+//var H,B: Byte; C: Word;
 begin
 {
   If not CheckSaved Then Exit;
@@ -1775,6 +1767,7 @@ begin
     end;
     If SkipChar Then Continue;
 
+    Node := nil;
     For j := l To LayerCount - 1 do
     begin
       Node := Trees[j].Insert(CharList[i].W, CharList[i].H);
@@ -1805,7 +1798,9 @@ begin
   begin
     If CharList[i].Skip Then Continue;
     For j := 0 To CharList[i].H - 1 do With FontData.TexHeader do
-      Move(Chars[CharList[i].Index].Ch[CharList[i].Y + j, 0], Pointer(LongWord(Pixels) + Width * Height * CharList[i].Layer + Width * CharList[i].Rect.Top + Width * j + CharList[i].Rect.Left)^, CharList[i].W);
+      Move(Chars[CharList[i].Index].Ch[CharList[i].Y + j, 0],
+        Pointer(LongWord(Pixels) + LongWord(Width * Height * CharList[i].Layer + Width * CharList[i].Rect.Top + Width * j + CharList[i].Rect.Left))^,
+        CharList[i].W);
   end;
   //SaveLayersToBitmap('F:\Test.bmp', Pixels, LayerCount);
   GetMem(ImageData, FontData.TexHeader.Width * FontData.TexHeader.Height * LayerCount div 4);
@@ -1830,7 +1825,6 @@ begin
   end;
   For i := 0 To FontData.Count - 1 do
   begin
-    j := 0;
     For j := 0 To FontData.KerningCount - 1 do
       If KerningData[j].a = FontData.CharData[i].Code Then
         break;
@@ -1905,6 +1899,7 @@ Var
 //  DIB: TDIB;
  LayerCount: Integer;
 begin
+  Result := False;
 
   try
     Stream := TMemoryStream.Create;
@@ -2001,8 +1996,9 @@ begin
 
       FillChar(Chars[n], SizeOf(TCharacter), 0);
       For y := Rect.Top To Rect.Bottom do
-        Move(Pointer(LongWord(FontPixels) + y * FontData.TexHeader.Width + Rect.Left +
-          FontData.TexHeader.Width * FontData.TexHeader.Height * FontData.CharData[n].Layer)^ ,Chars[n].Ch[y - Rect.Top + (FontData.FontHeader.Height - FontData.CharData[n].Y), 0], w);
+        Move(Pointer(LongWord(FontPixels) + LongWord(y * FontData.TexHeader.Width + Rect.Left +
+        FontData.TexHeader.Width * FontData.TexHeader.Height * FontData.CharData[n].Layer))^,
+        Chars[n].Ch[y - Rect.Top + (FontData.FontHeader.Height - FontData.CharData[n].Y), 0], w);
     end;
 
     FreeMem(FontPixels);
@@ -2017,6 +2013,7 @@ begin
     ShowMessage('Error!');
   end;
   FImported := True;
+  Result := True;
 end;
 
 
