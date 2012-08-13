@@ -8,6 +8,7 @@ SUBDIRS = \
 	ExtractorLib \
 	Extractor \
 	PasterLib \
+	FontLib \
 	Patcher \
 	externals/core \
 	externals/WiiStreams \

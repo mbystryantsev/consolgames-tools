@@ -11,6 +11,7 @@ DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 INCLUDEPATH += \
 	$$PWD/ScriptTesterLib \
 	$$PWD/ExtractorLib \
+	$$PWD/FontLib \
 	$$PWD/../../platform-specific/wii/streams \
 	$$PWD/../../platform-specific/wii/streams/include \
 	$$PWD/../../platform-specific/wii/streams/include/openssl \
@@ -29,5 +30,6 @@ QMAKE_LIBDIR += \
 	$$PWD/ScriptTesterLib/$$CONFIG_NAME \
 	$$PWD/ExtractorLib/$$CONFIG_NAME \
 	$$PWD/PasterLib/$$CONFIG_NAME \
+	$$PWD/FontLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
