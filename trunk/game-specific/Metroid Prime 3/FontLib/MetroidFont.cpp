@@ -32,6 +32,12 @@ static void saveTexture(const Consolgames::SimpleImage& texture, const QString& 
 namespace Consolgames
 {
 
+static inline quint32 endian32(quint32 v)
+{
+	return (v >> 24) | (v << 24) | ((v >> 8) & 0xFF00) | ((v << 8) & 0xFF0000);
+}
+
+
 bool MetroidFont::load(const QString& fontFile, const QString& textureFile)
 {
 	QFile file(fontFile);
@@ -402,6 +408,7 @@ bool MetroidFont::loadFromEditorFormat(const QString& filename)
 
 	
 	m_textureHeader = readTextureHeader(stream);
+	m_textureHeader.type = endian32(m_textureHeader.type);
 	
 	stream >> m_textureSubheader.bitCount;
 
