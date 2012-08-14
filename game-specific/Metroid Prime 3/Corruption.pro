@@ -9,9 +9,9 @@ SUBDIRS = \
 	Extractor \
 	PasterLib \
 	FontLib \
+	FontTool \
 	Patcher \
 	externals/core \
 	externals/WiiStreams \
 	tests/ScriptTesterTests \
 	tests/ExtractorTests \
-	
