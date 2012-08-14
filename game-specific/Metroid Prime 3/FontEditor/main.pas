@@ -337,7 +337,7 @@ begin
     Height := Endian(Height);
     Unk4 := Endian(Unk4);
     Unk5 := Endian(Unk5);
-    PWord(@Unk6)^ := Endian(PWord(@Unk6)^);
+	Unk6 := EndianW(Unk6);
     Unk7 := Endian(Unk7);
   end;
 end;
