@@ -1,5 +1,6 @@
 #pragma once
 #include "SimpleImage.h"
+#include "TextureAtlas.h"
 #include <QString>
 #include <QMap>
 #include <QRect>
@@ -13,10 +14,52 @@ namespace Consolgames
 class MetroidFont
 {
 public:
+	struct Rect
+	{
+		Rect()
+		{
+		}
+		Rect(float l, float t, float r, float b) : left(l), top(t), right(r), bottom(b)
+		{
+		}
+		float left;
+		float top;
+		float right;
+		float bottom;
+	};
+	struct CharMetrics
+	{
+		CharMetrics() : leftIdent(0), bodyWidth(0), rightIdent(0), layer(0)
+		{
+		}
+		bool isNull() const
+		{
+			return (leftIdent == 0 && bodyWidth == 0 && rightIdent == 0);
+		}
+		int leftIdent;
+		int bodyWidth;
+		int rightIdent;
+		int layer;
+		int glyphWidth;
+		int glyphHeight;
+		int baselineOffset;
+		Rect glyphRect;
+	};
+
+public:
 
 	bool load(const QString& fontFile, const QString& textureFile);
 	bool save(const QString& fontFile, const QString& textureFile);
 	bool loadFromEditorFormat(const QString& filename);
+
+	int layerCount() const;
+	const SimpleImage& layerTexture(int layer) const;
+	int height() const;
+
+	CharMetrics charMetrics(QChar c) const;
+	int kerning(QChar a, QChar b) const;
+	quint64 textureHash() const;
+	QList<QChar> charList() const;
 	
 protected:
 	struct Header
@@ -35,14 +78,7 @@ protected:
 	struct CharRecord
 	{
 		QChar code;
-		struct Rect
-		{
-			float left;
-			float top;
-			float right;
-			float bottom;
-		}
-		glyphRect;
+		Rect glyphRect;
 		quint8 layer;
 		qint8 leftIdent;
 		qint8 ident;
