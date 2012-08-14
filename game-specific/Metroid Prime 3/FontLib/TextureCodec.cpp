@@ -22,10 +22,15 @@ Rgb TextureCodec::decodeColor(quint16 color)
 	return makeRgb(r * rbCoef + 0.5, g * gCoef + 0.5, b * rbCoef + 0.5);
 }
 
+static inline int pixelIndex(int width, int j, int i, int n, int k, int p)
+{
+	return (j + n) * width + i + k + p;
+}
+
 void TextureCodec::decodeImage2bpp(const void* src, void* dest, int width, int height, int layerIndex)
 {
 	const quint8* s = static_cast<const quint8*>(src);
-	quint8* d = static_cast<quint8*>(dest);
+	quint8* const d = static_cast<quint8*>(dest);
 
 	for (int j = 0; j < height; j += 8)
 	{
@@ -35,8 +40,8 @@ void TextureCodec::decodeImage2bpp(const void* src, void* dest, int width, int h
 			{
 				for (int k = 0; k < 8; k += 2)
 				{
-					const int p0i = (j + n) * width + i + k + 1;
-					const int p1i = (j + n) * width + i + k + 0;
+					const int p0i = pixelIndex(width, j, i, n, k, 1);
+					const int p1i = pixelIndex(width, j, i, n, k, 0);
 					if (layerIndex == 0)
 					{
 						d[p0i] = *s & 3;
@@ -56,19 +61,19 @@ void TextureCodec::decodeImage2bpp(const void* src, void* dest, int width, int h
 
 void TextureCodec::decodeImage1bpp(const void* src, void* dest, int width, int height, int layerIndex)
 {
-	const quint8* const s = static_cast<const quint8*>(src);
-	quint8* d = static_cast<quint8*>(dest);
+	const quint8* s = static_cast<const quint8*>(src);
+	quint8* const d = static_cast<quint8*>(dest);
 
 	for (int j = 0; j < height; j += 8)
 	{
-		for (int i = 0; i < width; j += 8)
+		for (int i = 0; i < width; i += 8)
 		{
 			for (int n = 0; n < 8; n++)
 			{
-				for (int k = 0; k < 8; k++)
+				for (int k = 0; k < 8; k += 2)
 				{
-					const int p0i = (j + n) * width + i + k + 1;
-					const int p1i = (j + n) * width + i + k + 0;
+					const int p0i = pixelIndex(width, j, i, n, k, 1);
+					const int p1i = pixelIndex(width, j, i, n, k, 0);
 
 					if (layerIndex == 0)
 					{
@@ -90,6 +95,7 @@ void TextureCodec::decodeImage1bpp(const void* src, void* dest, int width, int h
 						d[p0i] = (*s >> 3) & 1;
 						d[p1i] = (*s >> 7) & 1;
 					}
+					s++;
 				}
 			}
 		}
@@ -109,8 +115,8 @@ void TextureCodec::encodeImage2bpp(const void* src, void* dest, int width, int h
 			{
 				for (int k = 0; k < 8; k += 2)
 				{
-					const int p0i = (j + n) * width + i + k + 1;
-					const int p1i = (j + n) * width + i + k + 0;
+					const int p0i = pixelIndex(width, j, i, n, k, 1);
+					const int p1i = pixelIndex(width, j, i, n, k, 0);
 					if (layerIndex == 0)
 					{
 						*d |= s[p0i] & 3;
@@ -141,27 +147,27 @@ void TextureCodec::encodeImage1bpp(const void* src, void* dest, int width, int h
 			{
 				for (int k = 0; k < 8; k += 2)
 				{
-					const int p0i = (j + n) * width + i + k + 1;
-					const int p1i = (j + n) * width + i + k + 0;
+					const int p0i = pixelIndex(width, j, i, n, k, 1);
+					const int p1i = pixelIndex(width, j, i, n, k, 0);
 					if (layerIndex == 0)
 					{
-						*d = s[p0i] & 1;
-						*d = (s[p1i] & 1) << 4;
+						*d |= s[p0i] & 1;
+						*d |= (s[p1i] & 1) << 4;
 					}
 					else if (layerIndex == 1)
 					{
-						*d = (s[p0i] & 1) << 1;
-						*d = (s[p1i] & 1) << 5;
+						*d |= (s[p0i] & 1) << 1;
+						*d |= (s[p1i] & 1) << 5;
 					}
 					else if (layerIndex == 2)
 					{
-						*d = (s[p0i] & 1) << 2;
-						*d = (s[p1i] & 1) << 6;
+						*d |= (s[p0i] & 1) << 2;
+						*d |= (s[p1i] & 1) << 6;
 					}
 					else if (layerIndex == 3)
 					{
-						*d = (s[p0i] & 1) << 3;
-						*d = (s[p1i] & 1) << 7;
+						*d |= (s[p0i] & 1) << 3;
+						*d |= (s[p1i] & 1) << 7;
 					}
 					d++;
 				}
