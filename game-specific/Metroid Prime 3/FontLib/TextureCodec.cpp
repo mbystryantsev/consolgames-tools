@@ -3,7 +3,12 @@
 namespace Consolgames
 {
 
-QRgb TextureCodec::decodeColor(quint16 color)
+inline Rgb makeRgb(int r, int g, int b)
+{
+	return (0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+}
+
+Rgb TextureCodec::decodeColor(quint16 color)
 {
 	// Big or little endian?
 	color = (color >> 8) | (color << 8);
@@ -14,7 +19,7 @@ QRgb TextureCodec::decodeColor(quint16 color)
 	const double r = (color >> 11);
 	const double g = ((color >> 5) & 0x3F);
 	const double b = (color & 0x1F);
-	return qRgb(r * rbCoef + 0.5, g * gCoef + 0.5, b * rbCoef + 0.5);
+	return makeRgb(r * rbCoef + 0.5, g * gCoef + 0.5, b * rbCoef + 0.5);
 }
 
 void TextureCodec::decodeImage2bpp(const void* src, void* dest, int width, int height, int layerIndex)
