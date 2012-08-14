@@ -1,6 +1,5 @@
 #include "MetroidFont.h"
 #include "TextureCodec.h"
-#include "TextureAtlas.h"
 #include <QFile>
 #include <QVector>
 #include <QSet>
@@ -615,6 +614,59 @@ bool MetroidFont::writeCanvases(const QString& textureName) const
 	stream.writeRawData(textureData.data(), textureData.size());
 
 	return true;
+}
+
+int MetroidFont::layerCount() const
+{
+	return m_textures.size();
+}
+
+const SimpleImage& MetroidFont::layerTexture(int layer) const
+{
+	return m_textures[layer];
+}
+
+MetroidFont::CharMetrics MetroidFont::charMetrics(QChar c) const
+{
+	CharMetrics metrics;
+	if (m_chars.contains(c))
+	{
+		const CharRecord& rec = m_chars[c];
+		metrics.leftIdent = rec.leftIdent;
+		metrics.bodyWidth = rec.ident;
+		metrics.rightIdent = rec.rightIdent;
+		metrics.layer = rec.layer;
+		metrics.glyphWidth = rec.glyphWidth;
+		metrics.glyphHeight = rec.glyphHeight;
+		metrics.baselineOffset = rec.baselineOffset;
+		metrics.glyphRect = rec.glyphRect;
+	}
+	return metrics;
+}
+
+int MetroidFont::kerning(QChar a, QChar b) const
+{
+	KerningPair pair(a, b);
+	if (m_kerning.contains(pair))
+	{
+		return m_kerning[pair];
+	}
+	return 0;
+}
+
+QList<QChar> MetroidFont::charList() const
+{
+	return m_chars.keys();
+}
+
+int MetroidFont::height() const
+{
+	return m_header.fontHeight;
+}
+
+quint64 MetroidFont::textureHash() const
+{
+	return m_textureHash;
 }
 
 }
