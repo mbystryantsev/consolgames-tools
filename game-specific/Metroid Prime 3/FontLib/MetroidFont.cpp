@@ -499,6 +499,12 @@ bool MetroidFont::loadFromEditorFormat(const QString& filename)
 		chars[i].glyphHeight = rect.y2 - rect.y1;
 		chars[i].baselineOffset = m_header.fontHeight - rect.y1;
 
+		// For correct horizontal alignment by center
+		if (chars[i].glyphWidth % 2 != chars[i].ident % 2)
+		{
+			chars[i].glyphWidth++;
+		}
+
 		const TextureAtlas::Node* node = atlas.insert(chars[i].glyphWidth + 1, chars[i].glyphHeight + 1);
 		if (node == NULL)
 		{
