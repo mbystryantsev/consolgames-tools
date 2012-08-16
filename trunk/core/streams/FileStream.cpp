@@ -81,7 +81,7 @@ offset_t FileStream::tell() const
     _LARGE_INTEGER zero;
 	zero.QuadPart = 0;
 
-    ASSERT(SetFilePointerEx(m_handle, zero, &ret, FILE_CURRENT));
+    VERIFY(SetFilePointerEx(m_handle, zero, &ret, FILE_CURRENT));
     return ret.QuadPart;
 #else
     return _telli64(m_descriptor);
@@ -115,7 +115,7 @@ offset_t FileStream::size() const
 {
 #ifdef USE_WINDOWS_FILES
 	_LARGE_INTEGER fileSize;
-	ASSERT(GetFileSizeEx(reinterpret_cast<HANDLE>(m_handle), &fileSize));
+	VERIFY(GetFileSizeEx(reinterpret_cast<HANDLE>(m_handle), &fileSize));
 	return fileSize.QuadPart;
 #else
 	struct _stat32i64 stat;
