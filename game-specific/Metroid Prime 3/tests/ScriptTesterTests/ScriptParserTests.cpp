@@ -126,7 +126,7 @@ void ScriptParserTests::parseMessageSet()
 
 
 	QCOMPARE(messageSet.nameHashes.size(), 1);
-	QCOMPARE(messageSet.nameHashes[0], QByteArray::fromHex("0123456789ABCDEF"));
+	QCOMPARE(messageSet.nameHashes[0], 0x0123456789ABCDEFULL);
 	QCOMPARE(messageSet.messages.size(), 3);
 	QCOMPARE(messageSet.definedCount, 3);
 	QCOMPARE(messageSet.idCount, 1);
@@ -150,7 +150,7 @@ void ScriptParserTests::parseEmptyMessageSet()
 	MessageSet messageSet = ScriptParser::parseMessageSet("[@0123456789ABCDEF,3,1,2]\r\n\r\n");
 	
 	QCOMPARE(messageSet.nameHashes.size(), 1);
-	QCOMPARE(messageSet.nameHashes[0], QByteArray::fromHex("0123456789ABCDEF"));
+	QCOMPARE(messageSet.nameHashes[0], 0x0123456789ABCDEFULL);
 	QCOMPARE(messageSet.messages.size(), 0);
 	QCOMPARE(messageSet.definedCount, 3);
 	QCOMPARE(messageSet.idCount, 1);
@@ -162,9 +162,9 @@ void ScriptParserTests::parseMultiHashesMessageSet()
 	MessageSet messageSet = ScriptParser::parseMessageSet("[@0123456789ABCDEF|AAAAAAAAAAAAAAAA|BBBBBBBBBBBBBBBB,3,1,2]\r\n\r\n");
 
 	QCOMPARE(messageSet.nameHashes.size(), 3);
-	QCOMPARE(messageSet.nameHashes[0], QByteArray::fromHex("0123456789ABCDEF"));
-	QCOMPARE(messageSet.nameHashes[1], QByteArray::fromHex("AAAAAAAAAAAAAAAA"));
-	QCOMPARE(messageSet.nameHashes[2], QByteArray::fromHex("BBBBBBBBBBBBBBBB"));
+	QCOMPARE(messageSet.nameHashes[0], 0x0123456789ABCDEFULL);
+	QCOMPARE(messageSet.nameHashes[1], 0xAAAAAAAAAAAAAAAAULL);
+	QCOMPARE(messageSet.nameHashes[2], 0xBBBBBBBBBBBBBBBBULL);
 	QCOMPARE(messageSet.messages.size(), 0);
 	QCOMPARE(messageSet.definedCount, 3);
 	QCOMPARE(messageSet.idCount, 1);
@@ -181,7 +181,7 @@ void ScriptParserTests::readScript()
 	QCOMPARE(script[0].idCount, 3);
 	QCOMPARE(script[0].version, 3);
 	QCOMPARE(script[0].nameHashes.size(), 1);
-	QCOMPARE(script[0].nameHashes[0], QByteArray::fromHex("0CEBFA1FFB30CA80"));
+	QCOMPARE(script[0].nameHashes[0], 0x0CEBFA1FFB30CA80ULL);
 	QCOMPARE(script[0].messages[0].id, QString("Activate_Mii Bobble Head"));
 	QCOMPARE(script[0].messages[1].id, QString("Activate_On"));
 	QCOMPARE(script[0].messages[2].id, QString("Activate_Off"));
@@ -191,20 +191,20 @@ void ScriptParserTests::readScript()
 	QCOMPARE(script[1].idCount, 0);
 	QCOMPARE(script[1].version, 1);
 	QCOMPARE(script[1].nameHashes.size(), 1);
-	QCOMPARE(script[1].nameHashes[0], QByteArray::fromHex("460D232B4E5A60FE"));
+	QCOMPARE(script[1].nameHashes[0], 0x460D232B4E5A60FEULL);
 
 	QCOMPARE(script[2].definedCount, 1);
 	QCOMPARE(script[2].messages.size(), 1);
 	QCOMPARE(script[2].idCount, 1);
 	QCOMPARE(script[2].version, 3);
 	QCOMPARE(script[2].nameHashes.size(), 1);
-	QCOMPARE(script[2].nameHashes[0], QByteArray::fromHex("DA1BFA4E4C3872C0"));
+	QCOMPARE(script[2].nameHashes[0], 0xDA1BFA4E4C3872C0ULL);
 
 	QCOMPARE(script[3].definedCount, 3);
 	QCOMPARE(script[3].messages.size(), 3);
 	QCOMPARE(script[3].idCount, 0);
 	QCOMPARE(script[3].version, 3);
 	QCOMPARE(script[3].nameHashes.size(), 2);
-	QCOMPARE(script[3].nameHashes[0], QByteArray::fromHex("026EFCDA326E764A"));
-	QCOMPARE(script[3].nameHashes[1], QByteArray::fromHex("BD2119C8D1F5B7E1"));
+	QCOMPARE(script[3].nameHashes[0], 0x026EFCDA326E764AULL);
+	QCOMPARE(script[3].nameHashes[1], 0xBD2119C8D1F5B7E1ULL);
 }
