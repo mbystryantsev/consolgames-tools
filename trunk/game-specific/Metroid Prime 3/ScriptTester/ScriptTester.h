@@ -27,7 +27,7 @@ public:
 
 	struct TestData
 	{
-		QMap<QByteArray, TestDataRecord> mappedHashes;
+		QMap<quint64, TestDataRecord> mappedHashes;
 	};
 
 public:
@@ -42,17 +42,17 @@ public:
 	static ErrorType exec(const QString& filename);
 	static const char* errorString(ErrorType error);
 	static QString lastErrorData();
-	static QMap<QByteArray,QByteArray> generateMergeMap(const QString& inputDir);
+	static QMap<quint64,quint64> generateMergeMap(const QString& inputDir);
 
 protected:
-	const MessageSet* findMessageSet(QByteArray hash);
+	const MessageSet* findMessageSet(quint64 hash);
 
 protected:
 	static QString s_lastErrorData;
 	QVector<MessageSet> m_script;
 	QString m_scriptName;
 	TestData m_testData;
-	QSet<QPair<QByteArray, int>> m_ignoredStrings;
-	QMap<QPair<QByteArray, int>, QString> m_identifiers;
+	QSet<QPair<quint64, int>> m_ignoredStrings;
+	QMap<QPair<quint64, int>, QString> m_identifiers;
 	int m_failedCount;
 };

@@ -51,7 +51,7 @@ MessageSet ScriptParser::parseMessageSet(const QString& string, int offset, int*
 	const QString hashes = expr.cap(1);
 	foreach (const QString& hashStr, hashes.split('|'))
 	{
-		messageSet.nameHashes.append(QByteArray::fromHex(hashStr.toLatin1()));
+		messageSet.nameHashes.append((hashStr.toULongLong(NULL, 16)));
 	}
 	messageSet.definedCount = expr.cap(2).toInt();
 	messageSet.idCount = expr.cap(3).toInt();

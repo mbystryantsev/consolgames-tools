@@ -30,7 +30,7 @@ ScriptTester::ErrorType ScriptTester::calculateTags(const QString& outFile)
 	foreach (const MessageSet& set, m_script)
 	{
 		bool isFirst = true;
-		foreach (const QByteArray& hash, set.nameHashes)
+		foreach (quint64 hash, set.nameHashes)
 		{
 			if (!isFirst)
 			{
@@ -40,7 +40,7 @@ ScriptTester::ErrorType ScriptTester::calculateTags(const QString& outFile)
 			{
 				isFirst = false;
 			}
-			stream << hash.toHex().toUpper();
+			stream << QString::number(hash, 16).toUpper();
 		}
 		stream << ';' << set.definedCount << ';' << set.idCount << ';' << set.version << ';';
 		isFirst = true;
@@ -97,7 +97,7 @@ ScriptTester::ErrorType ScriptTester::loadTestData(const QString& filename)
 		const QList<QByteArray> hashes = values[0].split(',');
 		for (int i = 0; i < hashes.size(); i++)
 		{
-			m_testData.mappedHashes[QByteArray::fromHex(hashes[i])] = record;
+			m_testData.mappedHashes[hashes[i].toULongLong(NULL, 16)] = record;
 		}
 
 	}
@@ -125,7 +125,7 @@ ScriptTester::ErrorType ScriptTester::loadIgnoreData(const QString& filename)
 		}
 
 		const QList<QByteArray> values = line.split(';');
-		m_ignoredStrings.insert(QPair<QByteArray, int>(QByteArray::fromHex(values[0]), values[1].toInt()));
+		m_ignoredStrings.insert(QPair<quint64, int>(values[0].toULongLong(NULL, 16), values[1].toInt()));
 	}
 	return NoError;
 }
@@ -157,7 +157,7 @@ ScriptTester::ErrorType ScriptTester::loadIdentifiers(const QString& filename)
 		text.replace("\\r", "\r");
 		text.replace("\\n", "\n");
 		text.replace("\\059", ";");
-		m_identifiers[QPair<QByteArray, int>(QByteArray::fromHex(values[0]), values[1].toInt())] = text;
+		m_identifiers[QPair<quint64,int>(values[0].toULongLong(NULL, 16), values[1].toInt())] = text;
 	}
 	return NoError;
 }
@@ -182,8 +182,7 @@ ScriptTester::ErrorType ScriptTester::loadScript(const QString& filename)
 	if (!(expr)) { \
 		if (failedCount == 0) std::cout << std::endl; \
 		failedCount++; \
-		std::cout << "FAIL: "; \
-		if (!hash.isEmpty()) std::cout << hash.toHex().toUpper().constData(); \
+		std::cout << "FAIL: " << QByteArray::number(hash, 16).toUpper().constData(); \
 		if (index != -1) std::cout << ": " << index; \
 		std::cout << ": " << message.toStdString() << std::endl; \
 		action; \
@@ -212,16 +211,18 @@ ScriptTester::ErrorType ScriptTester::runTests()
 		return NoExpectedData;
 	}
 
+	QByteArray::number(1, 16).toUpper().constData();
+
 	foreach (const MessageSet& set, m_script)
 	{
 		SVERIFY(set.nameHashes[0], -1, set.definedCount == set.messages.count(), QString("Defined message count (%1) differs from real count (%2)!").arg(set.definedCount).arg(set.messages.count()), continue);
-		foreach (const QByteArray& hash, set.nameHashes)
+		foreach (quint64 hash, set.nameHashes)
 		{
 			SVERIFYH(m_testData.mappedHashes.contains(hash), QString("Test data for hash does not exists!"), continue);
 			const TestDataRecord& record = m_testData.mappedHashes[hash];
 			for (int i = 0; i < set.definedCount; i++)
 			{
-				QPair<QByteArray, int> id(hash, i);
+				QPair<quint64, int> id(hash, i);
 				if (m_ignoredStrings.contains(id))
 				{
 					continue;
@@ -264,11 +265,11 @@ const char* ScriptTester::errorString(ErrorType error)
 	return "undefined";
 }
 
-const MessageSet* ScriptTester::findMessageSet(QByteArray hash)
+const MessageSet* ScriptTester::findMessageSet(quint64 hash)
 {
 	foreach (const MessageSet& messageSet, m_script)
 	{
-		foreach (const QByteArray& nameHash, messageSet.nameHashes)
+		foreach (quint64 nameHash, messageSet.nameHashes)
 		{
 			if (hash == nameHash)
 			{
@@ -306,17 +307,17 @@ ScriptTester::ErrorType ScriptTester::detectIdentifiers(const QString& externalS
 
 	foreach (const MessageSet& externalSet, externalScript)
 	{
-		foreach (const QByteArray& hash, externalSet.nameHashes)
+		foreach (quint64 hash, externalSet.nameHashes)
 		{
 			const MessageSet* messageSet = findMessageSet(hash);
 			if (messageSet == NULL)
 			{
-				s_lastErrorData = QString("Message set %1").arg(QString::fromUtf8(hash.toHex().toUpper())); 
+				s_lastErrorData = QString("Message set %1").arg(QString::number(hash, 16).toUpper()); 
 				return NoExpectedData;
 			}
 			if (externalSet.messages.size() != messageSet->messages.size())
 			{
-				s_lastErrorData = QString("Messages size (%1, %2 != %3)").arg(QString::fromUtf8(hash.toHex().toUpper())).arg(externalSet.messages.size()).arg(messageSet->messages.size());
+				s_lastErrorData = QString("Messages size (%1, %2 != %3)").arg(QString::number(hash, 16).toUpper()).arg(externalSet.messages.size()).arg(messageSet->messages.size());
 				return DataMismatch;
 			}
 			for (int i = 0; i < externalSet.messages.size(); i++)
@@ -327,7 +328,7 @@ ScriptTester::ErrorType ScriptTester::detectIdentifiers(const QString& externalS
 					text.replace('\r', "\\r");
 					text.replace('\n', "\\n");
 					text.replace(';', "\\059");
-					stream << hash.toHex().toUpper() << ';' << i << ';' << text << '\n';
+					stream << QString::number(hash, 16).toUpper() << ';' << i << ';' << text << '\n';
 				}
 			}
 		}
@@ -388,10 +389,10 @@ QString ScriptTester::lastErrorData()
 	return s_lastErrorData;
 }
 
-QMap<QByteArray,QByteArray> ScriptTester::generateMergeMap(const QString& inputDir)
+QMap<quint64,quint64> ScriptTester::generateMergeMap(const QString& inputDir)
 {
 	QDir dir(inputDir);
-	QMap<QByteArray,QByteArray> mergeMap;
+	QMap<quint64,quint64> mergeMap;
 	foreach (const QString& filename, dir.entryList(QStringList("*.txt"), QDir::Files))
 	{
 		const QVector<MessageSet> script = ScriptParser::loadFromFile(inputDir + "/" + filename);

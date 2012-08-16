@@ -10,7 +10,7 @@ struct Message
 
 struct MessageSet
 {
-	QVector<QByteArray> nameHashes;
+	QVector<quint64> nameHashes;
 	int definedCount;
 	int idCount;
 	int version;
