@@ -49,7 +49,7 @@ void Font::initTextures()
 		image.setColorCount(256);
 		image.setColor(0, qRgba(0, 0, 0, 0));
 		image.setColor(1, qRgb(255, 255, 255));
-		image.setColor(2, qRgb(127, 127, 127));
+		image.setColor(2, qRgba(127, 127, 127, 127));
 		const GLuint textureId = m_context->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::NoBindOption);
 		m_textures.append(textureId);
 	}
@@ -134,4 +134,9 @@ void Font::processKerning(QChar a, QChar b) const
 	{
 		glTranslated(kerning, 0, 0);
 	}
+}
+
+int Font::height() const
+{
+	return m_font.height();
 }

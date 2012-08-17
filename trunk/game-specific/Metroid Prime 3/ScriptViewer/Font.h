@@ -14,6 +14,7 @@ public:
 
 	void drawChar(QChar c) const;
 	void processKerning(QChar a, QChar b) const;
+	int height() const;
 
 protected:
 	bool init();
