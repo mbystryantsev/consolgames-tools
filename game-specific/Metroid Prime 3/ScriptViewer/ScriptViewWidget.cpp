@@ -9,10 +9,9 @@ ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_font(
 void ScriptViewWidget::initializeGL()
 {
 	m_font.loadFromEditorFormat("D:\\svn\\consolgames\\translations\\mp3c\\content\\rus\\fonts\\mtf\\FC1BE4F13D86CE52.mtf");
-	//m_font.load("D:\\rev\\corruption\\paks\\GuiNAND\\FONT_Deface14B.FONT", "D:\\rev\\corruption\\paks\\GuiNAND\\BBF70FA8BF8C7AEE.TXTR");
 	m_renderer.setFont(&m_font);
 
-	qglClearColor(Qt::green);
+	glClearColor(0.2, 0.2, 0.2, 1.0);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glMatrixMode(GL_MODELVIEW);
@@ -33,5 +32,11 @@ void ScriptViewWidget::resizeGL(int width, int height)
 void ScriptViewWidget::paintGL()
 {	
 	glClear(GL_COLOR_BUFFER_BIT);
-	m_renderer.drawString(QString::fromWCharArray(L"Множество!"), 2);
+	m_renderer.drawString(m_currentText);
+}
+
+void ScriptViewWidget::drawText(const QString& text)
+{
+	m_currentText = text;
+	updateGL();
 }

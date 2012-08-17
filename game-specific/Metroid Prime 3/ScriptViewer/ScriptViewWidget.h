@@ -12,6 +12,8 @@ class ScriptViewWidget : public QGLWidget
 public:
 	ScriptViewWidget(QWidget* parent = NULL);
 
+	void drawText(const QString& text);
+
 protected:
 	virtual void initializeGL() override;
 	virtual void resizeGL(int width, int height) override;
@@ -19,5 +21,7 @@ protected:
 
 	Font m_font;
 	int m_texture;
+
+	QString m_currentText;
 	StringRenderer m_renderer;
 };
