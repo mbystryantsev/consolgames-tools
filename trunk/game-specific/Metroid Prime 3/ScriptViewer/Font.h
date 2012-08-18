@@ -3,10 +3,10 @@
 #include <QGLWidget>
 #include <QList>
 
-class Font
+class Font : public QObject
 {
 public:
-	Font(QGLWidget* context);
+	Font(QGLWidget* context, QObject* parent = NULL);
 	~Font();
 
 	bool load(const QString& fontFilename, const QString& textureFilename);

@@ -19,9 +19,6 @@ protected:
 	virtual void resizeGL(int width, int height) override;
 	virtual void paintGL() override;
 
-	Font m_font;
-	int m_texture;
-
 	QString m_currentText;
 	StringRenderer m_renderer;
 };

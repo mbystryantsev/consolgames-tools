@@ -26,9 +26,14 @@ protected:
 	void openEditor(const QByteArray& languageId);
 	Q_SLOT void closeEditor(const QByteArray& languageId);
 
+	void initUI();
+	void initMessageList();
+	void initFileList();
+	void initScriptViewer();
+
 protected:
 	QListWidget* m_fileListWidget;
-	QTreeView* m_stringListWidget;
+	QTreeView* m_messageListWidget;
 	ScriptViewWidget* m_scriptViewer;
 	QString currentMessageFile() const;
 	Q_SLOT void setMessageSetModel(const QString& filename);
