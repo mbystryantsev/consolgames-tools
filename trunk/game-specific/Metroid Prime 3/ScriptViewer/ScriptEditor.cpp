@@ -6,9 +6,15 @@ ScriptEditor::ScriptEditor(const QByteArray& languageId, QWidget* parent)
 	, m_languageId(languageId)
 {
  	new ScriptHighlighter(this);
+	VERIFY(connect(this, SIGNAL(textChanged()), SLOT(onTextChangedInternal())));
 }
 
 const QByteArray& ScriptEditor::languageId() const
 {
 	return m_languageId;
+}
+
+void ScriptEditor::onTextChangedInternal()
+{
+	emit textChanged(m_languageId, toPlainText());
 }

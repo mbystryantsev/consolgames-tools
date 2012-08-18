@@ -1,11 +1,13 @@
 #include "ScriptViewer.h"
 #include "EditorDockWidget.h"
 #include "ScriptViewWidget.h"
+#include "ScriptEditor.h"
 #include <QHBoxLayout>
 #include <QDir>
 #include <QListWidget>
 #include <QTreeView>
 #include <QHeaderView>
+#include <QDockWidget>
 
 ScriptViewer::ScriptViewer(QWidget* parent) : QMainWindow(parent)
 {
@@ -19,6 +21,7 @@ ScriptViewer::ScriptViewer(QWidget* parent) : QMainWindow(parent)
 	m_stringListWidget = new QTreeView(this);
 	m_stringListWidget->header()->setDefaultSectionSize(64);
 	m_stringListWidget->setHeaderHidden(true);
+	VERIFY(connect(m_stringListWidget, SIGNAL(clicked(const QModelIndex&)), SLOT(onMessageSelect(const QModelIndex&))));
 	layout->addWidget(m_stringListWidget);
 
 	layout->setStretch(0, 0);
@@ -26,8 +29,10 @@ ScriptViewer::ScriptViewer(QWidget* parent) : QMainWindow(parent)
 
 	loadMainLanguage("Russian", "d:/svn/consolgames/translations/mp3c/content/rus/text");
 
+	m_scriptViewer = new ScriptViewWidget(this);
 	QDockWidget* dockWidget = new QDockWidget("Viewer", this);
-	dockWidget->setWidget(new ScriptViewWidget());
+	dockWidget->setWidget(m_scriptViewer);
+	dockWidget->setFeatures(dockWidget->features() ^ QDockWidget::DockWidgetClosable);
 	dockWidget->setMinimumSize(200, 80);
 	addDockWidget(Qt::BottomDockWidgetArea, dockWidget, Qt::Vertical);
 
@@ -43,10 +48,10 @@ void ScriptViewer::openEditor(const QByteArray& languageId)
 
 	EditorDockWidget* dockWidget = new EditorDockWidget(languageId, this);
 	VERIFY(connect(dockWidget, SIGNAL(closing(const QByteArray&)), SLOT(closeEditor(const QByteArray&))));
+	VERIFY(connect(dockWidget->editor(), SIGNAL(textChanged(const QByteArray&, const QString&)), SLOT(onTextChanged(const QByteArray&, const QString&))));
 
 	addDockWidget(Qt::BottomDockWidgetArea, dockWidget, Qt::Horizontal);
-
-	m_openedEditors.insert(languageId);
+	m_openedEditors.insert(languageId, dockWidget->editor());
 }
 
 void ScriptViewer::closeEditor(const QByteArray& languageId)
@@ -82,6 +87,7 @@ void ScriptViewer::loadMainLanguage(const QByteArray& languageId, const QString&
 
 	m_fileListWidget->addItems(m_mainLanguageData.keys());
 	m_fileListWidget->setCurrentRow(0);
+	openEditor(languageId);
 	//setMessageSetModel(m_mainLanguageData.keys().first());
 }
 
@@ -95,4 +101,31 @@ void ScriptViewer::setMessageSetModel(const QString& filename)
 	ASSERT(m_mainLanguageData.contains(filename));
 	m_currentModel.reset(new MessageSetModel(m_mainLanguageData[filename]));
 	m_stringListWidget->setModel(m_currentModel.get());
+}
+
+void ScriptViewer::onMessageSelect(const QModelIndex& index)
+{
+	const QModelIndex parent = index.parent();
+	if (parent.isValid())
+	{
+		foreach (const QByteArray& languageId, m_openedEditors.keys())
+		{
+			if (languageId == m_mainLanguage)
+			{
+				const QVector<MessageSet>& messageSets = m_mainLanguageData[currentMessageFile()];
+				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[index.row()].text);
+				continue;
+			}
+		}
+	}
+}
+
+QString ScriptViewer::currentMessageFile() const
+{
+	return m_fileListWidget->currentItem()->text();
+}
+
+void ScriptViewer::onTextChanged(const QByteArray& languageId, const QString& text)
+{
+	m_scriptViewer->drawText(text);
 }
