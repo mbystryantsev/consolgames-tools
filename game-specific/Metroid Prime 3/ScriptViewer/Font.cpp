@@ -3,7 +3,9 @@
 
 using namespace Consolgames;
 
-Font::Font(QGLWidget* context) : m_context(context)
+Font::Font(QGLWidget* context, QObject* parent)
+	: QObject(parent)
+	, m_context(context)
 {
 }
 

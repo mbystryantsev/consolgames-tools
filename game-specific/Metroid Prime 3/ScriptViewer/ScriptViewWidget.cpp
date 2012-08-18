@@ -2,16 +2,19 @@
 #include <MetroidFont.h>
 #include <QImage>
 
-ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_font(this)
+ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent)
 {
 }
 
 void ScriptViewWidget::initializeGL()
 {
-	m_font.loadFromEditorFormat("D:\\svn\\consolgames\\translations\\mp3c\\content\\rus\\fonts\\mtf\\FC1BE4F13D86CE52.mtf");
-	m_renderer.setFont(&m_font);
+	{
+		Font* font = new Font(this, &m_renderer);
+		font->loadFromEditorFormat("D:\\svn\\consolgames\\translations\\mp3c\\content\\rus\\fonts\\mtf\\FC1BE4F13D86CE52.mtf");
+		m_renderer.addFont(0xFC1BE4F13D86CE52ULL, font);
+	}
 
-	glClearColor(0.2, 0.2, 0.2, 1.0);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 	glMatrixMode(GL_MODELVIEW);
