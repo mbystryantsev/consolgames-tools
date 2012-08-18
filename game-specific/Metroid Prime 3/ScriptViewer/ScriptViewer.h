@@ -7,6 +7,8 @@
 class QListWidget;
 class QListView;
 class QTreeView;
+class ScriptEditor;
+class ScriptViewWidget;
 
 class ScriptViewer : public QMainWindow
 {
@@ -27,12 +29,16 @@ protected:
 protected:
 	QListWidget* m_fileListWidget;
 	QTreeView* m_stringListWidget;
+	ScriptViewWidget* m_scriptViewer;
+	QString currentMessageFile() const;
 	Q_SLOT void setMessageSetModel(const QString& filename);
+	Q_SLOT void onMessageSelect(const QModelIndex& index);
+	Q_SLOT void onTextChanged(const QByteArray& languageId, const QString& text);
 
 protected:
 	std::auto_ptr<MessageSetModel> m_currentModel;
 	QMap<QString,QVector<MessageSet>> m_mainLanguageData;
 	QByteArray m_mainLanguage;
 	QSet<QByteArray> m_languages;
-	QSet<QByteArray> m_openedEditors;
+	QMap<QByteArray,ScriptEditor*> m_openedEditors;
 };
