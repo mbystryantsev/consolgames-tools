@@ -4,11 +4,13 @@
 
 QHash<QString,StringRenderer::TagType> StringRenderer::s_tagsInfo;
 
-StringRenderer::StringRenderer(QObject* parent)
+StringRenderer::StringRenderer(QGLWidget* parent)
 	: QObject(parent)
+	, m_context(parent)
 	, m_currentFont(NULL)
 	, m_isDrawing(false)
 	, m_stackSize(0)
+	, m_scale(1.0)
 {
 	initTagsInfo();
 }
@@ -20,18 +22,20 @@ void StringRenderer::initTagsInfo()
 		s_tagsInfo["push"] = tagPush;
 		s_tagsInfo["pop"] = tagPop;
 		s_tagsInfo["main-color"] = tagMainColor;
+		s_tagsInfo["lookup"] = tagLookup;
+		s_tagsInfo["just"] = tagJust;
+		s_tagsInfo["space"] = tagSpace;
 	}
 }
 
-void StringRenderer::drawRawString(const QString& str, double scale)
+void StringRenderer::drawChar(QChar c)
 {
-	ASSERT(m_currentFont != NULL);
-	ASSERT(!m_isDrawing);
-	FlagHolder startDrawing(m_isDrawing, true); 
-	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glScaled(scale, scale, 1.0);
+	m_currentFont->drawChar(c);
+}
+
+void StringRenderer::drawRawString(const QString& str)
+{
+	ASSERT(m_isDrawing);
 
 	QChar prevChar = '\0';
 	foreach (QChar c, str)
@@ -39,11 +43,9 @@ void StringRenderer::drawRawString(const QString& str, double scale)
 		m_currentFont->drawChar(c);
 		m_currentFont->processKerning(prevChar, c);
 	}
-
-	glPopMatrix();
 }
 
-void StringRenderer::drawString(const QString& str, double scale)
+void StringRenderer::drawString(const QString& str)
 {
 	ASSERT(m_currentFont != NULL);
 	ASSERT(m_stackSize == 0);
@@ -52,11 +54,17 @@ void StringRenderer::drawString(const QString& str, double scale)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glScaled(scale, scale, 1.0);
+	glScaled(m_scale, m_scale, 1.0);
+	
+	QRect currentRect = m_textAreas.isEmpty() ? QRect(0, 0, m_context->width(), m_context->height()) : m_textAreas.front();
+	QString::const_iterator lineBegin = str.constBegin();
+	glTranslated(currentRect.left(), currentRect.top(), 0.0);
+	
 	glPushMatrix();
 
 	pushState();
 
+	bool wordEndReached = false;
 	QChar prevChar = '\0';
 	for (QString::const_iterator c = str.constBegin(); c != str.constEnd(); c++)
 	{
@@ -69,13 +77,20 @@ void StringRenderer::drawString(const QString& str, double scale)
 		{
 			break;
 		}
-
 		if (*c == '\n')
 		{
 			glPopMatrix();
 			glTranslated(0, m_currentFont->height(), 0);
 			glPushMatrix();
 			continue;
+		}
+		if (c->isSpace())
+		{
+// 			wordEndReached = true;
+// 			if (currLineWidth + lastWordWidth > currentRect.width())
+// 			{
+// 				// wrap
+// 			}
 		}
 
 		m_currentFont->drawChar(*c);
@@ -205,4 +220,22 @@ void StringRenderer::processTag(const TagInfo& tagInfo)
 	{
 		popState();
 	}
+	else if (tagInfo.type == tagLookup)
+	{
+		drawRawString("%" + tagInfo.value + "%");
+	}
+	else if (tagInfo.type == tagSpace)
+	{
+		drawChar(' ');
+	}
+}
+
+void StringRenderer::setScale(double scale)
+{
+	m_scale = scale;
+}
+
+double StringRenderer::scale() const
+{
+	return m_scale;
 }

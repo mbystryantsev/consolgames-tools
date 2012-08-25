@@ -14,6 +14,15 @@ public:
 	virtual QModelIndex parent(const QModelIndex & index) const override;
 	virtual int rowCount(const QModelIndex & parent) const override;
 
+	const QVector<MessageSet>& messages() const;
+
+protected:
+	enum Column
+	{
+		colIndex,
+		colText,
+		colCount
+	};
 
 protected:
 	const QVector<MessageSet>& m_messages;
