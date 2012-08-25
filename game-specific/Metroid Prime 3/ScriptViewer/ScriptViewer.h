@@ -1,6 +1,7 @@
 #pragma once
 #include "MessageSetModel.h"
 #include "MessageSetFilterModel.h"
+#include "MessageFileListModel.h"
 #include "ui_CentralWidget.h"
 #include <ScriptParser.h>
 #include <QMainWindow>
@@ -35,35 +36,49 @@ protected:
 	};
 
 protected:
+	virtual void closeEvent(QCloseEvent *event);
+
 	void openEditor(const QByteArray& languageId);
 	Q_SLOT void closeEditor(const QByteArray& languageId);
 
 	void initUI();
 	void initMessageList();
-	void initFileList();
 	void initScriptViewer();
 	void initActions();
 	void initToolbar();
 	void initMenu();
 
+	void updateFileList();
+	void setSaved(bool saved);
+
 protected:
 	Ui_CentralWidget m_ui;
 	ScriptViewWidget* m_scriptViewer;
 	QString currentMessageFile() const;
+	Q_SLOT void onFileListIndexChanged(const QModelIndex& index);
 	Q_SLOT void setMessageSetModel(const QString& filename);
 	Q_SLOT void onMessageSelect(const QModelIndex& index);
-	Q_SLOT void onTextChanged(const QByteArray& languageId, const QString& text);
+	Q_SLOT void onTextChanged(const QString& text, const QByteArray& languageId);
 	Q_SLOT void onFilterChanged(const QString& pattern);
 
 protected:
 	// Actions
 	Q_SLOT void onExit();
+	Q_SLOT void onSave();
 
 protected:
 	std::auto_ptr<MessageSetModel> m_currentModel;
 	std::auto_ptr<MessageSetFilterModel> m_filterModel;
 	std::auto_ptr<QItemSelectionModel> m_selectionModel;
+
+	std::auto_ptr<MessageFileListModel> m_scriptFilesModel;
+	std::auto_ptr<QItemSelectionModel> m_scriptFilesSelectionModel;
+
+	bool m_saved;
 	
+	Message* m_currentMessage;
+	QModelIndex m_currentMessageIndex;
+
 	QMap<QString,QVector<MessageSet>> m_mainLanguageData;
 	QByteArray m_mainLanguage;
 	QSet<QByteArray> m_languages;

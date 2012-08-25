@@ -11,7 +11,7 @@ public:
 	
 	const QByteArray& languageId() const;
 	Q_SLOT void setFilterPattern(const QString& pattern);
-	Q_SIGNAL void textChanged(const QByteArray& languageId, const QString& text);
+	Q_SIGNAL void textChanged(const QString& text, const QByteArray& languageId);
 
 protected:
 	Q_SLOT void onTextChangedInternal();
