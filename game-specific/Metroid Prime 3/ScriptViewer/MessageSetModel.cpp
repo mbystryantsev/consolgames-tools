@@ -1,6 +1,5 @@
 #include "MessageSetModel.h"
 
-
 MessageSetModel::MessageSetModel(const QVector<MessageSet>& messages, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_messages(messages)
@@ -9,7 +8,8 @@ MessageSetModel::MessageSetModel(const QVector<MessageSet>& messages, QObject* p
 
 int MessageSetModel::columnCount(const QModelIndex& parent) const 
 {
-	return 2;
+	Q_UNUSED(parent);
+	return colCount;
 }
 
 QVariant MessageSetModel::data(const QModelIndex& index, int role) const 
@@ -19,13 +19,13 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 	{
 		if (parent.isValid())
 		{
-			if (index.column() == 0)
+			if (index.column() == colIndex)
 			{
 				return index.row();
 			}
 			return m_messages[parent.row()].messages[index.row()].text.left(64).simplified();
 		}
-		if (index.column() == 1)
+		if (index.column() == colText)
 		{
 			return QString::number(m_messages[index.row()].nameHashes[0]);
 		}
@@ -58,4 +58,9 @@ int MessageSetModel::rowCount(const QModelIndex& parent) const
 		return 0;
 	}
 	return m_messages[parent.row()].messages.size();
+}
+
+const QVector<MessageSet>& MessageSetModel::messages() const
+{
+	return m_messages;
 }

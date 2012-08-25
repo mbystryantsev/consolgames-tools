@@ -8,6 +8,10 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QDockWidget>
+#include <QAction>
+#include <QToolBar>
+#include <QMenuBar>
+#include <QItemSelectionModel>
 
 ScriptViewer::ScriptViewer(QWidget* parent) : QMainWindow(parent)
 {
@@ -18,31 +22,27 @@ ScriptViewer::ScriptViewer(QWidget* parent) : QMainWindow(parent)
 
 void ScriptViewer::initUI()
 {
-	setCentralWidget(new QWidget());
-	
-	QHBoxLayout* layout = new QHBoxLayout(centralWidget());
-	layout->setStretch(0, 0);
-	layout->setStretch(1, 1);
+	QWidget* centralWidget = new QWidget(this);
+	m_ui.setupUi(centralWidget);
+	setCentralWidget(centralWidget);
 
 	initFileList();
 	initMessageList();
 	initScriptViewer();
+
+	initActions();
+	initMenu();
+	initToolbar();
 }
 
 void ScriptViewer::initFileList()
 {
-	m_fileListWidget = new QListWidget(this);
-	VERIFY(connect(m_fileListWidget, SIGNAL(currentTextChanged(const QString&)), SLOT(setMessageSetModel(const QString&))));
-	centralWidget()->layout()->addWidget(m_fileListWidget);
+	VERIFY(connect(m_ui.fileList, SIGNAL(currentTextChanged(const QString&)), SLOT(setMessageSetModel(const QString&))));
 }
 
 void ScriptViewer::initMessageList()
 {
-	m_messageListWidget = new QTreeView(this);
-	m_messageListWidget->header()->setDefaultSectionSize(64);
-	m_messageListWidget->setHeaderHidden(true);
-	VERIFY(connect(m_messageListWidget, SIGNAL(clicked(const QModelIndex&)), SLOT(onMessageSelect(const QModelIndex&))));
-	centralWidget()->layout()->addWidget(m_messageListWidget);
+	VERIFY(connect(m_ui.filterPattern, SIGNAL(textChanged(const QString&)), SLOT(onFilterChanged(const QString&))));
 }
 
 void ScriptViewer::initScriptViewer()
@@ -53,6 +53,40 @@ void ScriptViewer::initScriptViewer()
 	dockWidget->setFeatures(dockWidget->features() ^ QDockWidget::DockWidgetClosable);
 	dockWidget->setMinimumSize(200, 80);
 	addDockWidget(Qt::BottomDockWidgetArea, dockWidget, Qt::Vertical);
+}
+
+#define REG_ACT(name) \
+{ \
+	QAction* action = new QAction(QIcon(), tr(#name), this); \
+	m_actions[act##name] = action; \
+	VERIFY(connect(action, SIGNAL(triggered), SLOT(on##name))); \
+}
+
+void ScriptViewer::initActions()
+{
+	m_actions[actExit] = new QAction(QIcon(), tr("Exit"), this);
+
+	VERIFY(connect(m_actions[actExit], SIGNAL(triggered()), SLOT(onExit())));
+}
+
+void ScriptViewer::initToolbar()
+{
+	ASSERT(!m_actions.isEmpty());
+
+	{
+		QToolBar* bar = addToolBar(tr("&File"));
+		bar->addAction(m_actions[actExit]);
+	}
+}
+
+void ScriptViewer::initMenu()
+{
+	ASSERT(!m_actions.isEmpty());
+
+	{
+		QMenu* menu = menuBar()->addMenu(tr("&File"));
+		menu->addAction(m_actions[actExit]);
+	}
 }
 
 void ScriptViewer::openEditor(const QByteArray& languageId)
@@ -93,7 +127,7 @@ void ScriptViewer::loadMainLanguage(const QByteArray& languageId, const QString&
 		return;
 	}
 
-	m_fileListWidget->clear();
+	m_ui.fileList->clear();
 	m_mainLanguageData.clear();
 
 	foreach (const QString& name, dir.entryList(QStringList("*.txt"), QDir::Files))
@@ -102,8 +136,8 @@ void ScriptViewer::loadMainLanguage(const QByteArray& languageId, const QString&
 		m_mainLanguageData[name] = ScriptParser::loadFromFile(filePath);
 	}
 
-	m_fileListWidget->addItems(m_mainLanguageData.keys());
-	m_fileListWidget->setCurrentRow(0);
+	m_ui.fileList->addItems(m_mainLanguageData.keys());
+	m_ui.fileList->setCurrentRow(0);
 	openEditor(languageId);
 	//setMessageSetModel(m_mainLanguageData.keys().first());
 }
@@ -116,13 +150,27 @@ QByteArray ScriptViewer::mainLanguage() const
 void ScriptViewer::setMessageSetModel(const QString& filename)
 {
 	ASSERT(m_mainLanguageData.contains(filename));
+	m_selectionModel.reset();
+	m_filterModel.reset();
+
 	m_currentModel.reset(new MessageSetModel(m_mainLanguageData[filename]));
-	m_messageListWidget->setModel(m_currentModel.get());
+
+	m_filterModel.reset(new MessageSetFilterModel());
+	m_filterModel->setSourceModel(m_currentModel.get());
+
+	m_ui.messageList->setModel(m_filterModel.get());
+	m_ui.messageList->expandAll();
+
+	m_selectionModel.reset(new QItemSelectionModel(m_filterModel.get()));
+	m_ui.messageList->setSelectionModel(m_selectionModel.get());
+
+	VERIFY(connect(m_ui.messageList->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), SLOT(onMessageSelect(const QModelIndex&))));
 }
 
 void ScriptViewer::onMessageSelect(const QModelIndex& index)
 {
-	const QModelIndex parent = index.parent();
+	const QModelIndex sourceIndex = m_filterModel->mapToSource(index);
+	const QModelIndex parent = sourceIndex.parent();
 	if (parent.isValid())
 	{
 		foreach (const QByteArray& languageId, m_openedEditors.keys())
@@ -130,7 +178,7 @@ void ScriptViewer::onMessageSelect(const QModelIndex& index)
 			if (languageId == m_mainLanguage)
 			{
 				const QVector<MessageSet>& messageSets = m_mainLanguageData[currentMessageFile()];
-				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[index.row()].text);
+				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[sourceIndex.row()].text);
 				continue;
 			}
 		}
@@ -139,10 +187,28 @@ void ScriptViewer::onMessageSelect(const QModelIndex& index)
 
 QString ScriptViewer::currentMessageFile() const
 {
-	return m_fileListWidget->currentItem()->text();
+	return m_ui.fileList->currentItem()->text();
 }
 
 void ScriptViewer::onTextChanged(const QByteArray& languageId, const QString& text)
 {
+	Q_UNUSED(languageId);
 	m_scriptViewer->drawText(text);
+}
+
+void ScriptViewer::onFilterChanged(const QString& pattern)
+{
+	m_filterModel->setPattern(pattern);
+	foreach (ScriptEditor* editor, m_openedEditors)
+	{
+		editor->setFilterPattern(pattern);
+	}
+	m_ui.messageList->expandAll();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void ScriptViewer::onExit()
+{
+	close();
 }

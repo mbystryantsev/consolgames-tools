@@ -15,8 +15,7 @@ public:
 		tagImage,
 		tagLookup,
 		tagMainColor,
-
-
+		tagSpace
 	};
 	enum JustType
 	{
@@ -32,14 +31,17 @@ public:
 	};
 
 public:
-	StringRenderer(QObject* parent = NULL);
+	StringRenderer(QGLWidget* parent);
 
-	void drawRawString(const QString& str, double scale = 1.0);
-	void drawString(const QString& str, double scale = 1.0);
-
+	void drawString(const QString& str);
 	void addFont(quint64 hash, Font* font);
+	void setScale(double scale);
+	double scale() const;
 
 protected:
+	void drawChar(QChar c);
+	void drawRawString(const QString& str);
+
 	static void initTagsInfo();
 	TagInfo parseTag(QString::const_iterator& c, const QString::const_iterator& end);
 	static TagType detectTagType(const QString::const_iterator& begin, const QString::const_iterator& end);
@@ -50,9 +52,12 @@ protected:
 	void clearStack();
 
 protected:
+	QGLWidget* m_context;
 	static QHash<QString,TagType> s_tagsInfo;
 	QMap<quint64,Font*> m_fonts;
 	Font* m_currentFont;
 	bool m_isDrawing;
+	double m_scale;
 	int m_stackSize;
+	QList<QRect> m_textAreas;
 };

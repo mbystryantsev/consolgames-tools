@@ -2,7 +2,7 @@
 #include <MetroidFont.h>
 #include <QImage>
 
-ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent)
+ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_renderer(this)
 {
 }
 
