@@ -21,5 +21,5 @@ void ScriptEditor::setFilterPattern(const QString& pattern)
 
 void ScriptEditor::onTextChangedInternal()
 {
-	emit textChanged(m_languageId, toPlainText());
+	emit textChanged(toPlainText(), m_languageId);
 }

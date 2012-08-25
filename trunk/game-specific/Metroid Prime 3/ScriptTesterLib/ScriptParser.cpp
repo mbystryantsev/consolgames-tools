@@ -17,7 +17,6 @@ Message ScriptParser::parseMessage(const QString& string, int offset, int* parse
 	{
 		message.id = expr.cap(1);
 		message.text = expr.cap(2).isNull() ? expr.cap(3) : expr.cap(2);
-		QChar c = message.text[0];
 
 		if (parsedLength != NULL)
 		{
@@ -111,4 +110,54 @@ QVector<MessageSet> ScriptParser::loadFromFile(const QString& filename)
 	}
 
 	return script;
+}
+
+static QString hashToStr(quint64 hash)
+{
+	const QString temp = QString::number(hash, 16).toUpper();
+	QString hashStr(16, '0');
+	qCopy(temp.begin(), temp.end(), hashStr.end() - temp.size());
+	return hashStr;
+}
+
+bool ScriptParser::saveToFile(const QString& filename, const QVector<MessageSet>& messages)
+{
+	QFile file(filename);
+	if (!file.open(QIODevice::WriteOnly))
+	{
+		return false;
+	}
+
+	QTextStream stream(&file);
+	stream.setCodec("UTF-16LE");
+	stream.setGenerateByteOrderMark(true);
+	foreach (const MessageSet& messageSet, messages)
+	{
+		// Write header
+		stream << "[@";
+		for (int i = 0; i < messageSet.nameHashes.size(); i++)
+		{
+			if (i > 0)
+			{
+				stream << "|";
+			}
+			stream << hashToStr(messageSet.nameHashes[i]);
+		}
+		stream << "," << messageSet.messages.size() << ',' << messageSet.idCount;
+		if (messageSet.version != 0)
+		{
+			stream << ',' << messageSet.version;
+		}
+		stream << "]\n\n";
+
+		// Write messages
+		foreach (const Message& message, messageSet.messages)
+		{
+			if (!message.id.isEmpty())
+			{
+				stream << "[ID:" << message.id << "]\n";
+			}
+			stream << message.text << "\n{E}\n\n";
+		}
+	}
 }
