@@ -9,6 +9,7 @@ CONFIG(debug, debug|release) {
 DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
 INCLUDEPATH += \
+	$$PWD/Common \
 	$$PWD/ScriptTesterLib \
 	$$PWD/ExtractorLib \
 	$$PWD/FontLib \
