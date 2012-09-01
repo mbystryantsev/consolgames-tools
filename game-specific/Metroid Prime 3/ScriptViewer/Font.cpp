@@ -142,3 +142,14 @@ int Font::height() const
 {
 	return m_font.height();
 }
+
+int Font::kerning(QChar a, QChar b) const
+{
+	return m_font.kerning(a, b);
+}
+
+int Font::charWidth(QChar c) const
+{
+	const MetroidFont::CharMetrics metrics = m_font.charMetrics(c);
+	return metrics.leftIdent + metrics.bodyWidth + metrics.rightIdent;
+}

@@ -41,6 +41,8 @@ public:
 protected:
 	void drawChar(QChar c);
 	void drawRawString(const QString& str);
+	int charWidth(QChar c, QChar prevChar = '\0') const;
+	int wordWidth(const QString::const_iterator& begin, const QString::const_iterator& end) const;
 
 	static void initTagsInfo();
 	TagInfo parseTag(QString::const_iterator& c, const QString::const_iterator& end);
