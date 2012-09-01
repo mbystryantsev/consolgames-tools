@@ -11,6 +11,7 @@ SUBDIRS = \
 	FontLib \
 	FontTool \
 	Patcher \
+	ScriptViewer \
 	externals/core \
 	externals/WiiStreams \
 	tests/ScriptTesterTests \

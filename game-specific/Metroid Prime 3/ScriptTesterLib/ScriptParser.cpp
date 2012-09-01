@@ -160,4 +160,6 @@ bool ScriptParser::saveToFile(const QString& filename, const QVector<MessageSet>
 			stream << message.text << "\n{E}\n\n";
 		}
 	}
+
+	return true;
 }
