@@ -30,7 +30,30 @@ void StringRenderer::initTagsInfo()
 
 void StringRenderer::drawChar(QChar c)
 {
+	ASSERT(m_isDrawing);
 	m_currentFont->drawChar(c);
+}
+
+
+int StringRenderer::charWidth(QChar c, QChar prevChar) const
+{
+	return m_currentFont->charWidth(c) + m_currentFont->kerning(prevChar, c);
+}
+
+int StringRenderer::wordWidth(const QString::const_iterator& begin, const QString::const_iterator& end) const
+{
+	int width = 0;
+	QChar prevChar = '\0';
+	for (QString::const_iterator c = begin; c != end; c++)
+	{
+		if (c->isSpace())
+		{
+			break;
+		}
+		width += charWidth(*c, prevChar);
+		prevChar = *c;
+	}
+	return width;
 }
 
 void StringRenderer::drawRawString(const QString& str)
@@ -52,11 +75,16 @@ void StringRenderer::drawString(const QString& str)
 	ASSERT(!m_isDrawing);
 	FlagHolder startDrawing(m_isDrawing, true);
 
+	int initialStackDepth = 0;
+	glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &initialStackDepth);
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glScaled(m_scale, m_scale, 1.0);
 	
-	QRect currentRect = m_textAreas.isEmpty() ? QRect(0, 0, m_context->width(), m_context->height()) : m_textAreas.front();
+	QRect currentRect = m_textAreas.isEmpty()
+		? QRect(0, 0, m_context->geometry().width() / m_scale, m_context->geometry().height() / m_scale)
+		: m_textAreas.front();
 	QString::const_iterator lineBegin = str.constBegin();
 	glTranslated(currentRect.left(), currentRect.top(), 0.0);
 	
@@ -64,8 +92,10 @@ void StringRenderer::drawString(const QString& str)
 
 	pushState();
 
+	int currLineWidth = 0;
 	bool wordEndReached = false;
 	QChar prevChar = '\0';
+	bool wrapLine = false;
 	for (QString::const_iterator c = str.constBegin(); c != str.constEnd(); c++)
 	{
 		while (*c == '&')
@@ -79,22 +109,33 @@ void StringRenderer::drawString(const QString& str)
 		}
 		if (*c == '\n')
 		{
-			glPopMatrix();
-			glTranslated(0, m_currentFont->height(), 0);
-			glPushMatrix();
+			wrapLine = true;
 			continue;
 		}
 		if (c->isSpace())
 		{
-// 			wordEndReached = true;
-// 			if (currLineWidth + lastWordWidth > currentRect.width())
-// 			{
-// 				// wrap
-// 			}
+  			wordEndReached = true;
+		}
+		else if (wordEndReached && currLineWidth + wordWidth(c, str.end()) > currentRect.width())
+		{
+			wrapLine = true;
 		}
 
-		m_currentFont->drawChar(*c);
-		m_currentFont->processKerning(prevChar, *c);
+		if (wrapLine)
+		{
+			glPopMatrix();
+			glTranslated(currentRect.left(), m_currentFont->height(), 0);
+			glPushMatrix();
+			currLineWidth = 0;
+			wordEndReached = false;
+			wrapLine = false;
+		}
+		if (*c != '\n')
+		{
+			currLineWidth += charWidth(*c, prevChar);
+			m_currentFont->drawChar(*c);
+			m_currentFont->processKerning(prevChar, *c);
+		}
 	}
 
 	popState();
@@ -103,6 +144,10 @@ void StringRenderer::drawString(const QString& str)
 
 	glPopMatrix();
 	glPopMatrix();
+
+	int newStackDepth = 0;
+	glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &initialStackDepth);
+	ASSERT(initialStackDepth = newStackDepth);
 }
 
 void StringRenderer::addFont(quint64 hash, Font* font)
