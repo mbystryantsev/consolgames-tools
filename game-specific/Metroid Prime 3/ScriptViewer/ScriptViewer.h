@@ -23,7 +23,7 @@ public:
 	ScriptViewer(QWidget* parent = NULL);
 
 	void loadMainLanguage(const QByteArray& languageId, const QString& path);
-	void addLanguage(const QByteArray& languageId);
+	void addSourceLanguage(const QByteArray& languageId, const QString& path);
 
 	QByteArray mainLanguage() const;
 
@@ -36,6 +36,8 @@ protected:
 	};
 
 protected:
+	typedef QMap<QString,QVector<MessageSet>> LanguageData;
+	bool loadLanguage(LanguageData& data, const QByteArray& languageId, const QString& path);
 	virtual void closeEvent(QCloseEvent *event);
 
 	void openEditor(const QByteArray& languageId);
@@ -79,7 +81,12 @@ protected:
 	Message* m_currentMessage;
 	QModelIndex m_currentMessageIndex;
 
-	QMap<QString,QVector<MessageSet>> m_mainLanguageData;
+	typedef QMap<quint64,const MessageSet*> MessageMap;
+
+	LanguageData m_mainLanguageData;
+	QList<LanguageData> m_sourceLanguagesData;
+	QHash<QByteArray,MessageMap> m_sourceLangMessageMap;
+
 	QByteArray m_mainLanguage;
 	QSet<QByteArray> m_languages;
 	QMap<QByteArray,ScriptEditor*> m_openedEditors;
