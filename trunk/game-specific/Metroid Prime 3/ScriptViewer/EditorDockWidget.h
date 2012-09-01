@@ -8,7 +8,7 @@ class EditorDockWidget : public QDockWidget
 	Q_OBJECT;
 
 public:
-	EditorDockWidget(const QByteArray& languageId, QWidget* parent);
+	EditorDockWidget(const QByteArray& languageId, bool editable, QWidget* parent);
 
 	ScriptEditor* editor();
 

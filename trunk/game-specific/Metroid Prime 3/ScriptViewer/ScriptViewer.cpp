@@ -22,6 +22,8 @@ ScriptViewer::ScriptViewer(QWidget* parent)
 
 	// Temporary solution
 	loadMainLanguage("Russian", "../content/rus/text");
+	addSourceLanguage("English", "../content/eng/text");
+	addSourceLanguage("Japan", "../content/jpn/text");
 }
 
 void ScriptViewer::initUI()
@@ -112,7 +114,7 @@ void ScriptViewer::openEditor(const QByteArray& languageId)
 	}
 	ASSERT(m_languages.contains(languageId));
 
-	EditorDockWidget* dockWidget = new EditorDockWidget(languageId, this);
+	EditorDockWidget* dockWidget = new EditorDockWidget(languageId, languageId == m_mainLanguage, this);
 	VERIFY(connect(dockWidget, SIGNAL(closing(const QByteArray&)), SLOT(closeEditor(const QByteArray&))));
 	VERIFY(connect(dockWidget->editor(), SIGNAL(textChanged(const QString&, const QByteArray&)), SLOT(onTextChanged(const QString&, const QByteArray&))));
 
@@ -125,33 +127,67 @@ void ScriptViewer::closeEditor(const QByteArray& languageId)
 	m_openedEditors.remove(languageId);
 }
 
-void ScriptViewer::addLanguage(const QByteArray& languageId)
+void ScriptViewer::addSourceLanguage(const QByteArray& languageId, const QString& path)
 {
-	m_languages.insert(languageId);	
+	m_sourceLanguagesData.append(LanguageData());
+	LanguageData& langData = m_sourceLanguagesData.last();
+
+	if (!loadLanguage(langData, languageId, path))
+	{
+		m_sourceLanguagesData.removeLast();
+		return;
+	}
+
+	MessageMap& messageMap = m_sourceLangMessageMap[languageId];
+
+	foreach (const QVector<MessageSet>& messages, langData)
+	{
+		foreach (const MessageSet& messageSet, messages)
+		{
+			foreach (const quint64 hash, messageSet.nameHashes)
+			{
+				messageMap[hash] = &messageSet;
+			}
+		}
+	}
+	DLOG << "Loaded additional language: " << languageId;
+	openEditor(languageId);
 }
 
 void ScriptViewer::loadMainLanguage(const QByteArray& languageId, const QString& path)
+{
+	if (!loadLanguage(m_mainLanguageData, languageId, path))
+	{
+		return;
+	}
+	DLOG << "Loaded main language: " << languageId;
+
+	m_mainLanguage = languageId;
+	openEditor(languageId);
+	updateFileList();
+	setSaved(true);
+
+}
+
+bool ScriptViewer::loadLanguage(LanguageData& data, const QByteArray& languageId, const QString& path)
 {
 	QDir dir(path);
 	ASSERT(dir.exists());
 	if (!dir.exists())
 	{
-		return;
+		return false;
 	}
-	m_mainLanguage = languageId;
+
 	m_languages.insert(languageId);
-	m_mainLanguageData.clear();
+	data.clear();
 
 	foreach (const QString& name, dir.entryList(QStringList("*.txt"), QDir::Files))
 	{
 		const QString filePath = dir.absoluteFilePath(name);
-		m_mainLanguageData[filePath] = ScriptParser::loadFromFile(filePath);
+		data[filePath] = ScriptParser::loadFromFile(filePath);
 	}
 
-	openEditor(languageId);
-	updateFileList();
-
-	setSaved(true);
+	return true;
 }
 
 QByteArray ScriptViewer::mainLanguage() const
@@ -192,16 +228,36 @@ void ScriptViewer::onMessageSelect(const QModelIndex& index)
 	const QModelIndex parent = sourceIndex.parent();
 	if (parent.isValid())
 	{
+		QVector<MessageSet>& messageSets = m_mainLanguageData[currentMessageFile()];
+		MessageSet& currMessageSet = messageSets[parent.row()];
+		m_currentMessage = &currMessageSet.messages[sourceIndex.row()];
+		m_currentMessageIndex = sourceIndex;
+
 		foreach (const QByteArray& languageId, m_openedEditors.keys())
 		{
+			if (!m_openedEditors.contains(languageId))
+			{
+				continue;
+			}
 			if (languageId == m_mainLanguage)
 			{
-				QVector<MessageSet>& messageSets = m_mainLanguageData[currentMessageFile()];
 				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[sourceIndex.row()].text);
+			}
+			else
+			{
+				const quint64 hash = currMessageSet.nameHashes[0];
+				if (!m_sourceLangMessageMap[languageId].contains(hash))
+				{
+					continue;
+				}
 
-				m_currentMessage = &messageSets[parent.row()].messages[sourceIndex.row()];
-				m_currentMessageIndex = sourceIndex;
-				continue;
+				const MessageSet* sourceMessageSet = m_sourceLangMessageMap[languageId][hash];
+				if (sourceIndex.row() >= sourceMessageSet->messages.size())
+				{
+					continue;
+				}
+
+				m_openedEditors[languageId]->setPlainText(sourceMessageSet->messages[sourceIndex.row()].text);
 			}
 		}
 	}
