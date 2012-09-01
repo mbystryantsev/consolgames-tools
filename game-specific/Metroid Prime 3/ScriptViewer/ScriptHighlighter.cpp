@@ -36,12 +36,12 @@ void ScriptHighlighter::highlightPattern(const QString& text)
 		return;
 	}
 
-	int index = text.indexOf(m_pattern, Qt::CaseInsensitive);
+	int index = text.indexOf(m_pattern, 0, Qt::CaseInsensitive);
 	while (index >= 0)
 	{
 		QTextCharFormat currentFormat = format(index);
 		currentFormat.setBackground(QBrush(Qt::yellow));
 		setFormat(index, m_pattern.length(), currentFormat);
-		index = text.indexOf(m_pattern, index + m_pattern.length());
+		index = text.indexOf(m_pattern, index + m_pattern.length(), Qt::CaseInsensitive);
 	}
 }
