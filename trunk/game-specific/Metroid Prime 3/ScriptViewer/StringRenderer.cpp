@@ -85,7 +85,6 @@ void StringRenderer::drawString(const QString& str)
 	QRect currentRect = m_textAreas.isEmpty()
 		? QRect(0, 0, m_context->geometry().width() / m_scale, m_context->geometry().height() / m_scale)
 		: m_textAreas.front();
-	QString::const_iterator lineBegin = str.constBegin();
 	glTranslated(currentRect.left(), currentRect.top(), 0.0);
 	
 	glPushMatrix();
@@ -146,7 +145,7 @@ void StringRenderer::drawString(const QString& str)
 	glPopMatrix();
 
 	int newStackDepth = 0;
-	glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &initialStackDepth);
+	glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &newStackDepth);
 	ASSERT(initialStackDepth = newStackDepth);
 }
 
