@@ -9,9 +9,12 @@ ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_rende
 void ScriptViewWidget::initializeGL()
 {
 	{
+		// Temporary solution
 		Font* font = new Font(this, &m_renderer);
-		font->loadFromEditorFormat("D:\\svn\\consolgames\\translations\\mp3c\\content\\rus\\fonts\\mtf\\FC1BE4F13D86CE52.mtf");
+		font->loadFromEditorFormat("..\\content\\rus\\fonts\\mtf\\073A875DB4D51CE9.mtf");
+		font->setLinespacing(17);
 		m_renderer.addFont(0xFC1BE4F13D86CE52ULL, font);
+		m_renderer.setTextArea(QImage("../misc/viewer_project/textarea.png"), QRect(30, 16, 382, 51));
 	}
 
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);

@@ -11,6 +11,8 @@ public:
 
 	bool load(const QString& fontFilename, const QString& textureFilename);
 	bool loadFromEditorFormat(const QString& filename);
+	void setLinespacing(int spacing);
+	int linespacing() const;
 
 	void drawChar(QChar c) const;
 	void processKerning(QChar a, QChar b) const;
@@ -33,7 +35,7 @@ protected:
 	QList<GLuint> m_textures;
 	QMap<QChar, GLuint> m_charLists;
 	QGLWidget* m_context;
-
+	int m_linespacing;
 	GLuint m_listsBegin;
 
 };

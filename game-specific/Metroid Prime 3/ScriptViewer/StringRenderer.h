@@ -35,6 +35,7 @@ public:
 
 	void drawString(const QString& str);
 	void addFont(quint64 hash, Font* font);
+	void setTextArea(const QImage& texture, const QRect& area);
 	void setScale(double scale);
 	double scale() const;
 
@@ -43,6 +44,7 @@ protected:
 	void drawRawString(const QString& str);
 	int charWidth(QChar c, QChar prevChar = '\0') const;
 	int wordWidth(const QString::const_iterator& begin, const QString::const_iterator& end) const;
+	void drawBackground();
 
 	static void initTagsInfo();
 	TagInfo parseTag(QString::const_iterator& c, const QString::const_iterator& end);
@@ -52,6 +54,7 @@ protected:
 	void pushState();
 	void popState();
 	void clearStack();
+	void freeTextures();
 
 protected:
 	QGLWidget* m_context;
@@ -61,5 +64,7 @@ protected:
 	bool m_isDrawing;
 	double m_scale;
 	int m_stackSize;
-	QList<QRect> m_textAreas;
+	QRect m_textArea;
+	QSize m_textureSize;
+	GLuint m_texture;
 };
