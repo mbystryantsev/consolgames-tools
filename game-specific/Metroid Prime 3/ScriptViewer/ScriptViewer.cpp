@@ -17,6 +17,9 @@
 ScriptViewer::ScriptViewer(QWidget* parent)
 	: QMainWindow(parent)
 	, m_currentMessage(NULL)
+	, m_viewMenu(NULL)
+	, m_scriptViewer(NULL)
+	, m_scriptViewerDockWidget(NULL)
 {
 	initUI();
 
@@ -48,24 +51,24 @@ void ScriptViewer::initMessageList()
 void ScriptViewer::initScriptViewer()
 {
 	m_scriptViewer = new ScriptViewWidget(this);
-	QDockWidget* dockWidget = new QDockWidget("Viewer", this);
-	dockWidget->setWidget(m_scriptViewer);
-	dockWidget->setFeatures(dockWidget->features() ^ QDockWidget::DockWidgetClosable);
-	dockWidget->setMinimumSize(200, 80);
-	addDockWidget(Qt::BottomDockWidgetArea, dockWidget, Qt::Vertical);
+	m_scriptViewerDockWidget = new QDockWidget("Viewer", this);
+	m_scriptViewerDockWidget->setWidget(m_scriptViewer);
+	m_scriptViewerDockWidget->setMinimumSize(200, 80);
+	addDockWidget(Qt::BottomDockWidgetArea, m_scriptViewerDockWidget, Qt::Vertical);
 }
 
-#define REG_ACT(name) \
+#define REG_ACT(name, key, icon) \
 { \
-	QAction* action = new QAction(QIcon(), tr(#name), this); \
+	QAction* action = new QAction(icon, tr(#name), this); \
+	action->setShortcut(key); \
 	m_actions[act##name] = action; \
 	VERIFY(connect(action, SIGNAL(triggered()), SLOT(on##name()))); \
 }
 
 void ScriptViewer::initActions()
 {
-	REG_ACT(Exit);
-	REG_ACT(Save);
+	REG_ACT(Exit, QKeySequence::Quit, QIcon());
+	REG_ACT(Save, QKeySequence::Save, QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton));
 }
 
 void ScriptViewer::initToolbar()
@@ -74,18 +77,23 @@ void ScriptViewer::initToolbar()
 
 	{
 		QToolBar* bar = addToolBar(tr("&File"));
-		bar->addAction(m_actions[actExit]);
+		bar->setIconSize(QSize(24, 24));
+		bar->addAction(m_actions[actSave]);
 	}
 }
 
 void ScriptViewer::initMenu()
 {
 	ASSERT(!m_actions.isEmpty());
-
 	{
 		QMenu* menu = menuBar()->addMenu(tr("&File"));
-		menu->addAction(m_actions[actExit]);
+
 		menu->addAction(m_actions[actSave]);
+		menu->addSeparator();
+		menu->addAction(m_actions[actExit]);
+
+		m_viewMenu = menuBar()->addMenu(tr("&View"));
+		VERIFY(connect(m_viewMenu, SIGNAL(aboutToShow()), SLOT(buildViewMenu())));
 	}
 }
 
@@ -114,17 +122,30 @@ void ScriptViewer::openEditor(const QByteArray& languageId)
 	}
 	ASSERT(m_languages.contains(languageId));
 
-	EditorDockWidget* dockWidget = new EditorDockWidget(languageId, languageId == m_mainLanguage, this);
-	VERIFY(connect(dockWidget, SIGNAL(closing(const QByteArray&)), SLOT(closeEditor(const QByteArray&))));
-	VERIFY(connect(dockWidget->editor(), SIGNAL(textChanged(const QString&, const QByteArray&)), SLOT(onTextChanged(const QString&, const QByteArray&))));
+	EditorDockWidget* dockWidget = NULL;
+	if (!m_editors.contains(languageId))
+	{
+		dockWidget = new EditorDockWidget(languageId, languageId == m_mainLanguage, this);
+		VERIFY(connect(dockWidget, SIGNAL(closing(const QByteArray&)), SLOT(closeEditor(const QByteArray&))));
+		VERIFY(connect(dockWidget->editor(), SIGNAL(textChanged(const QString&, const QByteArray&)), SLOT(onTextChanged(const QString&, const QByteArray&))));
+		addDockWidget(Qt::RightDockWidgetArea, dockWidget, Qt::Vertical);
+		
+		m_editors[languageId] = dockWidget;
+	}
+	else
+	{
+		dockWidget = m_editors[languageId];
+	}
 
-	addDockWidget(Qt::RightDockWidgetArea, dockWidget, Qt::Vertical);
 	m_openedEditors.insert(languageId, dockWidget->editor());
+	dockWidget->setVisible(true);
 }
 
 void ScriptViewer::closeEditor(const QByteArray& languageId)
 {
+	ASSERT(m_openedEditors.contains(languageId));
 	m_openedEditors.remove(languageId);
+	m_editors[languageId]->setVisible(false);
 }
 
 void ScriptViewer::addSourceLanguage(const QByteArray& languageId, const QString& path)
@@ -248,12 +269,14 @@ void ScriptViewer::onMessageSelect(const QModelIndex& index)
 				const quint64 hash = currMessageSet.nameHashes[0];
 				if (!m_sourceLangMessageMap[languageId].contains(hash))
 				{
+					m_openedEditors[languageId]->setPlainText("");
 					continue;
 				}
 
 				const MessageSet* sourceMessageSet = m_sourceLangMessageMap[languageId][hash];
 				if (sourceIndex.row() >= sourceMessageSet->messages.size())
 				{
+					m_openedEditors[languageId]->setPlainText("");
 					continue;
 				}
 
@@ -332,4 +355,49 @@ void ScriptViewer::closeEvent(QCloseEvent *event)
 		}
 	}
 	QMainWindow::closeEvent(event);
+}
+
+void ScriptViewer::buildViewMenu()
+{
+	ASSERT(m_viewMenu != NULL);
+	m_viewMenu->clear();
+	QAction* toggleViewerAct = m_viewMenu->addAction(tr("Text &Viewer"));
+	toggleViewerAct->setCheckable(true);
+	toggleViewerAct->setChecked(m_scriptViewerDockWidget->isVisible());
+	VERIFY(connect(toggleViewerAct, SIGNAL(toggled(bool)), SLOT(toggleViewerVisible(bool))));
+
+	m_viewMenu->addSeparator();
+
+	foreach (const QByteArray& languageId, m_languages)
+	{
+		QAction* toggleEditorVisibleAct = m_viewMenu->addAction(languageId);
+		toggleEditorVisibleAct->setCheckable(true);
+		toggleEditorVisibleAct->setChecked(m_openedEditors.contains(languageId));
+		VERIFY(connect(toggleEditorVisibleAct, SIGNAL(toggled(bool)), SLOT(toggleEditorVisible(bool))));
+	}
+}
+
+void ScriptViewer::toggleViewerVisible(bool visible)
+{
+	m_scriptViewerDockWidget->setVisible(visible);
+}
+
+void ScriptViewer::toggleEditorVisible(bool visible)
+{
+	QAction* action = dynamic_cast<QAction*>(sender());
+	ASSERT(action != NULL);
+
+	const QByteArray languageId = action->text().toLatin1();
+	ASSERT(m_languages.contains(languageId));
+
+	ASSERT(!visible == m_openedEditors.contains(languageId));
+
+	if (visible)
+	{
+		openEditor(languageId);
+	}
+	else
+	{
+		closeEditor(languageId);
+	}
 }
