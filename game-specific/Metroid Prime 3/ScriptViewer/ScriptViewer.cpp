@@ -297,16 +297,16 @@ void ScriptViewer::onTextChanged(const QString& text, const QByteArray& language
 {
 	if (languageId == m_mainLanguage && m_currentMessage != NULL)
 	{
+		m_scriptViewer->drawText(text);
 		if (m_currentMessage->text != text)
 		{
 			ASSERT(m_currentMessageIndex.isValid());
+
 			m_currentMessage->text = text;
 			m_ui.messageList->update(m_currentMessageIndex);
 			setSaved(false);
 		}
 	}
-
-	m_scriptViewer->drawText(text);
 }
 
 void ScriptViewer::onFilterChanged(const QString& pattern)
