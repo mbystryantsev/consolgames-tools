@@ -317,6 +317,15 @@ void ScriptViewer::onFilterChanged(const QString& pattern)
 		editor->setFilterPattern(pattern);
 	}
 	m_ui.messageList->expandAll();
+
+	if (m_currentMessageIndex.isValid())
+	{
+		QModelIndex index = m_filterModel->mapFromSource(m_currentMessageIndex);
+		if (index.isValid())
+		{
+			m_ui.messageList->selectionModel()->select(index, QItemSelectionModel::SelectCurrent);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
