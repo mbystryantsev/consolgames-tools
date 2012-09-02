@@ -6,6 +6,7 @@ using namespace Consolgames;
 Font::Font(QGLWidget* context, QObject* parent)
 	: QObject(parent)
 	, m_context(context)
+	, m_linespacing(0)
 {
 }
 
@@ -31,6 +32,16 @@ bool Font::loadFromEditorFormat(const QString& filename)
 		return false;
 	}
 	return init();
+}
+
+void Font::setLinespacing(int spacing)
+{
+	m_linespacing = spacing;
+}
+
+int Font::linespacing() const
+{
+	return m_linespacing;
 }
 
 bool Font::init()

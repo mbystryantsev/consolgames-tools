@@ -11,6 +11,7 @@ StringRenderer::StringRenderer(QGLWidget* parent)
 	, m_isDrawing(false)
 	, m_stackSize(0)
 	, m_scale(1.0)
+	, m_texture(0)
 {
 	initTagsInfo();
 }
@@ -34,7 +35,6 @@ void StringRenderer::drawChar(QChar c)
 	m_currentFont->drawChar(c);
 }
 
-
 int StringRenderer::charWidth(QChar c, QChar prevChar) const
 {
 	return m_currentFont->charWidth(c) + m_currentFont->kerning(prevChar, c);
@@ -54,6 +54,32 @@ int StringRenderer::wordWidth(const QString::const_iterator& begin, const QStrin
 		prevChar = *c;
 	}
 	return width;
+}
+
+void StringRenderer::drawBackground()
+{
+	ASSERT(m_isDrawing);
+	if (m_texture == 0)
+	{
+		return;
+	}
+
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2d(0, 0);
+		glVertex2f(0, 0);
+
+		glTexCoord2d(1, 0);
+		glVertex2f(m_textureSize.width(), 0);
+
+		glTexCoord2d(1, 1);
+		glVertex2f(m_textureSize.width(), m_textureSize.height());
+
+		glTexCoord2d(0, 1);
+		glVertex2f(0, m_textureSize.height());
+	}
+	glEnd();
 }
 
 void StringRenderer::drawRawString(const QString& str)
@@ -82,13 +108,13 @@ void StringRenderer::drawString(const QString& str)
 	glPushMatrix();
 	glScaled(m_scale, m_scale, 1.0);
 	
-	QRect currentRect = m_textAreas.isEmpty()
-		? QRect(0, 0, m_context->geometry().width() / m_scale, m_context->geometry().height() / m_scale)
-		: m_textAreas.front();
-	glTranslated(currentRect.left(), currentRect.top(), 0.0);
-	
-	glPushMatrix();
+	const QRect currentRect = m_textArea.isNull()
+		? QRect(0, 0, m_context->geometry().width() / m_scale, m_context->geometry().height() / m_scale) : m_textArea;
 
+	drawBackground();
+
+	glTranslated(currentRect.left(), currentRect.top(), 0.0);	
+	glPushMatrix();
 	pushState();
 
 	int currLineWidth = 0;
@@ -123,7 +149,7 @@ void StringRenderer::drawString(const QString& str)
 		if (wrapLine)
 		{
 			glPopMatrix();
-			glTranslated(currentRect.left(), m_currentFont->height(), 0);
+			glTranslated(0, m_currentFont->linespacing() > 0 ? m_currentFont->linespacing() : m_currentFont->height(), 0);
 			glPushMatrix();
 			currLineWidth = 0;
 			wordEndReached = false;
@@ -157,6 +183,14 @@ void StringRenderer::addFont(quint64 hash, Font* font)
 	{
 		m_currentFont = font;
 	}
+}
+
+void StringRenderer::setTextArea(const QImage& texture, const QRect& area)
+{
+	freeTextures();
+	m_texture = m_context->bindTexture(texture, GL_TEXTURE_2D, GL_RGBA, QGLContext::NoBindOption);
+	m_textureSize = texture.size();
+	m_textArea = area;
 }
 
 static bool equalString(const QString::const_iterator& begin, const QString::const_iterator& end, const QString& str)
@@ -282,4 +316,13 @@ void StringRenderer::setScale(double scale)
 double StringRenderer::scale() const
 {
 	return m_scale;
+}
+
+void StringRenderer::freeTextures()
+{
+	if (m_texture != 0)
+	{
+		glDeleteTextures(1, &m_texture);
+		m_texture = 0;
+	}
 }
