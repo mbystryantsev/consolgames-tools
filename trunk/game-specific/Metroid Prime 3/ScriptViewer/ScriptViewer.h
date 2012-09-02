@@ -11,9 +11,11 @@ class QListWidget;
 class QListView;
 class QTreeView;
 class ScriptEditor;
+class EditorDockWidget;
 class ScriptViewWidget;
 class QAction;
 class QItemSelectionModel;
+class QMenu;
 
 class ScriptViewer : public QMainWindow
 {
@@ -56,6 +58,7 @@ protected:
 protected:
 	Ui_CentralWidget m_ui;
 	ScriptViewWidget* m_scriptViewer;
+	QDockWidget* m_scriptViewerDockWidget;
 	QString currentMessageFile() const;
 	Q_SLOT void onFileListIndexChanged(const QModelIndex& index);
 	Q_SLOT void setMessageSetModel(const QString& filename);
@@ -67,6 +70,9 @@ protected:
 	// Actions
 	Q_SLOT void onExit();
 	Q_SLOT void onSave();
+	Q_SLOT void buildViewMenu();
+	Q_SLOT void toggleViewerVisible(bool visible);
+	Q_SLOT void toggleEditorVisible(bool visible);
 
 protected:
 	std::auto_ptr<MessageSetModel> m_currentModel;
@@ -89,6 +95,8 @@ protected:
 
 	QByteArray m_mainLanguage;
 	QSet<QByteArray> m_languages;
+	QMap<QByteArray,EditorDockWidget*> m_editors;
 	QMap<QByteArray,ScriptEditor*> m_openedEditors;
 	QMap<Actions,QAction*> m_actions;
+	QMenu* m_viewMenu;
 };
