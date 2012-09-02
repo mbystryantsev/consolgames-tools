@@ -1,6 +1,7 @@
 #include "ScriptViewWidget.h"
 #include <MetroidFont.h>
 #include <QImage>
+#include <QWheelEvent>
 
 ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_renderer(this)
 {
@@ -44,5 +45,18 @@ void ScriptViewWidget::paintGL()
 void ScriptViewWidget::drawText(const QString& text)
 {
 	m_currentText = text;
+	updateGL();
+}
+
+void ScriptViewWidget::wheelEvent(QWheelEvent* event)
+{
+	if (event->delta() > 0)
+	{
+		m_renderer.setScale(qMin(10.0, m_renderer.scale() + 0.05));
+	}
+	else
+	{
+		m_renderer.setScale(qMax(0.1, m_renderer.scale() - 0.05));	
+	}
 	updateGL();
 }
