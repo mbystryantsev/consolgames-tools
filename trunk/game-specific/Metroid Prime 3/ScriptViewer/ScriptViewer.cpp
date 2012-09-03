@@ -13,8 +13,9 @@
 #include <QMenuBar>
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QSplashScreen>
 
-ScriptViewer::ScriptViewer(QWidget* parent)
+ScriptViewer::ScriptViewer(QWidget* parent, QSplashScreen* splash)
 	: QMainWindow(parent)
 	, m_currentMessage(NULL)
 	, m_currentMessageSet(NULL)
@@ -22,15 +23,31 @@ ScriptViewer::ScriptViewer(QWidget* parent)
 	, m_scriptViewer(NULL)
 	, m_scriptViewerDockWidget(NULL)
 {
+	if (splash) splash->showMessage("Initializing...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
+
 	initUI();
 
+
 	// Temporary solution
+	if (splash) splash->showMessage("Load main language: Russian...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	loadMainLanguage("Russian", "../content/rus/text");
+
+	if (splash) splash->showMessage("Load language: English...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("English", "../content/eng/text", true);
+
+	if (splash) splash->showMessage("Load language: Japan...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("Japan", "../content/jpn/text", true);
+
+	if (splash) splash->showMessage("Load language: French...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("French", "../content/fre/text");
+
+	if (splash) splash->showMessage("Load language: Spanish...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("Spanish", "../content/spa/text");
+
+	if (splash) splash->showMessage("Load language: German...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("German", "../content/ger/text");
+	
+	if (splash) splash->showMessage("Load language: Italian...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("Italian", "../content/ita/text");
 }
 

@@ -16,13 +16,14 @@ class ScriptViewWidget;
 class QAction;
 class QItemSelectionModel;
 class QMenu;
+class QSplashScreen;
 
 class ScriptViewer : public QMainWindow
 {
 	Q_OBJECT;
 
 public:
-	ScriptViewer(QWidget* parent = NULL);
+	ScriptViewer(QWidget* parent = NULL, QSplashScreen* splash = NULL);
 
 	void loadMainLanguage(const QByteArray& languageId, const QString& path);
 	void addSourceLanguage(const QByteArray& languageId, const QString& path, bool editorOpen = false);
