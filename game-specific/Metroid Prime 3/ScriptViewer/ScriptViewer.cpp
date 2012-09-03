@@ -17,6 +17,7 @@
 ScriptViewer::ScriptViewer(QWidget* parent)
 	: QMainWindow(parent)
 	, m_currentMessage(NULL)
+	, m_currentMessageSet(NULL)
 	, m_viewMenu(NULL)
 	, m_scriptViewer(NULL)
 	, m_scriptViewerDockWidget(NULL)
@@ -25,8 +26,12 @@ ScriptViewer::ScriptViewer(QWidget* parent)
 
 	// Temporary solution
 	loadMainLanguage("Russian", "../content/rus/text");
-	addSourceLanguage("English", "../content/eng/text");
-	addSourceLanguage("Japan", "../content/jpn/text");
+	addSourceLanguage("English", "../content/eng/text", true);
+	addSourceLanguage("Japan", "../content/jpn/text", true);
+	addSourceLanguage("French", "../content/fre/text");
+	addSourceLanguage("Spanish", "../content/spa/text");
+	addSourceLanguage("German", "../content/ger/text");
+	addSourceLanguage("Italian", "../content/ita/text");
 }
 
 void ScriptViewer::initUI()
@@ -139,6 +144,8 @@ void ScriptViewer::openEditor(const QByteArray& languageId)
 
 	m_openedEditors.insert(languageId, dockWidget->editor());
 	dockWidget->setVisible(true);
+
+	setSourceLanguageText(languageId);
 }
 
 void ScriptViewer::closeEditor(const QByteArray& languageId)
@@ -148,7 +155,7 @@ void ScriptViewer::closeEditor(const QByteArray& languageId)
 	m_editors[languageId]->setVisible(false);
 }
 
-void ScriptViewer::addSourceLanguage(const QByteArray& languageId, const QString& path)
+void ScriptViewer::addSourceLanguage(const QByteArray& languageId, const QString& path, bool editorOpen)
 {
 	m_sourceLanguagesData.append(LanguageData());
 	LanguageData& langData = m_sourceLanguagesData.last();
@@ -172,7 +179,10 @@ void ScriptViewer::addSourceLanguage(const QByteArray& languageId, const QString
 		}
 	}
 	DLOG << "Loaded additional language: " << languageId;
-	openEditor(languageId);
+	if (editorOpen)
+	{
+		openEditor(languageId);
+	}
 }
 
 void ScriptViewer::loadMainLanguage(const QByteArray& languageId, const QString& path)
@@ -243,9 +253,33 @@ void ScriptViewer::setMessageSetModel(const QString& filename)
 	VERIFY(connect(m_ui.messageList->selectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), SLOT(onMessageSelect(const QModelIndex&))));
 }
 
+void ScriptViewer::setSourceLanguageText(const QByteArray& languageId)
+{
+	if (m_currentMessageSet == NULL || !m_openedEditors.contains(languageId))
+	{
+		return;
+	}
+	const quint64 hash = m_currentMessageSet->nameHashes[0];
+	if (!m_sourceLangMessageMap[languageId].contains(hash))
+	{
+		m_openedEditors[languageId]->setPlainText("");
+		return;
+	}
+
+	const MessageSet* sourceMessageSet = m_sourceLangMessageMap[languageId][hash];
+	if (m_currentMessageIndex.row() >= sourceMessageSet->messages.size())
+	{
+		m_openedEditors[languageId]->setPlainText("");
+		return;
+	}
+
+	m_openedEditors[languageId]->setPlainText(sourceMessageSet->messages[m_currentMessageIndex.row()].text);
+}
+
 void ScriptViewer::onMessageSelect(const QModelIndex& index)
 {
 	m_currentMessage = NULL;
+	m_currentMessageSet = NULL;
 
 	const QModelIndex sourceIndex = m_filterModel->mapToSource(index);
 	const QModelIndex parent = sourceIndex.parent();
@@ -255,34 +289,17 @@ void ScriptViewer::onMessageSelect(const QModelIndex& index)
 		MessageSet& currMessageSet = messageSets[parent.row()];
 		m_currentMessage = &currMessageSet.messages[sourceIndex.row()];
 		m_currentMessageIndex = sourceIndex;
+		m_currentMessageSet = &currMessageSet;
 
 		foreach (const QByteArray& languageId, m_openedEditors.keys())
 		{
-			if (!m_openedEditors.contains(languageId))
-			{
-				continue;
-			}
 			if (languageId == m_mainLanguage)
 			{
-				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[sourceIndex.row()].text);
+				m_openedEditors[languageId]->setPlainText(messageSets[parent.row()].messages[m_currentMessageIndex.row()].text);
 			}
 			else
 			{
-				const quint64 hash = currMessageSet.nameHashes[0];
-				if (!m_sourceLangMessageMap[languageId].contains(hash))
-				{
-					m_openedEditors[languageId]->setPlainText("");
-					continue;
-				}
-
-				const MessageSet* sourceMessageSet = m_sourceLangMessageMap[languageId][hash];
-				if (sourceIndex.row() >= sourceMessageSet->messages.size())
-				{
-					m_openedEditors[languageId]->setPlainText("");
-					continue;
-				}
-
-				m_openedEditors[languageId]->setPlainText(sourceMessageSet->messages[sourceIndex.row()].text);
+				setSourceLanguageText(languageId);
 			}
 		}
 	}

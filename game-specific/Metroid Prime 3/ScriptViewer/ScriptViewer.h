@@ -25,7 +25,7 @@ public:
 	ScriptViewer(QWidget* parent = NULL);
 
 	void loadMainLanguage(const QByteArray& languageId, const QString& path);
-	void addSourceLanguage(const QByteArray& languageId, const QString& path);
+	void addSourceLanguage(const QByteArray& languageId, const QString& path, bool editorOpen = false);
 
 	QByteArray mainLanguage() const;
 
@@ -60,6 +60,7 @@ protected:
 	ScriptViewWidget* m_scriptViewer;
 	QDockWidget* m_scriptViewerDockWidget;
 	QString currentMessageFile() const;
+	void setSourceLanguageText(const QByteArray& languageId);
 	Q_SLOT void onFileListIndexChanged(const QModelIndex& index);
 	Q_SLOT void setMessageSetModel(const QString& filename);
 	Q_SLOT void onMessageSelect(const QModelIndex& index);
@@ -85,6 +86,7 @@ protected:
 	bool m_saved;
 	
 	Message* m_currentMessage;
+	const MessageSet* m_currentMessageSet;
 	QModelIndex m_currentMessageIndex;
 
 	typedef QMap<quint64,const MessageSet*> MessageMap;
