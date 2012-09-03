@@ -218,6 +218,7 @@ QByteArray ScriptViewer::mainLanguage() const
 
 void ScriptViewer::onFileListIndexChanged(const QModelIndex& index)
 {
+	m_currentMessageIndex = QModelIndex();
 	setMessageSetModel(m_scriptFilesModel->filenames()[index.row()]);
 	onFilterChanged(m_ui.filterPattern->text());
 }
