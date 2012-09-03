@@ -1,5 +1,5 @@
 #include "StringRenderer.h"
-#include <FlagHolder.h>
+#include <ValueHolder.h>
 #include <qgl.h>
 
 QHash<QString,StringRenderer::TagType> StringRenderer::s_tagsInfo;
@@ -12,6 +12,7 @@ StringRenderer::StringRenderer(QGLWidget* parent)
 	, m_stackSize(0)
 	, m_scale(1.0)
 	, m_texture(0)
+	, m_alignHorizontally(false)
 {
 	initTagsInfo();
 }
@@ -94,12 +95,39 @@ void StringRenderer::drawRawString(const QString& str)
 	}
 }
 
+int StringRenderer::lineWidth(const QChar* begin, const QChar* end, int areaWidth)
+{
+	int lineWidth = 0;
+	bool wordEndReached = false;
+	QChar prevChar = '\0';
+	for (const QChar* c = begin; c != end; c++)
+	{
+		while (*c == '&')
+		{
+			parseTag(c, end);
+		}
+		if (c == end || *c == '\n' || (wordEndReached && lineWidth + wordWidth(c, end) > areaWidth))
+		{
+			break;
+		}
+		if (c->isSpace())
+		{
+			wordEndReached = true;
+		}
+
+		lineWidth += charWidth(*c, prevChar);
+		prevChar = *c;
+	}
+	return lineWidth;
+}
+
 void StringRenderer::drawString(const QString& str)
 {
 	ASSERT(m_currentFont != NULL);
 	ASSERT(m_stackSize == 0);
 	ASSERT(!m_isDrawing);
 	FlagHolder startDrawing(m_isDrawing, true);
+	FlagHolder horAlignRestorer(m_alignHorizontally);
 
 	int initialStackDepth = 0;
 	glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &initialStackDepth);
@@ -119,6 +147,7 @@ void StringRenderer::drawString(const QString& str)
 
 	int currLineWidth = 0;
 	bool wordEndReached = false;
+	bool isFirstChar = true;
 	QChar prevChar = '\0';
 	bool wrapLine = false;
 	for (QString::const_iterator c = str.constBegin(); c != str.constEnd(); c++)
@@ -153,14 +182,22 @@ void StringRenderer::drawString(const QString& str)
 			glPushMatrix();
 			currLineWidth = 0;
 			wordEndReached = false;
-			wrapLine = false;
 		}
+		if (m_alignHorizontally && (wrapLine || isFirstChar))
+		{
+			const int width = lineWidth(c, str.constEnd(), currentRect.width());
+			const int offset = (currentRect.width() - width) / 2;
+			glTranslated(offset, 0, 0);
+		}
+		wrapLine = false;
+
 		if (*c != '\n')
 		{
 			currLineWidth += charWidth(*c, prevChar);
 			m_currentFont->drawChar(*c);
 			m_currentFont->processKerning(prevChar, *c);
 		}
+		isFirstChar = false;
 	}
 
 	popState();
@@ -268,6 +305,8 @@ void StringRenderer::clearStack()
 
 void StringRenderer::processTag(const TagInfo& tagInfo)
 {
+	ASSERT(m_isDrawing);
+
 	if (tagInfo.type == tagMainColor)
 	{
 		if (tagInfo.value.isNull())
@@ -306,6 +345,17 @@ void StringRenderer::processTag(const TagInfo& tagInfo)
 	{
 		drawChar(' ');
 	}
+	else if (tagInfo.type == tagJust)
+	{
+		if (tagInfo.value == "left")
+		{
+			m_alignHorizontally = false;
+		}
+		else if (tagInfo.value == "center")
+		{
+			m_alignHorizontally = true;
+		}
+	}
 }
 
 void StringRenderer::setScale(double scale)
@@ -325,4 +375,14 @@ void StringRenderer::freeTextures()
 		glDeleteTextures(1, &m_texture);
 		m_texture = 0;
 	}
+}
+
+void StringRenderer::setAlignHorizontally(bool align)
+{
+	m_alignHorizontally = align;
+}
+
+bool StringRenderer::alignHorizontally() const
+{
+	return m_alignHorizontally;
 }

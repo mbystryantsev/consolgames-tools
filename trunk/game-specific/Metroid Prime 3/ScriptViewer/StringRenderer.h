@@ -36,8 +36,12 @@ public:
 	void drawString(const QString& str);
 	void addFont(quint64 hash, Font* font);
 	void setTextArea(const QImage& texture, const QRect& area);
+	
 	void setScale(double scale);
 	double scale() const;
+	
+	void setAlignHorizontally(bool align);
+	bool alignHorizontally() const;
 
 protected:
 	void drawChar(QChar c);
@@ -45,6 +49,7 @@ protected:
 	int charWidth(QChar c, QChar prevChar = '\0') const;
 	int wordWidth(const QString::const_iterator& begin, const QString::const_iterator& end) const;
 	void drawBackground();
+	int lineWidth(const QChar* begin, const QChar* end, int areaWidth);
 
 	static void initTagsInfo();
 	TagInfo parseTag(QString::const_iterator& c, const QString::const_iterator& end);
@@ -67,4 +72,5 @@ protected:
 	QRect m_textArea;
 	QSize m_textureSize;
 	GLuint m_texture;
+	bool m_alignHorizontally;
 };

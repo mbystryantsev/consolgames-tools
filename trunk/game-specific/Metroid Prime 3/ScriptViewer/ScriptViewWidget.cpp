@@ -16,6 +16,7 @@ void ScriptViewWidget::initializeGL()
 		font->setLinespacing(17);
 		m_renderer.addFont(0xFC1BE4F13D86CE52ULL, font);
 		m_renderer.setTextArea(QImage("../misc/viewer_project/textarea.png"), QRect(30, 16, 382, 51));
+		m_renderer.setAlignHorizontally(true);
 	}
 
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
