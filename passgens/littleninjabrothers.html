@@ -1,0 +1,421 @@
+<html>
+<head>
+	<title>Little Ninja Brothers Password Generator by HoRRoR</title>
+</head>
+<body>
+
+<table>
+	<tr><td>
+		<p id='interface'></p>
+	</td></tr>
+	<tr><td>
+		<p id='password' ></p>
+	</td></tr>
+</table>
+
+<script type="text/javascript">
+  function getCheckSum(a, start, count){
+    var result = 0, key1, key2, i, j, flag;
+	for(i = 0; i < count; i++){
+		key1 = 0;
+		flag = !(i & 1);
+		key2 = (i + 1) >> 1;
+		for(j = 0; j < 8; j++){
+			if(flag) key1 += a[i + start];
+			flag = key2 & 1;
+			key2 = ((key2 >> 1) | (key1 << 7)) & 0xFF;
+			key1 >>= 1;
+		}
+		result += key2 + (key1 << 8);
+	}
+	return result;
+  }
+
+  function getCheckLength(BitCount){
+	return Math.floor(BitCount / 8);
+  }
+  
+  function getCharCount(ByteCount){
+	var i = (ByteCount * 8) / 5;
+	if(i = Math.ceil(i)) return i - 1;
+	else return Math.ceil(i);
+  }
+  
+  function ShiftRight(a, v, count, first, last){
+	var i, j, c, cc;
+	if(!last) last = a.length - 1;
+	for(i = 0; i < count; i++){
+		c = v & 1;
+		v >>= 1;
+		for(j = first; j <= last; j++){
+			cc = a[j] & 1;
+			a[j] >>= 1;
+			if(c) a[j] |= 0x80;
+			c = cc;
+		}
+	}
+  }
+    
+  function GeneratePassword(Password, Data, Increment){
+	var mask = 0, mMask = 0, i, j, index = 29, BitCount = 8, passlen, CharCount, CheckSum;
+	var mlen = [8, 8, 8, 6];
+	var dlen = [8,7,8,8,8,8,1,7, 8,2,3,4,4,2,4,2, 3,4,3,4,3,1,3,1, 3,4,3,4,4,1, 8,8,8,8,8,8];
+	var Pass = new Array(30);
+	if(Increment == -1) Increment = Math.floor(Math.random() * 32);
+	//Increment = 0;
+	if(Increment > 0x1F) Increment = 0x1F;
+	else if(Increment < 0) Increment = 0;
+	for(i = 0; i < 30; i++) Pass[i] = 0;
+
+	for(i = 0; i < 30; i++) mask |= ((Data[i] != 0) << i);
+	for(i = 0; i < 4;  i++) mMask |= (((mask >> (i * 8) & 0xFF) != 0) << (3 - i));
+	for(i = 3; i >= 0;  i--){
+		if((mMask >> (3 - i)) & 1){
+			BitCount += mlen[i];
+			for(j = mlen[i] - 1; j >= 0; j--){
+				if(Data[index]){
+					ShiftRight(Pass, Data[index], dlen[index], 4, 0);
+					BitCount += dlen[index];
+				}
+				index--;
+			}
+			ShiftRight(Pass, (mask >> (i * 8)) & 0xFF, mlen[i], 4, 0);
+		} else index -= mlen[i];
+	}
+	
+	passlen = getCheckLength(BitCount) + 1;
+	Pass[3] = Increment;
+	CheckSum  = getCheckSum(Pass, 3, passlen);
+	Pass[0] = CheckSum & 0xFF;
+	Pass[1] = (CheckSum >> 8) & 0xFF;
+	Pass[2] = (((CheckSum >> 16) & 0xF) | (mMask << 4)) & 0xFF;
+	
+	CharCount = getCharCount(passlen);
+	for(i = 0; i < 48; i++) Password[i] = 0;
+	j = -1;
+	index = -1;
+	for(i = 0; i < 24; i++){
+	  if(!(i % 8)) j++;
+	  if(!(i % 5)) index++;
+	  Password[index] = ((Password[index] <<= 1) | ((Pass[j] >> (7 - i % 8)) & 1)) & 0x1F;
+	}
+	j = 4 - 1;
+	index = 6 - 1;
+	for(i = 0; i < BitCount; i++){
+	  if(!(i % 8)) j++;
+	  if(!(i % 5)) index++;
+	  Password[index] = ((Password[index] <<= 1) | ((Pass[j] >> (7 - i % 8)) & 1)) & 0x1F;
+	}
+	for(i = 0; i < CharCount + 6; i++) Password[i] = (Password[i] + Increment) & 0x1F;
+	for(i = CharCount + 6; i < 48; i ++) Password[i] = 0xFF;
+	return CharCount + 6;
+  } 
+  
+  function DrawPassword(Password){
+	var Symbols =
+	["—","B","C","D","&#9632;","F","G","H","+","J","K","L","M","N","&#9679;","P",
+	 "Q","R","S","T","&#9650;","V","W","X","Y","Z","2","3","4","5","6","7"];
+	var i, s = "Password:<br/><table border='1' width='100%'><tr><td>"
+	s +="<table style='font-family: tahoma, verdana, arial, sans-serif, Lucida Sans; font-weight: bold;'>";
+	for(i = 0; i < 48 && Password[i] != 0xFF; i++){
+		if(!(i % 18)){
+			if(i > 0) s += "</tr>";
+			s += "<tr>";
+		} else
+		if(i > 0 && !(i % 6)) s += "<td width='15px'></td>";
+		s += "<td width='15px'>" + Symbols[Password[i]] + "</td>";
+		//if(i > 0 && !(i % 18)) s += "</tr>";
+	}
+	if(i % 18) s += "</tr>";
+	return s + "</td></tr></table>";
+  }
+    
+  function drawListBox(name, strings, params){
+	var i, s = "<select " + params + " id='" + name + "' style='width:100%' >\n";
+	for(i = 0; i < strings.length; i++){
+		s += " <option value='" + i + "'>" + strings[i] + "</option>\n";
+	}
+	s += "</select>\n";
+	return s;
+  }
+  
+  function drawIntListBox(name, from, to, params){
+	var i, s = "<select " + params + " id='" + name + "' style='width:100%' >\n";
+	for(i = from; i <= to; i++){
+		s += " <option value='" + i + "'>" + i + "</option>\n";
+	}
+	s += "</select>\n";
+	return s;
+	
+  }
+  
+  function drawCheckBoxArray(name, strings, params){
+	var i, s = "";
+	for(i = 0; i < strings.length; i++){
+		s += "<input type='checkbox' id='" + name + "' " + params + " />" + strings[i] + "<br/>\n";
+	}
+	return s;
+  }
+  
+  
+  var PunchList 	= ["Nothing", "Iron Claw", "Crush Punch", "Mega Punch", "Fire Punch", "Blunt Punch", "Golden Claw", "Lee's Punch", "Prism Claw"]
+  var SwordList 	= ["Nothing", "Hawk Sword", "Hawk Sword", "Tiger Sword", "Eagle Sword", "Prism Sword"];
+  var ShieldList	= ["Nothing", "Scale Shield", "Mirror Shield", "Fire Shield", "Prism Shield"];
+  var RobeList  	= ["Nothing", "White Robe", "Black Robe", "Lee's Robe", "Sacred Robe"];
+  var TalismanList 	= ["Nothing", "Talisman-&alpha;", "Talisman-&beta;", "Talisman ???", "Talisman-&gamma;", "Talisman-&Sigma;", "Talisman-&Omega;", "Talisman ???"];
+  var AmuletList 	= ["Nothing", "Amulet-I", "Amulet-II", "Amulet ???", "Amulet ???", "Amulet-III", "Amulet-IV"];
+  var LightList 	= ["Nothing", "Match", "Candle", "Torch", "Piece of the Sun"];
+  var StarList      = ["Single", "Volley", "Boomerang", "Fixer"];
+  var CityList		= ["Okay", "Cilly City", "Shorin", "Ling-Rang", "Yokan", "Ling-Rang, B", "Deli-Chous", "Hynen", "Chatzy", "unknown"]
+  var BellList		= ["Red Bell", "Orange Bell", "Yellow Bell", "Green Bell", "Cyan Bell", "Blue Bell", "Violet Bell"];
+  var TreasureList  = ["Antidote", "Mind"];
+  var UsedList		= ["Antidote used", "Pop"];
+  var Exp			= [
+						    0,    15,    80,   210,   390,   590,   840,  1140,  1500,  1900,
+						 2300,  2700,  3100,  3500,  4000,  4550,  5150,  5800,  6500,  7100, 
+						 7700,  8300,  9050,  9950, 10850, 11850, 12850, 14150, 15750, 17650, 
+						19750, 21950, 24250, 26650, 29050, 31450, 33850, 36350, 38850, 41350, 
+						43850, 46350, 48850, 51350, 53850, 56350, 58850, 61350, 63850, 65535
+					  ];
+  var MaxHP			= [
+						 10,  14,  17,  19,  30,  35,  38,  40,  42,  44,
+						 47,  60,  65,  68,  70,  74,  76,  92, 100, 105,
+						108, 112, 115, 118, 148, 155, 158, 180, 186, 190,
+						195, 199, 202, 204, 207, 211, 215, 218, 220, 224,
+						227, 230, 235, 239, 242, 245, 248, 250, 253, 255
+					];
+					
+var Locations = [
+	"World Map, Mt Epin", 	"Ling-Rang", 			"Mt Cone-Rum", 	"Cave to Mt Cone-Rum, Exit",	// 0x00-0x03
+	"Yokan", 				"Shinshin Tower", 		"Okay", 		"Fire Castle, L4, Exit", 		// 0x04-0x07
+	"Fire Castle", 			"Cave to Chatzy, Exit", "Chatzy", 		"Cave to Chatzy, Exit", 		// 0x08-0x0B
+	"Cave to Chatzy", 		"Shorin", 				"Cilly City", 	"Water Lily Palace", 			// 0x09-0x0F
+	"Deli-Chous", "", "", "", // 0x10-0x13
+	"", "", "", "", // 0x14-0x17
+	"", "", "", "", // // 0x18-0x1B
+	"", "", "", "World Map, Exit from Prison", // 0x1C-0x1F
+	"", "", "", "", // 0x20
+	"", "", "", "", // 0x24
+	"", "", "", "", // 0x28
+	"", "", "", "", // 0x2C
+	"", "", "", "", // 0x30
+	"", "", "", "", // 0x34
+	"", "", "", "", // 0x38
+	"", "", "", "", // 0x3C
+	"", "", "", "", // 0x40
+	"", "", "", "", // 0x44
+	"", "", "", "", // 0x48
+	"", "", "", "", // 0x4C
+	"", "", "", "", // 0x50
+	"", "", "", "", // 0x54
+	"", "", "", "", // 0x58
+	"", "", "", "", // 0x5C
+	"", "", "", "", // 0x60
+	"","Deli-Chous, Center", "Hynen, Center", "Chatzy, Center", // 0x64-0x67
+"Shinshin Tower, Rainbow Bridge", "World Map, Bridge to Yokan", "Yokan, Ending", "Deli-Chous, Prison", // 0x68-0x6B
+	"Okay, B1" // 0x6C
+];
+
+  
+  var Upd = "onchange='UpdatePassword();'";
+  var CUpd = "onclick='UpdatePassword();'";
+  function DrawEquip(){	
+    return "<table>" +
+	"<tr><td>Punch:</td><td>"	+	drawListBox("punches",   PunchList, Upd) +    "</td></tr>" +
+	"<tr><td>Sword:</td><td>"	+ 	drawListBox("swords",    SwordList, Upd)+    "</td></tr>" +
+	"<tr><td>Shield:</td><td>"	+ 	drawListBox("shields",   ShieldList, Upd)+   "</td></tr>" +
+	"<tr><td>Robe:</td><td>"	+ 	drawListBox("robes",     RobeList, Upd)+     "</td></tr>" +
+	"<tr><td>Talisman:</td><td>"+	drawListBox("talismans", TalismanList, Upd)+ "</td></tr>" +
+	"<tr><td>Amulet:</td><td>"	+ 	drawListBox("amulets",   AmuletList, Upd)+   "</td></tr>" +
+	"<tr><td>Light:</td><td>"	+ 	drawListBox("lights",    LightList, Upd)+    "</td></tr>" +
+	"<tr><td valign='top'>T-Stars:</td><td>"+ drawCheckBoxArray("stars", StarList, CUpd) + "</td></tr>" +
+	"</table>";
+  }
+  function DrawItems(){	
+    return "<table>" +
+	"<tr><td>Sweet Bun:</td><td width='60px'>"	+	drawIntListBox("sweetbun",   0, 8, Upd) + "</td></tr>" +
+	"<tr><td>Meat Bun:</td><td>"	+ 	drawIntListBox("meatbun",    0, 1, Upd) + "</td></tr>" +
+	"<tr><td>Whirly Bird:</td><td>"	+ 	drawIntListBox("whirlybird", 0, 8, Upd) + "</td></tr>" +
+	"<tr><td>Medicine:</td><td>"	+ 	drawIntListBox("medicine",   0, 1, Upd) + "</td></tr>" +
+	"<tr><td>Sk-Board:</td><td>"	+	drawIntListBox("skboard",    0, 8, Upd) + "</td></tr>" +
+	"<tr><td>Boo Bomb:</td><td>"	+ 	drawIntListBox("boobomb",    0, 8, Upd) + "</td></tr>" +
+	"<tr><td>Dragstar:</td><td>"	+ 	drawIntListBox("dragstar",   0, 1, Upd) + "</td></tr>" +
+	"<tr><td>Battery:</td><td>"		+ 	drawIntListBox("battery",    0, 8, Upd) + "</td></tr>" +
+	"<tr><td>T-Stars:</td><td>"		+ 	drawIntListBox("tstars",     0, 8, Upd) + "</td></tr>" +
+	"<tr><td>Jack K's:</td><td>"	+ 	drawIntListBox("jackks",     0, 99, Upd) + "</td></tr>" +
+	"</table>";
+  }  
+  
+  function getLocation(name, index){
+	this.name = name;
+	this.index = index;
+  }
+  
+  function CompareLocation(a, b){
+	if(a.name > b.name) return 1;
+	else if(a.name < b.name) return -1;
+	else return 0;
+  }
+  
+  var LocIndex;
+  function DrawLocations(){
+	var i, SortedLocations = new Array(Locations.length);
+	for(i = 0; i < Locations.length; i++) if(Locations[i] == "") Locations[i] = "Location #" + i;
+	for(i = 0; i < Locations.length; i++) SortedLocations[i] = new getLocation(Locations[i], i);
+	SortedLocations.sort(CompareLocation);
+	for(i = 0; i < SortedLocations.length; i++) if(SortedLocations[i].index == 0) break;
+	LocIndex = i;
+	var s = "<select onchange='UpdatePassword();' id='location' style='width:100%' change='UpdatePassword();'>\n";
+	for(i = 0; i < SortedLocations.length; i++){
+		s += " <option value='" + SortedLocations[i].index + "'>" + SortedLocations[i].name + "</option>\n";
+	}
+	s += "</select>\n";
+	return s;
+  }
+  
+  function DrawInterface(){
+	var s = "<table border='1' cellpadding='8px'><tr>";
+	s += "<td valign='top' style='text-align:center'>Equip:<br/>\n" + DrawEquip() + "\n</td>";
+	s += "<td valign='top' style='text-align:center'>Items:<br/>\n" + DrawItems() + "\n</td>";
+	s += "<td valign='top'>Visited Cities:<br/>" + drawCheckBoxArray("cities", CityList, CUpd) + "</td>";
+	s += "<td valign='top'>Bells and Treasures:<br/>" + drawCheckBoxArray("bells", BellList, CUpd) +
+	drawCheckBoxArray("treasures", TreasureList, CUpd) + drawCheckBoxArray("used", UsedList, CUpd) + "</td>";
+	s += "</tr><tr><td colspan='2' rowspan='2'>";
+		s += "<table width='100%' cellpadding='4px'><tr><td width='25%'>Level:</td><td width='25%'>" + drawIntListBox('level', 1, 50, "onchange='LevelChange();'") + "</td><td width='25%'>Exp:</td><td><input id='exp' type='text' maxlength='5' size='5' value='0' onkeypress='ExpChange();' onchange='ExpChange();'/></td></tr>";
+		s +="<tr><td>Attack:</td><td>" + drawIntListBox("attack", 1, 50, "onchange='AttackChange();'") + "<td>Money:</td><td><input id='money' type='text' maxlength='5' size='5' value='0' onkeypress='MoneyChange();' onchange='MoneyChange();'/></td></tr><tr></td><td>M's:</td><td>" + drawIntListBox("ms", 0, 6, Upd) + "</td><td>Max Life:</td><td>" + drawListBox("maxhp", MaxHP, "onchange='MaxHPChange();'") + "</td></tr></table>";
+	
+	s += "</td><td colspan='2'><table><tr><td>Location:</td><td width='100%'>" + DrawLocations() + "</td></tr></table>";
+	
+	
+	s += "</td></tr><tr><td colspan='2' align='center'>Little Ninja Brothers passgen by HoRRoR<br><a href='http://consolgames.ru/'>http://consolgames.ru/</a></td></tr>";
+	
+	s += "</table>";
+	
+	return s;
+  }
+  
+  function ExpChange(){
+	var i, e = document.getElementById('exp');
+	var v = parseInt(e.value);
+	if(isNaN(v) || v < 0) v = 0;
+	else if(v > 0xFFFF) v = 0xFFFF;
+	e.value = v;
+	for(i = 50; i >= 0; i--) if(v >= Exp[i]) break;
+	document.getElementById('level').selectedIndex = i;
+	document.getElementById('attack').selectedIndex = i;
+	document.getElementById('maxhp').selectedIndex = i;
+	UpdatePassword();
+  }
+  
+  function LevelChange(){
+	var i = document.getElementById('level').selectedIndex;
+	document.getElementById('exp').value = Exp[i];
+	document.getElementById('attack').selectedIndex = i;
+	document.getElementById('maxhp').selectedIndex = i;
+	UpdatePassword();
+  }
+
+  function AttackChange(){
+	var i = document.getElementById('attack').selectedIndex;
+	document.getElementById('exp').value = Exp[i];
+	document.getElementById('level').selectedIndex = i;
+	document.getElementById('maxhp').selectedIndex = i;
+	UpdatePassword();
+  }
+  
+  function MoneyChange(){
+	var e = document.getElementById('money');
+	var v = parseInt(e.value);
+	if(isNaN(v) || v < 0) v = 0;
+	else if(v > 99999) v = 99999;
+	e.value = v;
+	UpdatePassword();
+  }
+  
+  function MaxHPChange(){
+	var i = document.getElementById('maxhp').selectedIndex;
+	document.getElementById('exp').value = Exp[i];
+	document.getElementById('attack').selectedIndex = i;
+	document.getElementById('level').selectedIndex = i;
+	UpdatePassword();
+  }
+  
+  function getData(Data){
+  	var i, c;
+  
+	Data[0x0C] = Number(document.getElementById('punches').value);
+	Data[0x10] = Number(document.getElementById('swords').value);
+	Data[0x12] = Number(document.getElementById('shields').value);
+	Data[0x14] = Number(document.getElementById('robes').value);
+	Data[0x16] = Number(document.getElementById('talismans').value);
+	Data[0x18] = Number(document.getElementById('amulets').value);
+	Data[0x1A] = Number(document.getElementById('lights').value);
+	
+	c = document.all('stars');
+	Data[0x0E] = 0;
+	for(i = 0; i < 4; i++) Data[0x0E] |= c[i].checked << i;
+	
+	Data[0x19] = Number(document.getElementById('sweetbun').value);
+	Data[0x17] = Number(document.getElementById('meatbun').value);
+	Data[0x1C] = Number(document.getElementById('whirlybird').value);
+	Data[0x1D] = Number(document.getElementById('medicine').value);
+	Data[0x13] = Number(document.getElementById('skboard').value);
+	Data[0x11] = Number(document.getElementById('boobomb').value);
+	Data[0x15] = Number(document.getElementById('dragstar').value);
+	Data[0x1B] = Number(document.getElementById('battery').value);
+	Data[0x0B] = Number(document.getElementById('tstars').value);
+	Data[0x07] = Number(document.getElementById('jackks').value);
+	
+	c = document.all('cities');
+	Data[0x08] = 0;
+	for(i = 0; i < 8; i++) Data[0x08] |= c[i].checked << i;
+	Data[0x09] = c[8].checked | (c[9].checked << 1);
+	
+	c = document.all('bells');
+	Data[0x01] = 0;
+	for(i = 0; i < 7; i++) Data[0x01] |= c[i].checked << i;
+	
+	c = document.all('treasures');
+	Data[0x0F] = c[0].checked | (c[1].checked << 1);
+	
+	c = document.all('used');
+	Data[0x0D] = c[0].checked | (c[1].checked << 1);
+	
+	i = Number(document.getElementById('exp').value);
+	if(i > 0xFFFF) i = 0xFFFF;
+	Data[0x03] = i & 0xFF;
+	Data[0x05] = (i >> 8) & 0xFF;
+	
+	i = Number(document.getElementById('money').value);
+	if(i > 99999) i = 99999;
+	Data[0x02] = i & 0xFF;
+	Data[0x04] = (i >> 8) & 0xFF;
+	Data[0x06] = (i >> 16) & 1;
+	
+	Data[0x0A] = Number(document.getElementById('ms').value);
+	
+	Data[0x00] = Number(document.getElementById('location').value);
+  }
+  
+  Pass = new Array(48);
+  Data = new Array(30);
+  for(i = 0; i < 30; i++) Data[i] = 0;
+  Data[2] = 160;
+  Data[1] = 1;
+  GeneratePassword(Pass, Data, -1);
+  document.getElementById('interface').innerHTML = DrawInterface();
+  document.getElementById('password').innerHTML = DrawPassword(Pass);
+  document.all('bells')[0].checked = 1;
+  document.getElementById('money').value = 160;
+  document.getElementById('location').selectedIndex = LocIndex;
+  
+  function UpdatePassword(){
+	getData(Data);
+	GeneratePassword(Pass, Data, -1);
+	document.getElementById('password').innerHTML = DrawPassword(Pass);
+  }
+</script>
+
+
+</body>
+</html>
