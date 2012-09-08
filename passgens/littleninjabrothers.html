@@ -84,7 +84,7 @@
 				3, 4, 3, 4, 4, 1
 			];
 
-			var s_mapBitLengths = [
+			var s_groupsBytes = [
 				8, 8, 8, 6
 			];
 
@@ -129,6 +129,21 @@
 				return password;
 			}
 
+			function valuesMask(data, group)
+			{
+				var valuesMask = 0;
+				var startIndex = group * 8;
+				for (var i = startIndex + s_groupsBytes[group] - 1; i >= startIndex; i--)
+				{
+					valuesMask <<= 1;
+					if (data[i] != 0)
+					{
+						valuesMask |= 1;
+					}
+				}
+				return valuesMask;
+			}
+
 			function generatePassword(data, increment)
 			{
 				var stack = new BitStack();
@@ -138,26 +153,16 @@
 					increment = Math.floor(Math.random() * 32);
 				}
 				increment = Math.max(0, Math.min(0x1F, increment));
-				
-				var valuesMask = 0;
-				for (var i = 29; i >= 0; i--)
-				{
-					valuesMask <<= 1;
-					if (data[i] != 0)
-					{
-						valuesMask |= 1;
-					}
-				}
 								
 				var quadMask = 0;
 				for(var i = 3; i >= 0;  i--)
 				{
 					quadMask >>>= 1;
-					var currMask = (valuesMask >> i * 8) & 0xFF;
+					var currMask = valuesMask(data, i);
 					if (currMask != 0)
 					{
 						quadMask |= 0x8;
-						var mapBitLength = s_mapBitLengths[i];
+						var mapBitLength = s_groupsBytes[i];
 						for (var j = mapBitLength - 1; j >= 0; j--)
 						{
 							var index = i * 8 + j;
