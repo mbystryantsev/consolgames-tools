@@ -89,33 +89,43 @@
 			];
 
 			var s_passwordCharTable = [
-					'—', 'B', 'C', 'D', '&#9632;', 'F', 'G', 'H', '+', 'J', 'K', 'L', 'M', 'N', '&#9679;', 'P', 
-					'Q', 'R', 'S', 'T', '&#9650;', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7'
+				'—', 'B', 'C', 'D', '&#9632;', 'F', 'G', 'H', '+', 'J', 'K', 'L', 'M', 'N', '&#9679;', 'P', 
+				'Q', 'R', 'S', 'T', '&#9650;', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7'
 			];
 
 			function passwordDataToString(data, increment)
 			{
-				var password = [];
+				var password = [0, 0, 0, 0, 0, 0];
 
-				for (var i = 0; i < 6; i++)
+				// Encode header (3 bytes + increment = 6 chars)
+				for (var i = 0; i < 5; i++)
 				{
-					password.push(data.popBits(Math.min(5, data.length())));
+					password[i] = data.popBits(5);
 				}
-				data.popBits(2);
+				password[5] = increment;
 				
-				// Native algorithm
+				// Skip increment and unused bits
+				data.popBits(7);
+				
+				// Calculate char count by native formula
 				var byteCount = Math.ceil(data.length() / 8) + 1;
 				var charCount = Math.ceil((byteCount * 8) / 5) - 1;
 				
+				// Encode password data
 				for (var i = 0; i < charCount; i++)
 				{
 					password.push(data.popBits(5));
 				}
 
+				// Apply increment skipping increment char
 				for (var i = 0; i < password.length; i++)
 				{
-					password[i] = (password[i] + increment) % 32;
+					if (i != 5)
+					{
+						password[i] = (password[i] + increment) % 32;
+					}
 				}
+
 				return password;
 			}
 
@@ -128,8 +138,6 @@
 					increment = Math.floor(Math.random() * 32);
 				}
 				increment = Math.max(0, Math.min(0x1F, increment));
-				
-				increment = 0;
 				
 				var valuesMask = 0;
 				for (var i = 29; i >= 0; i--)
