@@ -70,7 +70,7 @@
 			function calcChecksum(data)
 			{
 				var sum = 0;
-				for(var i = 0; i < data.length; i++)
+				for (var i = 0; i < data.length; i++)
 				{
 					sum += data[i] * (i + 1);
 				}
@@ -148,30 +148,30 @@
 			{
 				var stack = new BitStack();
 
-				if(increment == -1)
+				if (increment == -1)
 				{
 					increment = Math.floor(Math.random() * 32);
 				}
 				increment = Math.max(0, Math.min(0x1F, increment));
 								
 				var quadMask = 0;
-				for(var i = 3; i >= 0;  i--)
+				for (var i = 3; i >= 0;  i--)
 				{
 					quadMask >>>= 1;
 					var currMask = valuesMask(data, i);
 					if (currMask != 0)
 					{
 						quadMask |= 0x8;
-						var mapBitLength = s_groupsBytes[i];
-						for (var j = mapBitLength - 1; j >= 0; j--)
+						var valuesCount = s_groupsBytes[i];
+						var startIndex = i * 8;
+						for (var j = startIndex + valuesCount - 1; j >= startIndex; j--)
 						{
-							var index = i * 8 + j;
-							if (data[index] != 0)
+							if (data[j] != 0)
 							{
-								stack.pushBits(data[index], s_bitLengths[index]);
+								stack.pushBits(data[j], s_bitLengths[j]);
 							}
 						}
-						stack.pushBits(currMask, mapBitLength);
+						stack.pushBits(currMask, valuesCount);
 					}
 				}
 				
@@ -283,7 +283,7 @@
 			function getBells()
 			{
 				var bells  = 0;
-				for(var i = 0; i < 7; i++)
+				for (var i = 0; i < 7; i++)
 				{
 					bells |= (form.bells[i].checked ? 1 : 0) << i;
 				}
@@ -293,7 +293,7 @@
 			function getCities()
 			{
 				var cities = 0;
-				for(var i = 0; i < 10; i++)
+				for (var i = 0; i < 10; i++)
 				{
 					cities |= (form.cities[i].checked ? 1 : 0) << i;
 				}
@@ -308,7 +308,7 @@
 			function getTStarTypes()
 			{
 				var stars = 0;
-				for(var i = 0; i < 4; i++)
+				for (var i = 0; i < 4; i++)
 				{
 					stars |= (form.stars[i].checked ? 1 : 0) << i;
 				}
