@@ -6,6 +6,21 @@
 		<script type="text/javascript">
 			/* <![CDATA[ */
 
+			if (!Array.prototype.indexOf)
+			{
+				Array.prototype.indexOf = function(value)
+				{;
+					for (var i = 0; i < this.length; i++)
+					{
+						if (this[i] === value)
+						{
+							return i;
+						}
+					}
+					return -1;
+				}
+			}
+			
 			var s_accessibleEggLocations = [
 				0x04, 0x07, 0x16, 0x1B, 0x2F, 0x31, 0x41, 0x43,
 				0x45, 0x47, 0x4E, 0x52, 0x57, 0x87, 0x98, 0x9C,
@@ -65,7 +80,7 @@
 				var password = '';
 				for (var i = 0; i < 8; i++)
 				{
-					password += s_encodeTables[tableIndex][bytes[i]];
+					password += s_encodeTables[tableIndex].charAt(bytes[i]);
 					if (i == 3 || i == 5)
 					{
 						password += '-';
@@ -239,10 +254,10 @@
 											<td>Password Factor:</td>
 											<td>
 												<select name="tableIndex" class="numeric" onchange="updatePassword();">
-													<option selected="selected">0</option>
-													<option>1</option>
-													<option>2</option>
-													<option>3</option>
+													<option value="0" selected="selected">0</option>
+													<option value="1">1</option>
+													<option value="2">2</option>
+													<option value="3">3</option>
 												</select>
 											</td>
 										</tr>
