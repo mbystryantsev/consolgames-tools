@@ -88,24 +88,25 @@
 				8, 8, 8, 6
 			];
 
+			var s_groupsMasks = [
+				0x80, 0x40, 0x20, 0x10
+			];
+
 			var s_passwordCharTable = [
 				'—', 'B', 'C', 'D', '&#9632;', 'F', 'G', 'H', '+', 'J', 'K', 'L', 'M', 'N', '&#9679;', 'P', 
 				'Q', 'R', 'S', 'T', '&#9650;', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7'
 			];
 
-			function passwordDataToString(data, increment)
+			function passwordDataToString(header, data, increment)
 			{
 				var password = [0, 0, 0, 0, 0, 0];
 
 				// Encode header (3 bytes + increment = 6 chars)
 				for (var i = 0; i < 5; i++)
 				{
-					password[i] = data.popBits(5);
+					password[i] = header.popBits(5);
 				}
 				password[5] = increment;
-				
-				// Skip increment and unused bits
-				data.popBits(7);
 				
 				// Calculate char count by native formula
 				var byteCount = Math.ceil(data.length() / 8) + 1;
@@ -116,7 +117,6 @@
 				{
 					password.push(data.popBits(5));
 				}
-
 				// Apply increment skipping increment char
 				for (var i = 0; i < password.length; i++)
 				{
@@ -157,11 +157,10 @@
 				var quadMask = 0;
 				for (var i = 3; i >= 0;  i--)
 				{
-					quadMask >>>= 1;
 					var currMask = valuesMask(data, i);
 					if (currMask != 0)
 					{
-						quadMask |= 0x8;
+						quadMask |= s_groupsMasks[i];
 						var valuesCount = s_groupsBytes[i];
 						var startIndex = i * 8;
 						for (var j = startIndex + valuesCount - 1; j >= startIndex; j--)
@@ -175,14 +174,14 @@
 					}
 				}
 				
-				stack.pushBits(increment, 8);
-
-				var checksum  = calcChecksum(stack.toByteArray());
-				stack.pushBits(checksum >> 16, 4);
-				stack.pushBits(quadMask, 4);
-				stack.pushBits(checksum >> 8, 8);
-				stack.pushBits(checksum, 8);
-				return passwordDataToString(stack, increment);
+				var checksum  = calcChecksum([increment].concat(stack.toByteArray()));
+				
+				var header = new BitStack();
+				header.pushBits((checksum >> 16) | quadMask, 8);
+				header.pushBits(checksum >> 8, 8);
+				header.pushBits(checksum, 8);
+				
+				return passwordDataToString(header, stack, increment);
 			} 
 
 			function setPasswordText(password)
@@ -335,6 +334,7 @@
 				data[0x05] = (exp >> 8) & 0xFF;
 				data[0x06] = (money >> 16) & 1;
 				data[0x07] = parseInt(form.jackks.value);
+				
 				data[0x08] = cities & 0xFF;
 				data[0x09] = (cities >> 8) & 0x3;
 				data[0x0A] = parseInt(form.ms.value);
@@ -343,6 +343,7 @@
 				data[0x0D] = getUsedTreasures();	
 				data[0x0E] = getTStarTypes();
 				data[0x0F] = getTreasures();
+				
 				data[0x10] = parseInt(form.sword.value);
 				data[0x11] = parseInt(form.boobomb.value);
 				data[0x12] = parseInt(form.shield.value);
@@ -351,6 +352,7 @@
 				data[0x15] = parseInt(form.dragstar.value);
 				data[0x16] = parseInt(form.talisman.value);
 				data[0x17] = parseInt(form.meatbun.value);
+				
 				data[0x18] = parseInt(form.amulet.value);
 				data[0x19] = parseInt(form.sweetbun.value);
 				data[0x1A] = parseInt(form.light.value);	
@@ -813,8 +815,8 @@
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Cyan Bell <br/>                                                                           
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Blue Bell <br/>                                                                           
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Violet Bell <br/>                                                                           
-							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Antidote <br/>                                                                           
 							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Mind <br/>                                                                           
+							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Antidote <br/>                                                                           
 							  <input type="checkbox" name="used" onclick="updatePassword();"/> Antidote used <br/>                                                                           
 							  <input type="checkbox" name="used" onclick="updatePassword();"/> Pop <br/>
 							</td>
