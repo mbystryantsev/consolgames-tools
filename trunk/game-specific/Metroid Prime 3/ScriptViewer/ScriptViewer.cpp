@@ -361,6 +361,12 @@ void ScriptViewer::onFilterChanged(const QString& pattern)
 			m_ui.messageList->selectionModel()->select(index, QItemSelectionModel::SelectCurrent);
 		}
 	}
+
+	if (m_ui.messageList->selectionModel()->hasSelection())
+	{
+		const QModelIndex index = m_ui.messageList->selectionModel()->selectedIndexes().first();
+		m_ui.messageList->scrollTo(index);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
