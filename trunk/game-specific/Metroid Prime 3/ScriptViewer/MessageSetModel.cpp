@@ -1,4 +1,5 @@
 #include "MessageSetModel.h"
+#include <QColor>
 
 MessageSetModel::MessageSetModel(const QVector<MessageSet>& messages, QObject* parent)
 	: QAbstractItemModel(parent)
@@ -32,7 +33,7 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 	}
 	if (role == Qt::BackgroundColorRole)
 	{
-		return parent.isValid() ? QVariant() : Qt::yellow;
+		return parent.isValid() ? QVariant() : QColor(240, 240, 240);
 	}
 	return QVariant();
 }
