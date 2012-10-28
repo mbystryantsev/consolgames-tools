@@ -1,5 +1,5 @@
 #include "DataPaster.h"
-#include <pak.h>
+#include <QtPakArchive.h>
 #include <WiiFileStream.h>
 #include <Stream.h>
 #include <QStringList>
@@ -32,7 +32,7 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
  			return false;
  		}
 
-		PakArchive pak;
+		QtPakArchive pak;
 		pak.setProgressHandler(m_pakProgressHandler);
 		pak.open(file.get());
 		if (!pak.opened())
@@ -103,7 +103,7 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 	foreach (const QString& pakName, pakArchives)
 	{
 		const QString pakPath = outDir + QDir::separator() + pakName;
-		PakArchive resultPak;
+		QtPakArchive resultPak;
 		if (!resultPak.open(pakPath.toStdString()))
 		{
 			DLOG << "CheckData: Unable to parse result pak: " << pakName;
