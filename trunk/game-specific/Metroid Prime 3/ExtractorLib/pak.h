@@ -192,7 +192,8 @@ protected:
 
 	bool extractFile(const FileRecord& file, Consolgames::Stream* out);
 	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
-	u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture,  u8 flags = 0xFF);
+	virtual std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const;
+	virtual u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
 	int findSegment(ResType type) const;
 	int getSegmentOffset(int index) const;
 	static void swapFileEndian(FileRecord& fileRecord);
