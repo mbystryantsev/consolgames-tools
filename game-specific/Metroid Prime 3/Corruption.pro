@@ -8,6 +8,7 @@ SUBDIRS = \
 	ExtractorLib \
 	Extractor \
 	PasterLib \
+	Paster \
 	FontLib \
 	FontTool \
 	Patcher \
