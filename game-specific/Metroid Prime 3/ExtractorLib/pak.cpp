@@ -410,7 +410,7 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 	return true;
 }
 
-std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res)
+std::string PakArchive::findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const
 {
 	const std::string filename = hashToStr(hash) + "." + res.toString();
 	for (size_t i = 0; i < inputDirs.size(); i++)
