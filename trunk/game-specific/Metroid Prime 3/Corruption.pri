@@ -12,6 +12,7 @@ INCLUDEPATH += \
 	$$PWD/Common \
 	$$PWD/ScriptTesterLib \
 	$$PWD/ExtractorLib \
+	$$PWD/PasterLib \
 	$$PWD/FontLib \
 	$$PWD/../../platform-specific/wii/streams \
 	$$PWD/../../platform-specific/wii/streams/include \

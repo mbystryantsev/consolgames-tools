@@ -1,10 +1,10 @@
 QT -= gui core
 CONFIG += static
-CONFIG -= flat
+CONFIG -= flat qt
 TEMPLATE = lib
 
-HEADERS = *.h
-SOURCES = *.cpp
+HEADERS = $$files(*.h)
+SOURCES = $$files(*.cpp)
 LIBS = core.lib
 
 include(lzo/lzo.pri)
