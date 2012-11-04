@@ -1407,7 +1407,7 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset,
 	// blanked data
 
 
-	int clusterCount = ((bytesToWrite -1)/ SIZE_CLUSTER_DATA)+1;
+	const int clusterCount = ((bytesToWrite + clusterOffset - 1) / SIZE_CLUSTER_DATA) + 1;
 
 	if (bytesToWrite != (NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA))
 	{
