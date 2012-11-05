@@ -16,6 +16,9 @@ public:
 
 	const QVector<MessageSet>& messages() const;
 
+	typedef QMap<quint64,const MessageSet*> MessageMap;
+	void setSourceMessages(const MessageMap& sourceMessages);
+
 protected:
 	enum Column
 	{
@@ -26,5 +29,6 @@ protected:
 
 protected:
 	const QVector<MessageSet>& m_messages;
+	const MessageMap* m_sourceMessages;
 
 };
