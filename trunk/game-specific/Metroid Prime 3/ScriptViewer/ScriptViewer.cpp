@@ -257,6 +257,7 @@ void ScriptViewer::setMessageSetModel(const QString& filename)
 	m_filterModel.reset();
 
 	m_currentModel.reset(new MessageSetModel(m_mainLanguageData[filename]));
+	m_currentModel->setSourceMessages(m_sourceLangMessageMap["English"]);
 
 	m_filterModel.reset(new MessageSetFilterModel());
 	m_filterModel->setSourceModel(m_currentModel.get());

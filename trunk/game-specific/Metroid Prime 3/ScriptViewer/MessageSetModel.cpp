@@ -4,6 +4,7 @@
 MessageSetModel::MessageSetModel(const QVector<MessageSet>& messages, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_messages(messages)
+	, m_sourceMessages(NULL)
 {
 }
 
@@ -28,12 +29,28 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 		}
 		if (index.column() == colText)
 		{
-			return QString::number(m_messages[index.row()].nameHashes[0]);
+			return QString::number(m_messages[index.row()].nameHashes[0], 16).toUpper().rightJustified(16, '0');
 		}
 	}
 	if (role == Qt::BackgroundColorRole)
 	{
-		return parent.isValid() ? QVariant() : QColor(240, 240, 240);
+		if (!parent.isValid())
+		{
+			return QColor(240, 240, 240);
+		}
+		if (m_sourceMessages != NULL)
+		{
+			const quint64 hash = m_messages.at(parent.row()).nameHashes[0];
+			if (m_sourceMessages->contains(hash))
+			{
+				const QString& message = m_messages.at(parent.row()).messages[index.row()].text;
+				const QString& sourceMessage = (*m_sourceMessages)[hash]->messages[index.row()].text;
+				if (sourceMessage == message && !message.trimmed().isEmpty())
+				{
+					return QColor(QColor(255, 220, 220));
+				}
+			}
+		}
 	}
 	return QVariant();
 }
@@ -64,4 +81,9 @@ int MessageSetModel::rowCount(const QModelIndex& parent) const
 const QVector<MessageSet>& MessageSetModel::messages() const
 {
 	return m_messages;
+}
+
+void MessageSetModel::setSourceMessages(const MessageMap& sourceMessages)
+{
+	m_sourceMessages = &sourceMessages;
 }
