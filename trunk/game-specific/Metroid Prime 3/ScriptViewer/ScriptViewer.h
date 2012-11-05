@@ -62,7 +62,7 @@ protected:
 	QDockWidget* m_scriptViewerDockWidget;
 	QString currentMessageFile() const;
 	void setSourceLanguageText(const QByteArray& languageId);
-	Q_SLOT void onFileListIndexChanged(const QModelIndex& index);
+	Q_SLOT void onFileListIndexChanged(const QModelIndex& index, const QModelIndex& prevIndex);
 	Q_SLOT void setMessageSetModel(const QString& filename);
 	Q_SLOT void onMessageSelect(const QModelIndex& index);
 	Q_SLOT void onTextChanged(const QString& text, const QByteArray& languageId);
@@ -75,6 +75,9 @@ protected:
 	Q_SLOT void buildViewMenu();
 	Q_SLOT void toggleViewerVisible(bool visible);
 	Q_SLOT void toggleEditorVisible(bool visible);
+
+	void calcFileDiffPercentage(const QString& file);
+	void calcDiffPercentage();
 
 protected:
 	std::auto_ptr<MessageSetModel> m_currentModel;

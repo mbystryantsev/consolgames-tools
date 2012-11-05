@@ -49,6 +49,9 @@ ScriptViewer::ScriptViewer(QWidget* parent, QSplashScreen* splash)
 	
 	if (splash) splash->showMessage("Load language: Italian...", Qt::AlignLeft | Qt::AlignBottom, Qt::white);
 	addSourceLanguage("Italian", "../content/ita/text");
+
+	calcDiffPercentage();
+	VERIFY(QMetaObject::invokeMethod(m_scriptFilesModel.get(), "dataChanged", Q_ARG(const QModelIndex&, m_scriptFilesModel->index(0, 0)), Q_ARG(const QModelIndex&, m_scriptFilesModel->index(m_mainLanguageData.size() - 1, 0))));
 }
 
 void ScriptViewer::initUI()
@@ -127,7 +130,7 @@ void ScriptViewer::updateFileList()
 	m_ui.fileList->setModel(m_scriptFilesModel.get());
 	m_ui.fileList->setSelectionModel(m_scriptFilesSelectionModel.get());
 
-	VERIFY(connect(m_scriptFilesSelectionModel.get(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), SLOT(onFileListIndexChanged(const QModelIndex&))));
+	VERIFY(connect(m_scriptFilesSelectionModel.get(), SIGNAL(currentRowChanged(const QModelIndex&, const QModelIndex&)), SLOT(onFileListIndexChanged(const QModelIndex&, const QModelIndex&))));
 	m_scriptFilesSelectionModel->setCurrentIndex(m_scriptFilesModel->index(0, 0), QItemSelectionModel::Current);
 }
 
@@ -243,8 +246,14 @@ QByteArray ScriptViewer::mainLanguage() const
 	return m_mainLanguage;
 }
 
-void ScriptViewer::onFileListIndexChanged(const QModelIndex& index)
+void ScriptViewer::onFileListIndexChanged(const QModelIndex& index, const QModelIndex& prevIndex)
 {
+	if (prevIndex.isValid())
+	{
+		calcFileDiffPercentage(m_scriptFilesModel->filenames()[prevIndex.row()]);
+		VERIFY(QMetaObject::invokeMethod(m_scriptFilesModel.get(), "dataChanged", Q_ARG(const QModelIndex&, prevIndex), Q_ARG(const QModelIndex&, prevIndex)));
+	}
+
 	m_currentMessageIndex = QModelIndex();
 	setMessageSetModel(m_scriptFilesModel->filenames()[index.row()]);
 	onFilterChanged(m_ui.filterPattern->text());
@@ -451,5 +460,42 @@ void ScriptViewer::toggleEditorVisible(bool visible)
 	else
 	{
 		closeEditor(languageId);
+	}
+}
+
+void ScriptViewer::calcFileDiffPercentage(const QString& file)
+{
+	MessageFileListModel::DiffFileInfo info;
+
+	foreach (const MessageSet& messageSet, m_mainLanguageData[file])
+	{
+		info.messageSetCount++;
+
+		const MessageSet& sourceMessageSet = *m_sourceLangMessageMap["English"][messageSet.nameHashes[0]];
+		bool setIsDifferent = false;
+		for (int i = 0; i < messageSet.messages.size(); i++)
+		{
+			info.messageCount++;
+
+			if (messageSet.messages[i].text != sourceMessageSet.messages[i].text)
+			{
+				info.messageDiffs++;
+				if (!setIsDifferent)
+				{
+					info.messageSetDiffs++;
+					setIsDifferent = true;
+				}
+			}
+		}
+	}
+
+	m_scriptFilesModel->setDiffInfo(file, info);
+}
+
+void ScriptViewer::calcDiffPercentage()
+{
+	foreach (const QString& file, m_mainLanguageData.keys())
+	{
+		calcFileDiffPercentage(file);
 	}
 }
