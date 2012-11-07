@@ -373,6 +373,11 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 
 	for (size_t i = 0; i < m_files.size(); i++)
 	{
+		if (stopRequested())
+		{
+			return false;
+		}
+
 		if (types.empty() || types.find(m_files[i].res) != types.end())
 		{
 			std::string filename = m_files[i].name();
@@ -402,7 +407,7 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 			}
 
 			extractFile(m_files[i], &stream);
-		  }
+		}
 	}
 	
 	finishProgress();
@@ -444,6 +449,11 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 
 	for (size_t i = 0; i < files.size(); i++)
 	{	
+		if (stopRequested())
+		{
+			return false;
+		}
+
 		progress(i, NULL);
 		files[i] = m_files[i];
 		if (!mergeMap.empty() && mergeMap.find(files[i].hash) != mergeMap.end()
@@ -568,6 +578,15 @@ void PakArchive::finishProgress()
 	{
 		m_progressHandler->finish();
 	}
+}
+
+bool PakArchive::stopRequested()
+{
+	if (m_progressHandler != NULL)
+	{
+		m_progressHandler->stopRequested();
+	}
+	return false;
 }
 
 bool PakArchive::opened() const
