@@ -24,6 +24,10 @@ public:
 	virtual void init(int size) = 0;
 	virtual void progress(int value, const char* message) = 0;
 	virtual void finish() = 0;
+	virtual bool stopRequested()
+	{
+		return false;
+	}
 };
 
 #pragma pack(push, 1)
@@ -205,6 +209,7 @@ protected:
 	void initProgress(int count);
 	void progress(int value, const char* message);
 	void finishProgress();
+	bool stopRequested();
 
 
 protected:
