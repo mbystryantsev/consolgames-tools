@@ -23,13 +23,17 @@ protected:
 	Q_SLOT void onTempPathSelectPressed();
 
 	Q_SLOT void setProgressSize(int size);
-	Q_SLOT void setProgressValue(int index, const char* message);
+	Q_SLOT void setProgressValue(int index, const QString&);
+	Q_SLOT void setMessage(const QString&);
 	Q_SLOT void onActionStarted(int action);
 	Q_SLOT void onActionCompleted(bool success);
+	Q_SLOT void onActionProgress(int value, const QString& message);
 
 	Q_SLOT void storeSettings() const;
 
 	virtual void closeEvent(QCloseEvent* event) override;
+
+	void reset();
 
 	void loadSettings();
 
@@ -39,4 +43,6 @@ protected:
 	PasterThread::Action m_step;
 	int m_currentAction;
 	bool m_settingsIsActive;
+	bool m_isPatching;
+	bool m_stopRequested;
 };

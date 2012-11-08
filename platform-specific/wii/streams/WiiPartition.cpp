@@ -1,5 +1,7 @@
 #include "WiiPartition.h"
 
+LOG_CATEGORY("WiiPartition")
+
 namespace Consolgames
 {
 

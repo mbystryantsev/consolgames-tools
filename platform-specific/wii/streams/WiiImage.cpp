@@ -5,15 +5,65 @@
 #include <MemoryStream.h>
 #include "WiiFileStream.h"
 
+LOG_CATEGORY("WiiImage")
+
+#pragma pack(push, 1)
+
+typedef u8 HashData[20];
+typedef u8 ClusterData[SIZE_CLUSTER_DATA];
+
+struct SHA1Hash
+{
+	HashData hash;
+	u8& operator[](int index)
+	{
+		return hash[index];
+	}
+	const u8& operator[](int index) const
+	{
+		return hash[index];
+	}
+};
+
+struct ClusterHeader
+{
+	HashData h0[31];
+	u8 _padding0[20];
+	HashData h1[8];
+	u8 _padding1[32];
+	HashData h2[8];
+	u8 _padding2[32];
+};
+
+#pragma pack(pop)
+
 namespace Consolgames
 {
-	
+
+WiiImage::DummyProgressHandler WiiImage::s_dummyProgressHandler;
+
+WiiImage::WiiImage()
+	: m_progressHandler(NULL)
+{
+
+}
+
+void WiiImage::setProgressHandler(IProgressHandler* handler)
+{
+	m_progressHandler = handler;
+}
+
 bool WiiImage::open(const std::string& filename, Stream::OpenMode mode)
 {
 	m_stream.reset(new FileStream(filename, mode));
-	ASSERT(m_stream->opened());
-
-	VERIFY(m_stream->seek(0, Stream::seekSet) == 0);
+	if (!m_stream->opened())
+	{
+		return false;
+	}
+	if (m_stream->seek(0, Stream::seekSet) != 0)
+	{
+		return false;
+	}
 	if (!readHeader())
 	{
 		return false;
@@ -537,9 +587,9 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, off
 
 					// update the settings for the FST.BIN entry
 					// this has to be rounded to the nearest 4 so.....
-					if (0!=(imageSize%4))
+					if (imageSize % 4 != 0)
 					{
-						imageSize = imageSize + (4 - imageSize%4);
+						imageSize += 4 - (imageSize % 4);
 					}
 					store32(&bootBin[0x428], static_cast<u32>(imageSize >> 2));
 					store32(&bootBin[0x42C], static_cast<u32>(imageSize >> 2));
@@ -579,9 +629,9 @@ bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, off
 			{
 				switch(fstReference)
 				{
-				case -1:
-				case -2:
-				case -3:
+				case refFst:
+				case refMain:
+				case refApploader:
 					// simple write as files are the same size
 					wii_write_data_file(partition, offset, &inStream, imageSize);
 					break;
@@ -785,9 +835,7 @@ bool WiiImage::wii_trucha_signing(int partition)
 {
 	u8 hash[20];
 
-	/* Store TMD size */
-	u32 size = m_partitions[partition].tmdSize;
-
+	const u32 size = m_partitions[partition].tmdSize;
 	std::vector<u8> buffer(size);
 
 	readDirect(m_partitions[partition].offset + m_partitions[partition].tmdOffset, &buffer[0], size);
@@ -1047,7 +1095,7 @@ bool WiiImage::parseImage()
 			partition.addFilesystemObject("cert.bin", partition.certOffset, partition.certSize, refCert, dataFile);
 
 			// add on the H3
-			DLOG << i << ":/h3.bin" << HEX << (partition.offset + partition.h3_offset) << " " << 0x18000;
+			DLOG << i << ":/h3.bin " << HEX << (partition.offset + partition.h3_offset) << " " << 0x18000;
 			markAsUsedDC(	partition.offset, partition.h3_offset, 0x18000, false);
 			partition.addFilesystemObject("h3.bin", partition.h3_offset, 0x18000, refH3, dataFile);
 		}
@@ -1259,7 +1307,7 @@ Tree<FileInfo>::Node* WiiImage::findFile(const std::string& path, Tree<FileInfo>
 	return NULL;
 }
 
-Consolgames::Stream* WiiImage::openFile(const std::string& path, Stream::OpenMode mode)
+Consolgames::WiiFileStream* WiiImage::openFile(const std::string& path, Stream::OpenMode mode)
 {
 	if (m_stream->openMode() != Stream::modeReadWrite && m_stream->openMode() != mode)
 	{
@@ -1285,13 +1333,13 @@ bool WiiImage::wii_read_cluster(int partition, int cluster, u8 *data, u8 *header
 	u8  iv[16];
 
 	/* Jump to the specified cluster and copy it to memory */
-	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + cluster * SIZE_CLUSTER;
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + static_cast<offset_t>(cluster) * SIZE_CLUSTER;
 
 	// read the correct location block in
 	io_read(buf, SIZE_CLUSTER, offset);
 
 	/* Set title key */
-	u8* title_key =  &m_partitions[partition].title_key[0];
+	const u8* title_key =  &m_partitions[partition].title_key[0];
 
 	/* Copy header if required*/
 	if (header)
@@ -1379,35 +1427,31 @@ bool WiiImage::wii_calc_group_hash(int partition, int cluster)
 	return true;
 }
 
-bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset, int bytesToWrite, Stream* inStream)
+bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluster, int bytesToWrite, Stream* inStream)
 {
 	// TODO: Refactor
+	HashData h1;
+	HashData h2[8];
 
-	u8 h0[SIZE_H0];
-	u8 h1[SIZE_H1];
-	u8 h2[SIZE_H2];
-
-	u8 iv[16];
-
-	int clusterGroup = cluster / NB_CLUSTER_GROUP;
-	int firstCluster = clusterGroup * NB_CLUSTER_GROUP;
+	const int clusterGroup = cluster / NB_CLUSTER_GROUP;
+	const int firstClusterInGroup = clusterGroup * NB_CLUSTER_GROUP;
 
 	/* Get number of clusters in this group */
-	int clustersInGroup = wii_nb_cluster(partition) - firstCluster;
+	int clustersInGroup = wii_nb_cluster(partition) - firstClusterInGroup;
 	if (clustersInGroup > NB_CLUSTER_GROUP)
 	{
 		clustersInGroup = NB_CLUSTER_GROUP;
 	}
 
 	std::vector<u8> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
-	std::vector<u8> header(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP);
+	std::vector<ClusterHeader> headers(NB_CLUSTER_GROUP);
 	
 	// if we are replacing a full set of clusters then we don't
 	// need to do any reading as we just need to overwrite the
 	// blanked data
 
 
-	const int clusterCount = ((bytesToWrite + clusterOffset - 1) / SIZE_CLUSTER_DATA) + 1;
+	const int clusterCount = ((bytesToWrite + offsetInCluster - 1) / SIZE_CLUSTER_DATA) + 1;
 
 	if (bytesToWrite != (NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA))
 	{
@@ -1415,9 +1459,7 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset,
 		for (int i = 0; i < clustersInGroup; i++)
 		{
 			u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-			u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
-
-			if (!wii_read_cluster(partition, firstCluster + i, d_ptr, h_ptr))
+			if (!wii_read_cluster(partition, firstClusterInGroup + i, d_ptr, reinterpret_cast<u8*>(&headers[i])))
 			{
 				return false;
 			}
@@ -1427,82 +1469,68 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset,
 	// now overwrite the data in the correct location
 	// be it from file data or from the memory location
 	/* Write new cluster and H0 table */
-	int pos_header  = ((cluster - firstCluster) * SIZE_CLUSTER_HEADER);
-	int pos_cluster = ((cluster - firstCluster) * SIZE_CLUSTER_DATA);
+	const int firstClusterIndexInGroup = cluster - firstClusterInGroup;
+	const int firstClusterDataOffset = firstClusterIndexInGroup * SIZE_CLUSTER_DATA;
 
-	inStream->read(&data[pos_cluster + clusterOffset], bytesToWrite);
+	inStream->read(&data[firstClusterDataOffset + offsetInCluster], bytesToWrite);
 
-	for(int j = 0; j < clusterCount; j++)
+	for (int clusterIndex = 0; clusterIndex < clusterCount; clusterIndex++)
 	{
-		memset(h0, 0, SIZE_H0);
+		int clusterIndexInGroup = firstClusterIndexInGroup + clusterIndex;
 
 		/* Calculate new clusters H0 table */
-		for (int i = 0; i < SIZE_CLUSTER_DATA; i += 0x400)
+		for (int i = 0; i < 31; i++)
 		{
-			const u32 index = (i / 0x400) * 20;
-			sha1(&data[pos_cluster + (j * SIZE_CLUSTER_DATA) + i], 0x400, &h0[index]);
+			sha1(&data[firstClusterDataOffset + clusterIndex * SIZE_CLUSTER_DATA + i * 0x400], 0x400, &headers[clusterIndexInGroup].h0[i][0]);
 		}
-
-		memcpy(&header[pos_header + (j * SIZE_CLUSTER_HEADER)], h0, SIZE_H0);
-
-		sha1(&header[pos_header + (j * SIZE_CLUSTER_HEADER)], SIZE_H0, h1);
+		sha1(&headers[clusterIndexInGroup].h0[0][0], SIZE_H0, h1);
 
 		// now copy to all the sub cluster locations
-		for (int k = 0; k < NB_CLUSTER_SUBGROUP; k++)
+		const u32 subgroupIndex = clusterIndexInGroup / NB_CLUSTER_SUBGROUP;
+		const int clusterIndexInSubgroup = clusterIndexInGroup % NB_CLUSTER_SUBGROUP;
+		for (int cluster = 0; cluster < NB_CLUSTER_SUBGROUP; cluster++)
 		{
 			// need to get the position of the first block we are changing
 			// which is the start of the subgroup for the current cluster
-			const u32 subGroup = ((cluster + j) % NB_CLUSTER_GROUP) / NB_CLUSTER_SUBGROUP;
-
-			u32 pos = (SIZE_CLUSTER_HEADER * subGroup * NB_CLUSTER_SUBGROUP) + (0x14 * ((cluster +j)%NB_CLUSTER_SUBGROUP));
-
-			memcpy(&header[pos + (k * SIZE_CLUSTER_HEADER) + OFFSET_H1], h1, 20);
+			memcpy(&headers[subgroupIndex * NB_CLUSTER_SUBGROUP + cluster].h1[clusterIndexInSubgroup], h1, 20);
 		}
 
 	}
 
 	// now we need to calculate the H2's for all subgroups
 	/* Calculate H2 */
-	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
+	for (int i = 0; i < 8; i++)
 	{
-		int pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
-
 		/* Cluster exists? */
-		if ((pos / SIZE_CLUSTER_HEADER) > clustersInGroup)
+		if (i * NB_CLUSTER_SUBGROUP > clustersInGroup)
 		{
 			break;
 		}
 
-		/* Calculate SHA-1 hash */
-		sha1(&header[pos + OFFSET_H1], SIZE_H1, &h2[20 * i]);
+		sha1(&headers[i * 8].h1[0][0], SIZE_H1, &h2[i][0]);
 	}
 
 	/* Write H2 table */
 	for (int i = 0; i < clustersInGroup; i++)
 	{
-		/* Write H2 table */
-		memcpy(&header[(SIZE_CLUSTER_HEADER * i) + OFFSET_H2], h2, SIZE_H2);
+		memcpy(&headers[i].h2, h2, SIZE_H2);
 	}
 
 	// update the H3 key table here
-	/* Calculate SHA-1 hash */
-	sha1(h2, SIZE_H2, &m_h3[clusterGroup * 0x14]);
-
+	sha1(&h2[0][0], SIZE_H2, &m_h3[clusterGroup * 0x14]);
 
 	// now encrypt and write
-
-	/* Set title key */
 	const u8* title_key = &(m_partitions[partition].title_key[0]);
 
 	/* Encrypt headers */
 	for (int i = 0; i < clustersInGroup; i++)
 	{
-		u8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
+		u8 *ptr = reinterpret_cast<u8*>(&headers[i]);
 
 		u8 phData[SIZE_CLUSTER_HEADER];
 
 		/* Set IV key */
-		memset(iv, 0, 16);
+		u8 iv[16] = {};
 
 		/* Encrypt */
 		aes_cbc_enc(ptr, (u8*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
@@ -1513,13 +1541,12 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset,
 	for (int i = 0; i < clustersInGroup; i++)
 	{
 		u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		const u8 *h_ptr = reinterpret_cast<const u8*>(&headers[i]);
 
 		u8 phData[SIZE_CLUSTER_DATA];
 
-
-		/* Set IV key */
-		memcpy(iv, &h_ptr[OFFSET_CLUSTER_IV], 16);
+		u8 iv[16];
+		std::copy(&h_ptr[OFFSET_CLUSTER_IV], &h_ptr[OFFSET_CLUSTER_IV] + 16, iv);
 
 		/* Encrypt */
 		aes_cbc_enc(d_ptr, (u8*) phData, SIZE_CLUSTER_DATA, title_key, iv);
@@ -1527,32 +1554,24 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int clusterOffset,
 	}
 
 	/* Jump to first cluster in the group */
-	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + (u64)((u64)firstCluster * (u64)SIZE_CLUSTER);
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + (u64)((u64)firstClusterInGroup * (u64)SIZE_CLUSTER);
 
 	for (int i = 0; i < clustersInGroup; i++)
 	{
 		const u8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const u8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		const u8 *h_ptr = reinterpret_cast<const u8*>(&headers[i]);
 
-		if (writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
-		{
-			// written ok, add value to offset
-			offset += SIZE_CLUSTER_HEADER;
-
-			if (writeDirect(offset, d_ptr, SIZE_CLUSTER_DATA))
-			{
-				offset += SIZE_CLUSTER_DATA;
-			}
-			else
-			{
-				return false;
-
-			}
-		}
-		else
+		if (!writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
 		{
 			return false;
 		}
+		offset += SIZE_CLUSTER_HEADER;
+
+		if (!writeDirect(offset, d_ptr, SIZE_CLUSTER_DATA))
+		{
+			return false;
+		}
+		offset += SIZE_CLUSTER_DATA;
 	}
 
 
@@ -1786,66 +1805,59 @@ int WiiImage::wii_nb_cluster(int partition) const
 
 bool WiiImage::wii_write_data_file(int partition, offset_t offset, Stream* file, largesize_t size)
 {
-	/* Calculate some needed information */
-	u32 cluster_start = (u32)(offset / (u64)(SIZE_CLUSTER_DATA));
-	u32 clusters = (u32)(((offset + size) / (u64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
-	u32 offset_start = (u32)(offset - (cluster_start * (u64)(SIZE_CLUSTER_DATA)));
+	DLOG << "Write data file from " << HEX << offset << " to " << (offset + size);
 
+	progressHandler().startProgress("writeFile", static_cast<int>((size + SIZE_CLUSTER - 1) / SIZE_CLUSTER));
+
+	const int firstCluster = static_cast<int>(offset / SIZE_CLUSTER_DATA);
+	int offset_start = static_cast<int>(offset - firstCluster * SIZE_CLUSTER_DATA);
 
 	// read the H3 and H4
 	io_read(m_h3, SIZE_H3, m_partitions[partition].offset + m_partitions[partition].h3_offset);
 
 	/* Write clusters */
-	largesize_t nWritten = 0;
-	int i = 0;
-	int clusterCount = 0;
-	while (i < size)
+	int writen = 0;
+	int currentCluster = 0;
+	while (writen < size)
 	{
-		if (((cluster_start + clusterCount) % 64) != 0 || offset_start != 0)
+		if (progressHandler().stopRequested())
+		{
+			return false;
+		}
+
+		int toWrite = 0;
+		if (((firstCluster + currentCluster) % NB_CLUSTER_GROUP) != 0 || offset_start != 0)
 		{
 			// not at the start so our max size is different
 			// and also our cluster offset
-			nWritten = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
-			nWritten = nWritten - offset_start;
+			toWrite = std::min<int>(static_cast<int>(size), (NB_CLUSTER_GROUP - (firstCluster % NB_CLUSTER_GROUP)) * SIZE_CLUSTER_DATA - offset_start);
 
-			// max check
-			if (nWritten > size)
-			{
-				nWritten = (u32)size;
-			}
-
-			if (!wii_write_clusters(partition, cluster_start, offset_start, nWritten, file))
+			if (!wii_write_clusters(partition, firstCluster, offset_start, toWrite, file))
 			{
 				DLOG << "Error writing clusters";
 				return false;
 			}
 			// round up the cluster count
-			clusterCount = NB_CLUSTER_GROUP - (cluster_start % NB_CLUSTER_GROUP);
+			currentCluster = NB_CLUSTER_GROUP - (firstCluster % NB_CLUSTER_GROUP);
 		}
 		else
 		{
 			// potentially full block
-			nWritten = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
+			toWrite = std::min<int>(static_cast<int>(size - writen), NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA);
 
-			// max check
-			if (nWritten > (size-i))
-			{
-				nWritten = (u32)(size-i);
-			}
-
-			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, nWritten, file))
+			if (!wii_write_clusters(partition, firstCluster + currentCluster, offset_start, toWrite, file))
 			{
 				DLOG << "Error writing clusters";
 				return false;
 			}
 			// we simply add a full cluster block
-			clusterCount = clusterCount + NB_CLUSTER_GROUP;
+			currentCluster += NB_CLUSTER_GROUP;
 
 		}
 		offset_start = 0;
-		i += nWritten;
+		writen += toWrite;
 
-
+		progressHandler().progress(static_cast<int>(currentCluster));
 	}
 
 	if (!writeDirect(m_partitions[partition].h3_offset + m_partitions[partition].offset, m_h3, SIZE_H3))
@@ -1868,7 +1880,7 @@ bool WiiImage::wii_write_data_file(int partition, offset_t offset, Stream* file,
 
 bool WiiImage::wii_write_data_file(int partition, offset_t offset, void* data, largesize_t size)
 {
-	MemoryStream stream(data, size);
+	MemoryStream stream(data, static_cast<ptrdiff_t>(size));
 	return wii_write_data_file(partition, offset, &stream, size);
 }
 
@@ -1876,29 +1888,28 @@ bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, larg
 {
 	/* Calculate some needed information */
 	u32 cluster_start = (u32)(offset / (u64)(SIZE_CLUSTER_DATA));
-	u32 clusters = (u32)(((offset + size) / (u64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
 	u32 offset_start = (u32)(offset - (cluster_start * (u64)(SIZE_CLUSTER_DATA)));
 
 	/* Write clusters */
-	largesize_t nWritten = 0;
-	int i = 0;
+	int writen = 0;
 	int clusterCount = 0;
-	while (i < size)
+	while (writen < size)
 	{
+		int toWrite = 0;
 		if (((cluster_start + clusterCount) % 64) != 0 || offset_start != 0)
 		{
 			// not at the start so our max size is different
 			// and also our cluster offset
-			nWritten = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
-			nWritten = nWritten - offset_start;
+			toWrite = (NB_CLUSTER_GROUP - (cluster_start%64))* SIZE_CLUSTER_DATA;
+			toWrite = toWrite - offset_start;
 
 			// max check
-			if (nWritten > size)
+			if (toWrite > size)
 			{
-				nWritten = (u32)size;
+				toWrite = (int)size;
 			}
 
-			if (!wii_write_clusters(partition, cluster_start, offset_start, nWritten, file))
+			if (!wii_write_clusters(partition, cluster_start, offset_start, toWrite, file))
 			{
 				DLOG << "Error writing clusters";
 				return false;
@@ -1909,15 +1920,15 @@ bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, larg
 		else
 		{
 			// potentially full block
-			nWritten = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
+			toWrite = NB_CLUSTER_GROUP * SIZE_CLUSTER_DATA;
 
 			// max check
-			if (nWritten > (size-i))
+			if (toWrite > (size-writen))
 			{
-				nWritten = (u32)(size-i);
+				toWrite = (u32)(size-writen);
 			}
 
-			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, nWritten, file))
+			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, toWrite, file))
 			{
 				DLOG << "Error writing clusters";
 				return false;
@@ -1927,12 +1938,143 @@ bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, larg
 
 		}
 		offset_start = 0;
-		i += nWritten;
+		writen += toWrite;
 
 
 	}
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+bool WiiImage::checkPartition(int partition)
+{
+	const int groupCount = static_cast<int>(m_partitions[partition].dataSize / (SIZE_CLUSTER * NB_CLUSTER_GROUP));
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset;
+
+	std::vector<SHA1Hash> actualH3Hashes(groupCount);
+	readDirect(m_partitions[partition].offset + m_partitions[partition].h3_offset, &actualH3Hashes[0], sizeof(HashData) * groupCount);
+
+	// Checking signature...
+// 	{
+// 		const u32 size = m_partitions[partition].tmdSize;
+// 		std::vector<u8> buffer(size);
+// 
+// 		readDirect(m_partitions[partition].offset + m_partitions[partition].tmdOffset, &buffer[0], size);
+// 		HashData contentHash;
+// 		HashData signatureHash;
+// 		sha1(&buffer[0x140], size - 0x140, contentHash);
+// 		sha1(&buffer[4], 256, signatureHash);
+// 
+// 		if (!std::equal(signatureHash, signatureHash + 20, contentHash))
+// 		{
+// 			u8 decryptedSignature[256];
+// 
+// 			RSA_public_decrypt()
+// 			if (signatureHash[0] != 0 && contentHash[0] != 0)
+// 			{
+// 				DLOG << "Signature check failed!";
+// 				return false;
+// 			}
+// 		}
+// 	}
+
+	std::vector<SHA1Hash> expectedH3Hashes(groupCount);
+	std::vector<u8> data(64 * SIZE_CLUSTER_DATA);
+	// array for each cluster and each hash
+	std::vector<ClusterHeader> headers(64);
+
+	progressHandler().startProgress("checkPartition", groupCount);
+
+	for (int group = 0; group < groupCount; group++)
+	{
+		if (progressHandler().stopRequested())
+		{
+			return false;
+		}
+
+		for (int i = 0; i < NB_CLUSTER_GROUP; i++)
+		{
+			const int clusterIndex = group * NB_CLUSTER_GROUP + i;
+			const offset_t clusterOffset = clusterIndex * SIZE_CLUSTER_DATA;
+			const offset_t clusterPhOffset = clusterOffset + m_partitions[partition].offset + SIZE_CLUSTER_HEADER * clusterIndex + m_partitions[partition].dataOffset;
+
+			u8 buf[SIZE_CLUSTER_DATA];
+			readDirect(offset, buf, SIZE_CLUSTER_HEADER);
+
+			u8 iv[16] = {};
+			aes_cbc_dec(buf, reinterpret_cast<u8*>(&headers[i]), SIZE_CLUSTER_HEADER, m_partitions[partition].title_key, iv);
+			std::copy(&buf[OFFSET_CLUSTER_IV], &buf[OFFSET_CLUSTER_IV] + 16, iv);
+
+			readDirect(offset + SIZE_CLUSTER_HEADER, buf, SIZE_CLUSTER_DATA);
+			aes_cbc_dec(buf, &data[SIZE_CLUSTER_DATA * i], SIZE_CLUSTER_DATA, m_partitions[partition].title_key, iv);
+
+			for (int j = 0; j < 31; j++)
+			{
+				HashData hash = {};
+				sha1(&data[SIZE_CLUSTER_DATA * i + 0x400 * j], 0x400, &hash[0]);
+
+				if (!std::equal(&hash[0], &hash[0] + 20, headers[i].h0[j]))
+				{
+					DLOG << "h0 does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
+						<< ", physical offset: " << clusterPhOffset << ")";
+					return false;
+				}
+			}
+
+			offset += SIZE_CLUSTER;
+		}
+
+		HashData h1[8][8] = {};
+		for (int subgroup = 0; subgroup < 8; subgroup++)
+		{
+			for (int cluster = 0; cluster < 8; cluster++)
+			{
+				sha1(&headers[subgroup * 8 + cluster].h0[0][0], 20 * 31, &h1[subgroup][cluster][0]);
+			}
+		}
+
+		HashData h2[8] = {};
+		for (int gr = 0; gr < 8; gr++)
+		{
+			sha1(&h1[gr][0][0], 8 * 20, &h2[gr][0]);
+		}
+
+		for (int cluster = 0; cluster < NB_CLUSTER_GROUP; cluster++)
+		{
+			const int clusterIndex = group * NB_CLUSTER_GROUP + cluster;
+			const offset_t clusterOffset = clusterIndex * SIZE_CLUSTER_DATA;
+			const offset_t clusterPhOffset = clusterOffset + m_partitions[partition].offset + SIZE_CLUSTER_HEADER * clusterIndex + m_partitions[partition].dataOffset;
+			
+			if (!std::equal(&h2[0][0], &h2[0][0] + 8 * 20, &headers[cluster].h2[0][0]))
+			{
+				DLOG << "h2 does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
+					<< ", physical offset: " << clusterPhOffset << ")";
+				return false;
+			}
+			for (int i = 0; i < 8; i++)
+			{
+				if (!std::equal(&h1[cluster / 8][i][0], &h1[cluster / 8][i][0] + 20, &headers[cluster].h1[i][0]))
+				{
+					DLOG << "h1 of " << i << " cluster does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
+						<< ", physical offset: " << clusterPhOffset << ")";
+					return false;
+				}
+			}
+		}
+
+		sha1(&h2[0][0], sizeof(HashData) * 8, &expectedH3Hashes[group][0]);
+		if (!std::equal(&expectedH3Hashes[group][0], &expectedH3Hashes[group][0] + sizeof(HashData), &actualH3Hashes[group][0]))
+		{
+			DLOG << "h0 does not match! Cluster group: " << group;
+			return false;
+		}
+
+		progressHandler().progress(group);
+	}
+	progressHandler().finishProgress();
+
+	return true;
+}
 
 }

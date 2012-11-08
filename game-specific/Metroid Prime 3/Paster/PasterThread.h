@@ -6,30 +6,51 @@
 #include <QStringList>
 #include <QString>
 #include <memory>
+#include <QCoreApplication>
 
 class QString;
 class QStringList;
 
-class PakProgressHandler: public QObject, public IPakProgressHandler
+class ProgressHandler: public QObject, public IPakProgressHandler
 {
 	Q_OBJECT;
 
+public:
+	ProgressHandler() : m_stopRequested(false)
+	{
+	}
+
+	Q_SLOT void requestStop()
+	{
+		m_stopRequested = true;
+	}
+
+private:
 	virtual void init(int size) override
 	{
+		m_stopRequested = false;
 		emit initProgress(size);
 	}
 	virtual void progress(int value, const char* message)
 	{
 		emit changeProgress(value, message);
+		QCoreApplication::processEvents();
 	}
 	virtual void finish()
 	{
 		emit finishProgress();
 	}
+	virtual bool stopRequested()
+	{
+		return m_stopRequested;
+	}
 
 	Q_SIGNAL void initProgress(int size);
-	Q_SIGNAL void changeProgress(int index, const char* message);
+	Q_SIGNAL void changeProgress(int index, const QString& message);
 	Q_SIGNAL void finishProgress();
+
+private:
+	bool m_stopRequested;
 };
 
 class PasterThread : public QThread
@@ -44,6 +65,7 @@ public:
 		CheckData,
 		ReplacePaks,
 		CheckPaks,
+		CheckImage,
 		Done
 	};
 
@@ -57,13 +79,17 @@ public:
 
 public:
 	PasterThread();
+	Q_SLOT bool startPatching();
 
-	void setImageFile(const QString& imageFilename);
-	void setPakList(const QStringList& paks);
-	void setDataDirectories(const QStringList& dataDirs);
-	void setTempDirectory(const QString& tempDir);
-	void setCheckData(bool check);
-	void setCheckPaks(bool check);
+private:
+	Q_SLOT void setImageFile(const QString& imageFilename);
+	Q_SLOT void setPakList(const QStringList& paks);
+	Q_SLOT void setDataDirectories(const QStringList& dataDirs);
+	Q_SLOT void setTempDirectory(const QString& tempDir);
+	Q_SLOT void setCheckData(bool check);
+	Q_SLOT void setCheckPaks(bool check);
+	Q_SLOT void setCheckImage(bool check);
+	Q_SLOT void requestStop();
 
 	QString imageFile() const;
 	QStringList pakList() const;
@@ -71,8 +97,7 @@ public:
 	QString tempDirectory() const;
 	bool checkDataOn() const;
 	bool checkPaksOn() const;
-
-	Q_SLOT bool startPatching();
+	bool checkImageOn() const;
 
 	Q_SIGNAL void actionStarted(int action);
 	Q_SIGNAL void actionCompleted(bool success);
@@ -87,10 +112,15 @@ protected:
 	bool replacePaks(const QStringList& paks, const QString& inputDir);
 	bool checkData(const QStringList& paks, const QStringList& inputDirs, const QString& outDir);
 	bool checkPaks(const QStringList& paks, const QString& inputDir);
+	bool checkImage();
 
 	Q_SIGNAL void initProgress(int size);
-	Q_SIGNAL void changeProgress(int index, const char* message);
+	Q_SIGNAL void changeProgress(int index, const QString& message);
 	Q_SIGNAL void finishProgress();
+
+	Q_SIGNAL void initActionProgress(int size);
+	Q_SIGNAL void changeActionProgress(int index, const QString& message);
+	Q_SIGNAL void finishActionProgress();
 
 protected:
 	virtual void run() override;
@@ -105,6 +135,9 @@ protected:
 	QStringList m_dataDirectories;
 	bool m_checkData;
 	bool m_checkPaks;
+	bool m_checkImage;
 	mutable QReadWriteLock m_lock;
-	PakProgressHandler m_pakProgressHandler;
+	ProgressHandler m_pakProgressHandler;
+	ProgressHandler m_actionProgressHandler;
+	bool m_stopRequested;
 };
