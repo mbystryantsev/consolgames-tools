@@ -160,6 +160,16 @@ struct FileInfo
 	FsObjectType dataType;
 };
 
+struct Certificate
+{
+	u32 signatureType;
+	char signature[256];
+	char issuer[64];
+	int tag;
+	char name[64];
+	// key;
+};
+
 
 typedef Tree<FileInfo>::Node *PNode;
 

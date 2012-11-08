@@ -16,6 +16,8 @@ public:
 		offset_t certOffset;
 		largesize_t certSize;
 		u32 appldrSize;
+
+		//! http://wiibrew.org/wiki/Title_metadata
 		offset_t tmdOffset;
 		u32 tmdSize;
 		Nullable<Tmd> tmd;

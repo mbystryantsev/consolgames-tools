@@ -10,25 +10,75 @@ LOG_CATEGORY("DataPaster")
 
 using namespace Consolgames;
 
+class DummyProgressHandler : public IPakProgressHandler
+{
+	virtual void init(int) override {}
+	virtual void progress(int, const char*) override {}
+	virtual void finish() override {}
+	virtual bool stopRequested()
+	{
+		return false;
+	}
+};
+
+class ProgressHandlerHolder
+{
+public:
+	ProgressHandlerHolder(IPakProgressHandler* handler, int size) : m_handler(handler)
+	{
+		m_handler->init(size);
+	}
+	~ProgressHandlerHolder()
+	{
+		m_handler->finish();
+	}
+
+private:
+	IPakProgressHandler* m_handler;
+};
+
+DummyProgressHandler g_dummyProgressHandler;
+
 DataPaster::DataPaster(const QString& wiiImageFile)
 	: m_imageFilename(wiiImageFile)
 	, m_image()
+	, m_errorCode(NoError)
+	, m_actionProgressHandler(&g_dummyProgressHandler)
 {
+	m_image.setProgressHandler(&m_pakToWiiImageProgressHandlerAdapter);
 }
 
 bool DataPaster::open()
 {
-	return m_image.open(m_imageFilename.toStdString(), Stream::modeReadWrite);
+	if (!m_image.open(m_imageFilename.toStdString(), Stream::modeReadWrite))
+	{
+		m_errorCode = Open_UnableToOpenImage;
+		return false;
+	}
+	return true;
 }
 
 bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<std::string>& inputDirs, const std::string& outDir)
 {
+	int paksRebuilded = 0;
+
+	ProgressHandlerHolder holder(m_actionProgressHandler, pakArchives.size());
+
 	foreach (const QString& pakName, pakArchives)
 	{
+		if (m_actionProgressHandler->stopRequested())
+		{
+			break;
+		}
+
+		m_actionProgressHandler->progress(paksRebuilded++, pakName.toLatin1().constData());
+
 		std::auto_ptr<WiiFileStream> file(m_image.openFile(pakName.toStdString(), Stream::modeRead));
  		if(file.get() == NULL)
  		{
 			DLOG << "Unable to open file in image: " << pakName;
+			m_errorCode = RebuildPaks_UnableToOpenFileInImage;
+			m_errorData = pakName;
  			return false;
  		}
 
@@ -38,6 +88,8 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 		if (!pak.opened())
 		{
 			DLOG << "Unable to parse pak: " << pakName;
+			m_errorCode = RebuildPaks_UnableToParsePak;
+			m_errorData = pakName;
 			return false;
 		}
 
@@ -47,6 +99,8 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 		if (!pak.rebuild(filename, inputDirs, std::set<ResType>(), m_mergeMap))
  		{
 			DLOG << "Unable to rebuild pak: " << pakName;
+			m_errorCode = RebuildPaks_UnableToRebuildPak;
+			m_errorData = pakName;
 			return false;
  		}
 	}
@@ -56,15 +110,22 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 
 bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inputDir)
 {
+	int paksReplaced = 0;
+
+	ProgressHandlerHolder holder(m_actionProgressHandler, pakArchives.size());
+
 	foreach (const QString& pakName, pakArchives)
 	{
-		const QString filename = inputDir + QDir::separator() + pakName;
+		m_actionProgressHandler->progress(paksReplaced++, pakName.toLatin1().constData());
 
+		const QString filename = inputDir + QDir::separator() + pakName;
 
 		Tree<FileInfo>::Node* fileRecord = m_image.findFile(pakName.toStdString());
 		if (fileRecord == NULL)
 		{
 			DLOG << "Unable to open pak for replace: " << pakName;
+			m_errorCode = ReplacePaks_UnableToOpenPakForReplace;
+			m_errorData = pakName;
 			return false;
 		}
 
@@ -72,20 +133,25 @@ bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inpu
 		if (!inputFile.opened())
 		{
 			DLOG << "Unable to open input pak: " << pakName;
+			m_errorCode = ReplacePaks_UnableToOpenInputPak;
+			m_errorData = pakName;
 			return false;
 		}
 
 		if (inputFile.size() > fileRecord->data().size)
 		{
 			DLOG << "Input pak file too big: " << pakName << " (" << inputFile.size() << " bytes / " << fileRecord->data().size << " bytes)";
+			m_errorCode = ReplacePaks_InputPakFileTooBig;
+			m_errorData = pakName;
 			return false;
 		}
-
 
 		const bool written = m_image.wii_write_data_file(m_image.dataPartition(), fileRecord->data().offset, &inputFile, inputFile.size());
 		if (!written)
 		{
 			DLOG << "Unable to write file!";
+			m_errorCode = ReplacePaks_UnableToWriteFile;
+			m_errorData = pakName;
 			return false;
 		}
 	}
@@ -96,17 +162,27 @@ bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inpu
 void DataPaster::setProgressHandler(IPakProgressHandler* handler)
 {
 	m_pakProgressHandler = handler;
+	m_pakToWiiImageProgressHandlerAdapter.setHandler(handler);
+	m_image.setProgressHandler(&m_pakToWiiImageProgressHandlerAdapter);
 }
 
-bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir)
+bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir, const QString& tempDir)
 {
+	int paksChecked = 0;
+
+	ProgressHandlerHolder holder(m_actionProgressHandler, pakArchives.size());
+
 	foreach (const QString& pakName, pakArchives)
 	{
+		m_actionProgressHandler->progress(paksChecked++, pakName.toLatin1().constData());
+
 		const QString pakPath = outDir + QDir::separator() + pakName;
 		QtPakArchive resultPak;
 		if (!resultPak.open(pakPath.toStdString()))
 		{
 			DLOG << "CheckData: Unable to parse result pak: " << pakName;
+			m_errorCode = CheckData_UnableToParseResultPak;
+			m_errorData = pakName;
 			return false;
 		}
 
@@ -130,21 +206,26 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 				if (!file.opened())
 				{
 					DLOG << "Unable to open file!";
+					m_errorCode = CheckData_UnableToOpenFile;
+					m_errorData = filename;
 					return false;
 				}
 
 				std::auto_ptr<Stream> fileInPak;
+				const QString tempFileName = QDir(tempDir).absoluteFilePath("~filefrompak.tmp");
 				if (fileRecord.packed != 0)
 				{
-					if (QFile::exists("~filefrompak.tmp"))
+					if (QFile::exists(tempFileName))
 					{
-						QFile::remove("~filefrompak.tmp");
+						QFile::remove(tempFileName);
 					}
 
-					fileInPak.reset(new FileStream("~filefrompak.tmp", Stream::modeReadWrite));
+					fileInPak.reset(new FileStream(tempFileName.toStdString(), Stream::modeReadWrite));
 					if (!resultPak.extractFile(fileRecord.hash, fileInPak.get()))
 					{
 						DLOG << "Unable to extract file!";
+						m_errorCode = CheckData_UnableToExtractTemporaryFile;
+						m_errorData = pakPath + ";" + filename;
 						return false;
 					}
 				}
@@ -155,12 +236,16 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 				if (fileInPak.get() == NULL)
 				{
 					DLOG << "Unable to open file in pak!";
+					m_errorCode = CheckData_UnableToOpenFileInPak;
+					m_errorData = pakName + ";" + filename;
 					return false;
 				}
 
 				if (!compareStreams(&file, fileInPak.get()))
 				{
 					DLOG << "Files are different!";
+					m_errorCode = CheckData_FilesAreDifferent;
+					m_errorData = pakName + ";" + filename;
 					return false;
 				}
 			}
@@ -172,12 +257,20 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 
 bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDir)
 {
+	int paksChecked = 0;
+
+	ProgressHandlerHolder holder(m_actionProgressHandler, pakArchives.size());
+
 	foreach (const QString& pakName, pakArchives)
 	{
+		m_actionProgressHandler->progress(paksChecked++, pakName.toLatin1().constData());
+
 		std::auto_ptr<Stream> imagePakFile(m_image.openFile(pakName.toStdString(), Stream::modeRead));
 		if (imagePakFile.get() == NULL)
 		{
 			DLOG << "CheckData: Opening pak in image failed: " << pakName;
+			m_errorCode = CheckPaks_UnableToOpenPak;
+			m_errorData = pakName;
 			return false;
 		}
 
@@ -185,18 +278,24 @@ bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDi
 		if (!resultPakFile.opened())
 		{
 			DLOG << "CheckData: Opening result pak failed: " << pakName;
+			m_errorCode = CheckPaks_UnableToOpenResultPak;
+			m_errorData = pakName;
 			return false;
 		}
 
 		if (imagePakFile->size() < resultPakFile.size())
 		{
 			DLOG << "CheckData: Invalid pak size: " << pakName;
+			m_errorCode = CheckPaks_InvalidPakSize;
+			m_errorData = pakName + ";" + QString::number(resultPakFile.size()) + ";" + QString::number(imagePakFile->size());
 			return false;
 		}
 		
 		if (!compareStreams(&resultPakFile, imagePakFile.get(), true))
 		{
 			DLOG << "PAKs are not equal: " << pakName;
+			m_errorCode = CheckPaks_PaksAreNotEqual;
+			m_errorData = pakName;
 			return false;
 		}
 	}
@@ -265,4 +364,24 @@ void DataPaster::loadMergeMap(const QString& filename, std::map<Hash,Hash>& merg
 		const Hash hash2 = hashFromData(hash2Data);
 		mergeMap[hash1] = hash2;
 	}
+}
+
+DataPaster::ErrorCode DataPaster::errorCode() const
+{
+	return m_errorCode;
+}
+
+QString DataPaster::errorData() const
+{
+	return m_errorData;
+}
+
+bool DataPaster::checkImage()
+{
+	return m_image.checkPartition(m_image.dataPartition());
+}
+
+void DataPaster::setActionProgressHandler(IPakProgressHandler* handler)
+{
+	m_actionProgressHandler = (handler == NULL ? &g_dummyProgressHandler : handler);
 }

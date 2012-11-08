@@ -12,31 +12,46 @@ namespace Consolgames
 FileStream::FileStream(const std::string& filename, OpenMode mode) : Stream()
 {
 	m_openMode = mode;
+	m_handle = INVALID_HANDLE_VALUE;
 
 #ifdef USE_WINDOWS_FILES
-	DWORD desiredAccess = GENERIC_READ;
+	DWORD desiredAccess = 0;
+	DWORD creationDisposition = 0;
+	if (mode == modeRead || mode == modeReadWrite)
+	{
+		desiredAccess |= GENERIC_READ;
+		creationDisposition = OPEN_EXISTING;
+	}
 	if (mode == modeWrite || mode == modeReadWrite)
 	{
+		creationDisposition = OPEN_ALWAYS;
 		desiredAccess |= GENERIC_WRITE;
 	}
-	m_handle = CreateFileA(static_cast<LPCSTR>(filename.c_str()), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_ALWAYS | (mode == modeWrite ? TRUNCATE_EXISTING : 0), FILE_ATTRIBUTE_NORMAL, NULL);
-    //m_ofstruct.cBytes = sizeof(m_ofstruct);
-    //m_handle = OpenFile(filename.c_str(), &m_ofstruct, static_cast<int>(mode));
+	if (mode == modeWrite)
+	{
+		 creationDisposition = CREATE_ALWAYS;
+	}
+	m_handle = CreateFileA(filename.c_str(), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    
+	if (m_handle == INVALID_HANDLE_VALUE)
+	{
+		DLOG << "FileStream: Unable to open file! WinApi error code: " << GetLastError();
+	}
 #else
     m_descriptor = _open(filename.c_str(), static_cast<int>(mode) | _O_BINARY, _S_IREAD | _S_IWRITE);
 #endif
 }
 
-FileStream::FileStream()
+FileStream::FileStream() : m_handle(INVALID_HANDLE_VALUE)
 {
 }
 
 FileStream::~FileStream()
 {
 #ifdef USE_WINDOWS_FILES
-    if(m_handle != NULL)
+    if(m_handle != INVALID_HANDLE_VALUE)
 	{
-		CloseHandle(reinterpret_cast<void*>(m_handle));
+		CloseHandle(m_handle);
 	}
 #else
     if(m_descriptor != -1)
@@ -67,7 +82,7 @@ largesize_t FileStream::read(void *buf, largesize_t size)
     }
     else
     {
-        return static_cast<int>(readed);
+        return readed;
     }
 #else
     return _read(m_descriptor, buf, size);
@@ -77,8 +92,8 @@ largesize_t FileStream::read(void *buf, largesize_t size)
 offset_t FileStream::tell() const
 {
 #ifdef USE_WINDOWS_FILES
-    _LARGE_INTEGER ret;
-    _LARGE_INTEGER zero;
+	_LARGE_INTEGER ret = {0, 0};
+    _LARGE_INTEGER zero = {0, 0};
 	zero.QuadPart = 0;
 
     VERIFY(SetFilePointerEx(m_handle, zero, &ret, FILE_CURRENT));
@@ -91,7 +106,7 @@ offset_t FileStream::tell() const
 void FileStream::flush()
 {
 #ifdef USE_WINDOWS_FILES
-    FlushFileBuffers(reinterpret_cast<void*>(m_handle));
+    FlushFileBuffers(m_handle);
 #else
     //_flush(fd);
 #endif
@@ -101,7 +116,7 @@ largesize_t FileStream::write(const void* buf, largesize_t size)
 {
 #ifdef USE_WINDOWS_FILES
     unsigned long writed;
-    if(!WriteFile(reinterpret_cast<void*>(m_handle), buf, static_cast<DWORD>(size), &writed, NULL))
+    if(!WriteFile(m_handle, buf, static_cast<DWORD>(size), &writed, NULL))
     {
         return - 1;
     }
@@ -114,8 +129,8 @@ largesize_t FileStream::write(const void* buf, largesize_t size)
 offset_t FileStream::size() const
 {
 #ifdef USE_WINDOWS_FILES
-	_LARGE_INTEGER fileSize;
-	VERIFY(GetFileSizeEx(reinterpret_cast<HANDLE>(m_handle), &fileSize));
+	_LARGE_INTEGER fileSize = {0, 0};
+	VERIFY(GetFileSizeEx(m_handle, &fileSize));
 	return fileSize.QuadPart;
 #else
 	struct _stat32i64 stat;
@@ -128,7 +143,7 @@ offset_t FileStream::size() const
 bool FileStream::opened() const
 {
 #ifdef USE_WINDOWS_FILES
-	return (reinterpret_cast<HANDLE>(m_handle) != INVALID_HANDLE_VALUE);
+	return (m_handle != INVALID_HANDLE_VALUE);
 #else
 	return (m_descriptor != -1);
 #endif

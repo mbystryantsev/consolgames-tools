@@ -13,7 +13,6 @@ class ImageFileStream: public Stream
 public:
     ImageFileStream(Stream* stream, offset_t size, OpenMode mode = modeReadWrite);
     ImageFileStream(Stream* stream, offset_t offset, offset_t size, OpenMode mode = modeReadWrite);
-	virtual ~ImageFileStream();
 
     virtual largesize_t read(void* buf, largesize_t size) override;
     virtual largesize_t write(const void* buf, largesize_t size) override;

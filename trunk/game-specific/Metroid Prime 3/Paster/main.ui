@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>395</width>
-    <height>460</height>
+    <height>573</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -88,11 +88,35 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="statusLabel">
-     <property name="text">
-      <string>Welcome!</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QLabel" name="statusLabel">
+       <property name="text">
+        <string>Welcome!</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="messageLabel">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="QProgressBar" name="itemProgressBar">
@@ -104,13 +128,46 @@
    <item>
     <widget class="QProgressBar" name="totalProgressBar">
      <property name="maximum">
-      <number>5</number>
+      <number>6</number>
      </property>
      <property name="value">
       <number>1</number>
      </property>
+     <property name="textVisible">
+      <bool>true</bool>
+     </property>
      <property name="format">
-      <string>%v/5</string>
+      <string>%v/6</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkData">
+     <property name="text">
+      <string>Check data in PAKs after rebuild</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkPaks">
+     <property name="text">
+      <string>Check PAKs in image after replacing</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkImage">
+     <property name="text">
+      <string>Validate image after patching</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

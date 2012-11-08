@@ -9,6 +9,7 @@
 
 #ifdef QT_CORE_LIB
 #include <QString>
+#include <QByteArray>
 #endif
 
 #ifdef _MSC_VER
@@ -142,6 +143,7 @@ public:
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
 #ifdef QT_CORE_LIB
 	DLog& operator <<(const QString& s){std::cout << s.toStdString(); return *this;}
+	DLog& operator <<(const QByteArray& s){std::cout << s.data(); return *this;}
 #endif
 	void setModifier(const LogModifiers& m)
 	{
@@ -152,9 +154,9 @@ protected:
 
 public:
 #else
-	DLog& operator ()(const char*){return *this;}
+	const DLog& operator ()(const char*) const {return *this;}
 	template<typename T>
-	DLog& operator <<(const T&){return *this;}
+	const DLog& operator <<(const T&) const {return *this;}
 #endif
 };
 
