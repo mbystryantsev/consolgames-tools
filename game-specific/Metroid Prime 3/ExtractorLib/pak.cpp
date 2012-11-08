@@ -584,7 +584,7 @@ bool PakArchive::stopRequested()
 {
 	if (m_progressHandler != NULL)
 	{
-		m_progressHandler->stopRequested();
+		return m_progressHandler->stopRequested();
 	}
 	return false;
 }
