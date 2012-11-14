@@ -57,6 +57,7 @@ public:
 	{
 		NoError = 0,
 		Open_UnableToOpenImage = 0x10,
+		Open_InvalidDiscId = 0x11,
 		RebuildPaks_UnableToOpenFileInImage = 0x20,
 		RebuildPaks_UnableToParsePak = 0x21,
 		RebuildPaks_UnableToRebuildPak = 0x22,
