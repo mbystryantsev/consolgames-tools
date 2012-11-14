@@ -78,7 +78,8 @@ public:
 
 public:
 	WiiImage();
-
+	
+	std::string discId() const;
 	void setProgressHandler(IProgressHandler* handler);
 
 	largesize_t io_read(void* ptr, largesize_t size, offset_t offset);

@@ -74,11 +74,13 @@ bool WiiImage::open(const std::string& filename, Stream::OpenMode mode)
 bool WiiImage::readHeader()
 {
 	char buffer[0x440];
-	VERIFY(m_stream->read(buffer, 0x440) == 0x440);
+	if (m_stream->read(buffer, 0x440) != 0x440)
+	{
+		return false;
+	}
 
 	m_header = PartitionHeader::parse(buffer);
 
-	ASSERT(m_header.isGamecube() || m_header.isWii());
 	if (!m_header.isGamecube() && !m_header.isWii())
 	{
 		DLOG << "Unknown image type!";
@@ -2075,6 +2077,11 @@ bool WiiImage::checkPartition(int partition)
 	progressHandler().finishProgress();
 
 	return true;
+}
+
+std::string WiiImage::discId() const
+{
+	return m_header.discId();
 }
 
 }
