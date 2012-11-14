@@ -127,6 +127,17 @@ struct PartitionHeader
 	{
 		return (console == 'G') || (console == 'D') || (console == 'P') || (console == 'U');
 	}
+	std::string discId() const
+	{
+		std::string id(6, '\0');
+		id[0] = console;
+		id[1] = gamecode[0];
+		id[2] = gamecode[1];
+		id[3] = region;
+		id[4] = publisher[0];
+		id[5] = publisher[1];
+		return id;
+	}
 };
 
 enum FsObjectType
