@@ -55,6 +55,12 @@ bool DataPaster::open()
 		m_errorCode = Open_UnableToOpenImage;
 		return false;
 	}
+	if (m_image.discId() != "RM3P01")
+	{
+		m_errorCode = Open_InvalidDiscId;
+		m_errorData = QString::fromStdString(m_image.discId());
+		return false;
+	}
 	return true;
 }
 
@@ -142,7 +148,7 @@ bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inpu
 		{
 			DLOG << "Input pak file too big: " << pakName << " (" << inputFile.size() << " bytes / " << fileRecord->data().size << " bytes)";
 			m_errorCode = ReplacePaks_InputPakFileTooBig;
-			m_errorData = pakName;
+			m_errorData = QString("%1;%2;%3").arg(pakName).arg(inputFile.size()).arg(fileRecord->data().size);
 			return false;
 		}
 
