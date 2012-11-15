@@ -173,11 +173,32 @@ void DataPaster::setProgressHandler(IPakProgressHandler* handler)
 	m_image.setProgressHandler(&m_pakToWiiImageProgressHandlerAdapter);
 }
 
+class TempFileRemover
+{
+public:
+	TempFileRemover(const QString& filename) : m_filename(filename)
+	{
+	}
+	~TempFileRemover()
+	{
+		if (QFile::exists(m_filename))
+		{
+			QFile::remove(m_filename);
+		}
+	}
+
+private:
+	const QString m_filename;
+};
+
 bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir, const QString& tempDir)
 {
-	int paksChecked = 0;
-
 	ProgressHandlerHolder holder(m_actionProgressHandler, pakArchives.size());
+
+	const QString tempFileName = QDir(tempDir).absoluteFilePath("~filefrompak.tmp");
+	TempFileRemover tempGuard(tempFileName);
+
+	int paksChecked = 0;
 
 	foreach (const QString& pakName, pakArchives)
 	{
@@ -219,15 +240,9 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 				}
 
 				std::auto_ptr<Stream> fileInPak;
-				const QString tempFileName = QDir(tempDir).absoluteFilePath("~filefrompak.tmp");
 				if (fileRecord.packed != 0)
 				{
-					if (QFile::exists(tempFileName))
-					{
-						QFile::remove(tempFileName);
-					}
-
-					fileInPak.reset(new FileStream(tempFileName.toStdString(), Stream::modeReadWrite));
+					fileInPak.reset(new QtFileStream(tempFileName, QIODevice::ReadWrite | QIODevice::Truncate));
 					if (!resultPak.extractFile(fileRecord.hash, fileInPak.get()))
 					{
 						DLOG << "Unable to extract file!";
