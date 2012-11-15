@@ -5,6 +5,7 @@
 #include "ImagePatchPage.h"
 #include "CompletedPage.h"
 #include "FailedPage.h"
+#include "CanceledPage.h"
 #include "ui_SideWidget.h"
 
 #include "ProgressPage.h"
@@ -18,6 +19,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	, m_errorCode(0)
 {
 	setWizardStyle(ModernStyle);
+	setOption(NoBackButtonOnLastPage, true);
 
 	setButtonText(QWizard::NextButton, QString::fromWCharArray(L"Далее >"));
 	setButtonText(QWizard::BackButton, QString::fromWCharArray(L"< Назад"));
@@ -41,6 +43,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	setPage(PageProgress, new ProgressPage());
 	setPage(PageCompleted, new CompletedPage());
 	setPage(PageFailed, new FailedPage());
+	setPage(PageCanceled, new CanceledPage());
 
 	setStartId(PageIntro);
 

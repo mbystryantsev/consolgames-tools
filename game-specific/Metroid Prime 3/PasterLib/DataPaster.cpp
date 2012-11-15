@@ -205,6 +205,11 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 	{
 		m_actionProgressHandler->progress(paksChecked++, pakName.toLatin1().constData());
 
+		if (m_actionProgressHandler->stopRequested())
+		{
+			break;
+		}
+
 		const QString pakPath = outDir + QDir::separator() + pakName;
 		QtPakArchive resultPak;
 		if (!resultPak.open(pakPath.toStdString()))
@@ -231,6 +236,11 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 
 			if (!resultName.isNull())
 			{
+				if (m_actionProgressHandler->stopRequested())
+				{
+					break;
+				}
+
 				FileStream file(resultName.toStdString(), Stream::modeRead);
 				if (!file.opened())
 				{
@@ -287,6 +297,11 @@ bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDi
 	foreach (const QString& pakName, pakArchives)
 	{
 		m_actionProgressHandler->progress(paksChecked++, pakName.toLatin1().constData());
+
+		if (m_actionProgressHandler->stopRequested())
+		{
+			break;
+		}
 
 		std::auto_ptr<Stream> imagePakFile(m_image.openFile(pakName.toStdString(), Stream::modeRead));
 		if (imagePakFile.get() == NULL)
@@ -352,6 +367,11 @@ bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Strea
 	while (size > 0)
 	{
 		m_pakProgressHandler->progress(s2c(processed), NULL);
+
+		if (m_pakProgressHandler->stopRequested())
+		{
+			return false;
+		}
 
 		const largesize_t toRead = min(chunk, size);
 		size -= chunk;
@@ -445,6 +465,8 @@ bool DataPaster::removeTempFiles(const QString& tempDirectory)
 	{
 		return false;
 	}
+
+	return true;
 }
 
 void DataPaster::resetProgressHandlers()

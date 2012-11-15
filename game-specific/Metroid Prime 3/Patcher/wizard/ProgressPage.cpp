@@ -1,6 +1,7 @@
 #include "ProgressPage.h"
 #include "PatchWizard.h"
 #include <QAbstractButton>
+#include <QMessageBox>
 
 QHash<QString,QString> ProgressPage::s_locInfo;
 
@@ -38,6 +39,8 @@ ProgressPage::ProgressPage()
 	VERIFY(connect(m_patcherController.progressHandler(), SIGNAL(progress(int, const QString&)), m_ui.progressBar, SLOT(setValue(int))));
 	VERIFY(connect(m_patcherController.progressHandler(), SIGNAL(progressFinish()), m_ui.progressBar, SLOT(reset())));
 	VERIFY(connect(m_patcherController.progressHandler(), SIGNAL(progress(int, const QString&)), SLOT(onProgress(int, const QString&))));
+
+	m_ui.progressBar->reset();
 }
 
 int ProgressPage::nextId() const 
@@ -109,6 +112,9 @@ void ProgressPage::initializePage()
 		m_ui.actionList->addAction(action, s_locInfo[action]);
 	}
 
+	VERIFY(disconnect(wizard()->button(QWizard::CancelButton), SIGNAL(clicked()), wizard(), SLOT(reject())));
+	VERIFY(connect(wizard()->button(QWizard::CancelButton ), SIGNAL(clicked()), SLOT(onCancelPressed())));
+
 	startPatching(actions);
 }
 
@@ -119,6 +125,7 @@ void ProgressPage::onPatchingCompleted()
 	QApplication::beep();
 
 	emit completeChanged();
+	wizard()->button(QWizard::CancelButton)->setEnabled(false);
 }
 
 void ProgressPage::onStepStarted(const QByteArray& step)
@@ -149,6 +156,7 @@ void ProgressPage::onPatchingFailed(const QByteArray& step, int errorCode, const
 	wiz->setErrorData(QString::fromLatin1(QString("%1;%2").arg(errorCode).arg(errorData).toLatin1().toBase64()));
 
 	emit completeChanged();
+	wizard()->button(QWizard::CancelButton)->setEnabled(false);
 }
 
 void ProgressPage::onPatchingCanceled(const QByteArray& step)
@@ -165,4 +173,22 @@ void ProgressPage::onPatchingCanceled(const QByteArray& step)
 void ProgressPage::onProgress(int, const QString& message)
 {
 	m_ui.progressText->setText(message);
+}
+
+void ProgressPage::onCancelPressed()
+{
+	const int answer = QMessageBox::question(this,
+		QString::fromLocal8Bit("Запрос отмены"),
+		QString::fromLocal8Bit(
+			"Отмена может привести к повреждению бэкап-образа, если она выполняется на этапе замены игровых данных."
+			"\r\n\r\n"
+			"Вы уверены, что хотите отменить процесс?"
+		),
+		QMessageBox::Yes, QMessageBox::No);
+
+	if (answer == QMessageBox::Yes)
+	{
+		wizard()->button(QWizard::CancelButton)->setEnabled(false);
+		m_patcherController.requestStop();
+	}
 }

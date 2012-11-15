@@ -2,8 +2,6 @@
 #include "Page.h"
 #include "ui_FailedPage.h"
 
-class FreeSpaceChecker;
-
 class FailedPage : public Page<Ui_FailedPage>
 {
 	Q_OBJECT
