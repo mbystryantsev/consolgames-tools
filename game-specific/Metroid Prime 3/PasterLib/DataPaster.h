@@ -86,6 +86,8 @@ public:
 	bool checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir, const QString& tempDir = QString());
 	bool checkPaks(const QStringList& pakArchives, const QString& paksDir);
 	bool checkImage();
+	bool removeTempFiles(const QString& tempDirectory);
+
 	void setProgressHandler(IPakProgressHandler* handler);
 	void setActionProgressHandler(IPakProgressHandler* handler);
 	void setMergeMap(const std::map<Hash,Hash>& mergeMap);
@@ -93,6 +95,8 @@ public:
 
 	ErrorCode errorCode() const;
 	QString errorData() const;
+
+	void resetProgressHandlers();
 
 protected:
 	bool compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize = false) const;
