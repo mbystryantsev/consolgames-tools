@@ -45,6 +45,7 @@ DataPaster::DataPaster(const QString& wiiImageFile)
 	, m_image()
 	, m_errorCode(NoError)
 	, m_actionProgressHandler(&g_dummyProgressHandler)
+	, m_pakProgressHandler(&g_dummyProgressHandler)
 {
 	m_image.setProgressHandler(&m_pakToWiiImageProgressHandlerAdapter);
 }
@@ -344,7 +345,6 @@ bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Strea
 	stream2->seek(0, Stream::seekSet);
 
 	const int chunk = 0x7C00;
-
 	char data1[chunk];
 	char data2[chunk];
 
@@ -418,4 +418,37 @@ bool DataPaster::checkImage()
 void DataPaster::setActionProgressHandler(IPakProgressHandler* handler)
 {
 	m_actionProgressHandler = (handler == NULL ? &g_dummyProgressHandler : handler);
+}
+
+bool DataPaster::removeTempFiles(const QString& tempDirectory)
+{
+	QDir dir(tempDirectory);
+
+	if (!dir.exists())
+	{
+		return false;
+	}
+
+	const QStringList files = dir.entryList(QDir::Files);
+	ProgressHandlerHolder holder(m_actionProgressHandler, files.size());
+
+	int processed = 0;
+	foreach (const QString& file, files)
+	{
+		m_pakProgressHandler->progress(processed++, file.toLatin1().constData());
+		if (!dir.remove(file))
+		{
+			return false;
+		}
+	}
+	if (!dir.rmdir(tempDirectory))
+	{
+		return false;
+	}
+}
+
+void DataPaster::resetProgressHandlers()
+{
+	m_actionProgressHandler = &g_dummyProgressHandler;
+	m_pakProgressHandler = &g_dummyProgressHandler;
 }

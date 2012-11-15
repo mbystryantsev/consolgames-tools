@@ -223,17 +223,22 @@ void PatcherWorker::processError(const QString& errorMessage, const QString& des
 {
 	ASSERT(thread() == QThread::currentThread());
 	emit stepFailed(m_paster->errorCode(), m_paster->errorData(), errorMessage, description);
+	m_paster->resetProgressHandlers();
 	finalizeInternal();
 }
 
 void PatcherWorker::finalizeInternal()
 {
 	ASSERT(thread() == QThread::currentThread());
-	m_paster.reset();
 	removeTempFiles();
+	m_paster.reset();
 }
 
 void PatcherWorker::removeTempFiles()
 {
 	ASSERT(thread() == QThread::currentThread());
+	if (!m_paster->removeTempFiles(m_pakTempPath))
+	{
+		DLOG << "Unable to delete temporary files!";
+	}
 }
