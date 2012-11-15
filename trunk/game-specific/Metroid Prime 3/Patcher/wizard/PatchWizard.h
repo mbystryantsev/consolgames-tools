@@ -39,6 +39,8 @@ public:
 	void setErrorData(const QString& errorData);
 	QString errorData() const;
 
+	QString version() const;
+
 private:
 	PatchType m_patchType;
 	bool m_checkingEnabled;

@@ -28,7 +28,10 @@ PatchWizard::PatchWizard(QWidget* parent)
 	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/watermark.png"));
 
 	QWidget* sideWidget = new QWidget(this);
-	Ui_SideWidget().setupUi(sideWidget);
+	Ui_SideWidget ui;
+	ui.setupUi(sideWidget);
+	ui.version->setText(ui.version->text().arg(version()));
+	
 	setSideWidget(sideWidget);
 
 	setPage(PageIntro, new IntroPage());
@@ -83,4 +86,9 @@ void PatchWizard::setErrorData(const QString& errorData)
 QString PatchWizard::errorData() const
 {
 	return m_errorData;
+}
+
+QString PatchWizard::version() const
+{
+	return "0.7a";
 }

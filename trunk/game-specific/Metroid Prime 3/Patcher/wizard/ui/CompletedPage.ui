@@ -20,10 +20,31 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Вас приветствует</string>
+      <string/>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openProjectPage">
+     <property name="text">
+      <string>Посетить страницу проекта</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openForumThread">
+     <property name="text">
+      <string>Открыть тему на форуме</string>
      </property>
     </widget>
    </item>

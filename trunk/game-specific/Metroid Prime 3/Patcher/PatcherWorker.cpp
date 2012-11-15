@@ -49,12 +49,15 @@ PatcherWorker::PatcherWorker()
 {
 	if (s_pakList.isEmpty())
 	{
-		s_pakList << "Metroid1.pak"
+		s_pakList
+#if !defined(_DEBUG)
+			<< "Metroid1.pak"
 			<< "Metroid3.pak"
 			<< "Metroid4.pak"
 			<< "Metroid5.pak"
 			<< "Metroid6.pak"
 			<< "Metroid7.pak"
+#endif
 			<< "Metroid8.pak"
 			<< "GuiDVD.pak"
 			<< "GuiNAND.pak"
@@ -184,7 +187,7 @@ void PatcherWorker::replacePaks()
 void PatcherWorker::checkPaks()
 {
 	ASSERT(thread() == QThread::currentThread());
-	if (!m_paster->checkPaks(s_pakList, m_tempPath))
+	if (!m_paster->checkPaks(s_pakList, m_pakTempPath))
 	{
 		return processError(
 			QString::fromLocal8Bit("Бэкап-образ не прошёл проверку на правильность установки патча."),

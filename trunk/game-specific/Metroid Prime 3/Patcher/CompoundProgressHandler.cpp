@@ -3,6 +3,11 @@
 QHash<QString, int> CompoundProgressHandler::s_paksFileCount;
 QHash<QString, int> CompoundProgressHandler::s_paksClusterCount;
 
+static bool isPaksAction(const QString& action)
+{
+	return (action == "rebuildPaks" || action == "replacePaks" || action == "checkPaks");
+}
+
 static inline int s2c(quint64 size)
 {
 	const int clusterSize = 0x7C00;
@@ -18,12 +23,14 @@ CompoundProgressHandler::CompoundProgressHandler(QObject* parent)
 {
 	if (s_paksFileCount.isEmpty())
 	{
+#if !defined(_DEBUG)
 		s_paksFileCount["Metroid1.pak"]     = 37168;
 		s_paksFileCount["Metroid3.pak"]     = 38481;
 		s_paksFileCount["Metroid4.pak"]     = 30725;
 		s_paksFileCount["Metroid5.pak"]     = 29324;
 		s_paksFileCount["Metroid6.pak"]     = 5219;
 		s_paksFileCount["Metroid7.pak"]     = 6686;
+#endif
 		s_paksFileCount["Metroid8.pak"]     = 1031;
 		s_paksFileCount["GuiDVD.pak"]       = 245;
 		s_paksFileCount["GuiNAND.pak"]      = 351;
@@ -36,12 +43,14 @@ CompoundProgressHandler::CompoundProgressHandler(QObject* parent)
 	}
 	if (s_paksClusterCount.isEmpty())
 	{
+#if !defined(_DEBUG)
 		s_paksClusterCount["Metroid1.pak"]     = s2c(773174208);
 		s_paksClusterCount["Metroid3.pak"]     = s2c(698251328);
 		s_paksClusterCount["Metroid4.pak"]     = s2c(738060992);
 		s_paksClusterCount["Metroid5.pak"]     = s2c(577712320);
 		s_paksClusterCount["Metroid6.pak"]     = s2c(126914560);
 		s_paksClusterCount["Metroid7.pak"]     = s2c(158443456);
+#endif
 		s_paksClusterCount["Metroid8.pak"]     = s2c(33171776);
 		s_paksClusterCount["GuiDVD.pak"]       = s2c(2165696);
 		s_paksClusterCount["GuiNAND.pak"]      = s2c(1212416);
@@ -68,7 +77,7 @@ void CompoundProgressHandler::onActionInit(int maximum)
 {
 	m_actionMax = maximum;
 
-	if (m_currentAction == "rebuildPaks" || m_currentAction == "replacePaks")
+	if (isPaksAction(m_currentAction))
 	{
 		const QHash<QString, int>& progressMap = (m_currentAction == "rebuildPaks" ? s_paksFileCount : s_paksClusterCount);
 		m_processedPaks.clear();
@@ -88,7 +97,7 @@ void CompoundProgressHandler::onActionInit(int maximum)
 void CompoundProgressHandler::onActionProgress(int progressValue, const QString& message)
 {
 	m_currentMessage = message;
-	if (m_currentAction == "rebuildPaks" || m_currentAction == "replacePaks")
+	if (isPaksAction(m_currentAction))
 	{
 		const QHash<QString, int>& progressMap = (m_currentAction == "rebuildPaks" ? s_paksFileCount : s_paksClusterCount);
 		ASSERT(progressMap.contains(message));
@@ -126,7 +135,7 @@ void CompoundProgressHandler::onSubActionInit(int maximum)
 void CompoundProgressHandler::onSubActionProgress(int value, const QString& message)
 {
 	Q_UNUSED(message);
-	if (m_currentAction == "rebuildPaks" || m_currentAction == "replacePaks")
+	if (isPaksAction(m_currentAction))
 	{
 		const int progressValue = qMin(m_currentIterationMax, m_currentIterationFloor + value);
 		emit progress(progressValue, m_currentMessage);

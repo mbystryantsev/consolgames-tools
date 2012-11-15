@@ -96,7 +96,10 @@ void ProgressPage::initializePage()
 	actions << "replacePaks";
 	if (!isRiivolution && checkingEnabled)
 	{
+		actions << "checkPaks";
+#if !defined(_DEBUG)
 		actions << "checkImage";
+#endif
 	}
 	actions << "finalize";
 

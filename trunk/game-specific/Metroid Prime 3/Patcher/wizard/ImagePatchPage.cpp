@@ -28,7 +28,12 @@ int ImagePatchPage::nextId() const
 
 void ImagePatchPage::initializePage()
 {
+#if defined(_DEBUG)
+	m_ui.imagePath->setText(QDir::toNativeSeparators("D:/rev/Corruption/Metroid_3_forPatch.iso"));
+	m_ui.tempPath->setText(QDir::toNativeSeparators("D:/Temp"));
+#else
 	processEuristic();
+#endif
 }
 
 bool ImagePatchPage::validatePage()
