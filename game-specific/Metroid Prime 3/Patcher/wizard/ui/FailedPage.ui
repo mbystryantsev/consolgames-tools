@@ -122,7 +122,7 @@
     </spacer>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
+    <widget class="QCheckBox" name="openThread">
      <property name="text">
       <string>Открыть страницу с обсуждением перевода на форуме</string>
      </property>

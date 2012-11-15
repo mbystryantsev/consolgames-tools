@@ -44,7 +44,7 @@
    <property name="margin">
     <number>0</number>
    </property>
-   <item row="0" column="0">
+   <item row="1" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string/>
@@ -54,11 +54,10 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="1" column="1">
     <widget class="QLabel" name="label_2">
      <property name="styleSheet">
-      <string notr="true">	text-decoration: none;
-	color: white;</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head&gt;&lt;style&gt;a{text-decoration:underline;color:white;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;a href=&quot;http://consolgames.ru/&quot;&gt;consolgames.ru&lt;/a&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -68,20 +67,20 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
+   <item row="1" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>74</width>
+       <width>60</width>
        <height>20</height>
       </size>
      </property>
     </spacer>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QLabel" name="label_4">
      <property name="text">
       <string/>
@@ -91,7 +90,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="2" column="1">
     <widget class="QLabel" name="label">
      <property name="styleSheet">
       <string notr="true"/>
@@ -104,7 +103,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="3" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -113,6 +112,38 @@
       <size>
        <width>20</width>
        <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="3">
+    <widget class="QLabel" name="version">
+     <property name="font">
+      <font>
+       <pointsize>6</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">	text-decoration: none;
+	color: #666;</string>
+     </property>
+     <property name="text">
+      <string>v%1</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
       </size>
      </property>
     </spacer>

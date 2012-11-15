@@ -12,4 +12,5 @@ public:
 	FailedPage();
 
 	virtual void initializePage() override;
+	Q_SLOT void openForumThread();
 };

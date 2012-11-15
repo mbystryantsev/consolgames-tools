@@ -10,4 +10,7 @@ class CompletedPage : public Page<Ui_CompletedPage>
 
 public:
 	CompletedPage();
+	virtual void initializePage();
+
+	Q_SLOT void operURLs();
 };
