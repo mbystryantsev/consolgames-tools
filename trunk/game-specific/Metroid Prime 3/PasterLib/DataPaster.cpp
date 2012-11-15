@@ -1,5 +1,6 @@
 #include "DataPaster.h"
 #include <QtPakArchive.h>
+#include <QtFileStream.h>
 #include <WiiFileStream.h>
 #include <Stream.h>
 #include <QStringList>
@@ -280,7 +281,7 @@ bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDi
 			return false;
 		}
 
-		FileStream resultPakFile((paksDir + QDir::separator() + pakName).toStdString(), Stream::modeRead);
+		QtFileStream resultPakFile(paksDir + QDir::separator() + pakName, QIODevice::ReadOnly);
 		if (!resultPakFile.opened())
 		{
 			DLOG << "CheckData: Opening result pak failed: " << pakName;
@@ -308,24 +309,35 @@ bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDi
 	return true;
 }
 
-bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize)
+static int s2c(int size)
 {
+	const int cluster = 0x7C00;
+	return (size + cluster - 1) / cluster;
+}
+
+bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize) const
+{
+	largesize_t size = min(stream1->size(), stream2->size());
+	ProgressHandlerHolder holder(m_pakProgressHandler, s2c(size));
+
 	if (!ignoreSize && stream1->size() != stream2->size())
 	{
 		return false;
 	}
 
-	largesize_t size = min(stream1->size(), stream2->size());
-
 	stream1->seek(0, Stream::seekSet);
 	stream2->seek(0, Stream::seekSet);
 
-	const int chunk = 4096;
+	const int chunk = 0x7C00;
 
 	char data1[chunk];
 	char data2[chunk];
+
+	int processed = 0;
 	while (size > 0)
 	{
+		m_pakProgressHandler->progress(s2c(processed), NULL);
+
 		const largesize_t toRead = min(chunk, size);
 		size -= chunk;
 
@@ -336,6 +348,7 @@ bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Strea
 			DLOG << __FUNCTION__ << ": I/O error!";
 			return false;
 		}
+		processed += readed1;
 
 		if (!std::equal(&data1[0], &data1[readed1], &data2[0]))
 		{

@@ -95,7 +95,7 @@ public:
 	QString errorData() const;
 
 protected:
-	static bool compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize = false);
+	bool compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize = false) const;
 
 protected:
 	QString m_imageFilename;
