@@ -25,6 +25,7 @@ public:
 	Q_SLOT void onPatchingFailed(const QByteArray& step, int errorCode, const QString& errorData, const QString& errorMessage, const QString& errorDescription);
 	Q_SLOT void onPatchingCanceled(const QByteArray& step);
 	Q_SLOT void onProgress(int, const QString& message);
+	Q_SLOT void onCancelPressed();
 
 private:
 	enum State

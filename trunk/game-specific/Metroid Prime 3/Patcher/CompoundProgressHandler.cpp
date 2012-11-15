@@ -23,7 +23,7 @@ CompoundProgressHandler::CompoundProgressHandler(QObject* parent)
 {
 	if (s_paksFileCount.isEmpty())
 	{
-#if !defined(_DEBUG)
+#if !defined(_DEBUG) || defined(ALL_PAKS_IN_DEBUG)
 		s_paksFileCount["Metroid1.pak"]     = 37168;
 		s_paksFileCount["Metroid3.pak"]     = 38481;
 		s_paksFileCount["Metroid4.pak"]     = 30725;
@@ -43,7 +43,7 @@ CompoundProgressHandler::CompoundProgressHandler(QObject* parent)
 	}
 	if (s_paksClusterCount.isEmpty())
 	{
-#if !defined(_DEBUG)
+#if !defined(_DEBUG) || defined(ALL_PAKS_IN_DEBUG)
 		s_paksClusterCount["Metroid1.pak"]     = s2c(773174208);
 		s_paksClusterCount["Metroid3.pak"]     = s2c(698251328);
 		s_paksClusterCount["Metroid4.pak"]     = s2c(738060992);

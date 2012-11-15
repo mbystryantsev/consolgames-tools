@@ -8,6 +8,7 @@ PatcherController::PatcherController(QObject* parent)
 	, m_workerPtr(new PatcherWorker())
 	, m_worker(m_workerPtr.get())
 	, m_errorCode(0)
+	, m_stopRequested(false)
 {
 	addResourcesPath(":/patchdata/");
 
@@ -62,8 +63,21 @@ bool PatcherController::processStep()
 	return true;
 }
 
+void PatcherController::processCancel()
+{
+	VERIFY(QMetaObject::invokeMethod(m_worker, "finalizeInternal"));
+	emit canceled(m_currentStep);
+	finish();
+}
+
 void PatcherController::onStepCompleted()
 {
+	if (m_stopRequested)
+	{
+		processCancel();
+		return;
+	}
+
 	DLOG << "Step completed: " << m_currentStep;
 	emit stepCompleted(m_currentStep);
 	if (!processStep())
@@ -75,6 +89,12 @@ void PatcherController::onStepCompleted()
 
 void PatcherController::onStepFailed(int errorCode, const QString& errorData, const QString& errorMessage, const QString& errorDescription)
 {
+	if (m_stopRequested)
+	{
+		processCancel();
+		return;
+	}
+
 	DLOG << "Step failed: " << m_currentStep;
 	finish();
 	emit failed(m_currentStep, errorCode, errorData, errorMessage, errorDescription);
@@ -82,6 +102,11 @@ void PatcherController::onStepFailed(int errorCode, const QString& errorData, co
 
 void PatcherController::requestStop()
 {
+	if (!m_stopRequested)
+	{
+		VERIFY(QMetaObject::invokeMethod(m_worker, "requestStop"));
+		m_stopRequested = true;
+	}
 }
 
 int PatcherController::errorCode() const

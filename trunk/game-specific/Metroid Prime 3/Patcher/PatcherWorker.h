@@ -2,6 +2,7 @@
 #include <DataPaster.h>
 #include <memory>
 #include <QStringList>
+#include <QTime>
 
 class ProgressHandler : public QObject, public IPakProgressHandler
 {
@@ -22,6 +23,7 @@ public:
 
 private:
 	bool m_stopRequested;
+	QTime m_timer;
 };
 
 class PatcherWorker : public QObject
@@ -45,6 +47,7 @@ private:
 	Q_SLOT void checkPaks();
 	Q_SLOT void checkImage();
 	Q_SLOT void finalize();
+	Q_SLOT void requestStop();
 
 	Q_SIGNAL void stepFailed(int errorCode, const QString& errorData, const QString& errorMessage, const QString& description);
 	Q_SIGNAL void stepCompleted();
@@ -58,7 +61,7 @@ private:
 
 private:
 	void processError(const QString& errorMessage, const QString& description);
-	void finalizeInternal();
+	Q_SLOT void finalizeInternal();
 	void removeTempFiles();
 
 private:

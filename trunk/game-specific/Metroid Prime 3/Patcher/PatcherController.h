@@ -37,6 +37,7 @@ public:
 private:
 	bool runStep(const QByteArray& step);
 	bool processStep();
+	void processCancel();
 	void finish();
 	Q_SLOT void onStepCompleted();
 	Q_SLOT void onStepFailed(int errorCode, const QString& errorData, const QString& errorMessage, const QString& errorDescription);
@@ -48,6 +49,7 @@ private:
 	QList<QByteArray> m_steps;
 	QByteArray m_currentStep;
 	CompoundProgressHandler m_progressHandler;
+	bool m_stopRequested;
 
 	int m_errorCode;
 	QString m_errorData;

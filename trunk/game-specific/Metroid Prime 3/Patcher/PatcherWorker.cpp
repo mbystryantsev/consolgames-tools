@@ -3,6 +3,7 @@
 #include <string>
 #include <QDir>
 #include <QThread>
+#include <QApplication>
 
 LOG_CATEGORY("PatcherWorker");
 
@@ -16,11 +17,18 @@ ProgressHandler::ProgressHandler()
 void ProgressHandler::init(int size)
 {
 	emit progressInit(size);
+	m_timer.start();
 }
 
 void ProgressHandler::progress(int value, const char* message)
 {
 	emit progressChanged(value, message);
+
+	if (m_timer.elapsed() >= 300)
+	{
+		m_timer.restart();
+		QApplication::processEvents();
+	}
 }
 
 void ProgressHandler::finish()
@@ -50,7 +58,7 @@ PatcherWorker::PatcherWorker()
 	if (s_pakList.isEmpty())
 	{
 		s_pakList
-#if !defined(_DEBUG)
+#if !defined(_DEBUG) || defined(ALL_PAKS_IN_DEBUG)
 			<< "Metroid1.pak"
 			<< "Metroid3.pak"
 			<< "Metroid4.pak"
@@ -219,6 +227,13 @@ void PatcherWorker::finalize()
 	finalizeInternal();
 }
 
+void PatcherWorker::requestStop()
+{
+	VERIFY(QMetaObject::invokeMethod(&m_actionProgressHandler, "requestStop", Qt::QueuedConnection));
+	VERIFY(QMetaObject::invokeMethod(&m_subActionProgressHandler, "requestStop", Qt::QueuedConnection));
+	DLOG << "Stop requested";
+}
+
 void PatcherWorker::processError(const QString& errorMessage, const QString& description)
 {
 	ASSERT(thread() == QThread::currentThread());
@@ -230,12 +245,18 @@ void PatcherWorker::processError(const QString& errorMessage, const QString& des
 void PatcherWorker::finalizeInternal()
 {
 	ASSERT(thread() == QThread::currentThread());
+	if (m_paster.get() == NULL)
+	{
+		return;
+	}
+
 	removeTempFiles();
 	m_paster.reset();
 }
 
 void PatcherWorker::removeTempFiles()
 {
+	DLOG << "removeTempFiles executed";
 	ASSERT(thread() == QThread::currentThread());
 	if (!m_paster->removeTempFiles(m_pakTempPath))
 	{
