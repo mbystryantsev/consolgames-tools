@@ -14,7 +14,7 @@
    <string>Form</string>
   </property>
   <property name="title" stdset="0">
-   <string>Ololo</string>
+   <string>Патч не применён</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -24,6 +24,47 @@
      </property>
      <property name="wordWrap">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Процесс применения или генерации патча отменён.&lt;br/&gt;
+&lt;br/&gt;
+Если у в процессе у Вас возникли какие-либо проблемы, можете обратиться на наш &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;форум&lt;/a&gt;.</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Нажмите «Завершить» для выхода из программы.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
      </property>
     </widget>
    </item>

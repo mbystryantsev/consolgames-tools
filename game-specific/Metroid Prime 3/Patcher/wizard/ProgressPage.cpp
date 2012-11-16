@@ -189,6 +189,7 @@ void ProgressPage::onCancelPressed()
 	if (answer == QMessageBox::Yes)
 	{
 		wizard()->button(QWizard::CancelButton)->setEnabled(false);
+		m_ui.progressLabel->setText(QString::fromLocal8Bit("Остановка..."));
 		m_patcherController.requestStop();
 	}
 }
