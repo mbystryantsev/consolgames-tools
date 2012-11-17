@@ -37,3 +37,5 @@ LIBS += \
 	WiiStreams.lib \
 	PasterLib.lib \
 	core.lib \
+
+TRANSLATIONS += qt_ru.ts

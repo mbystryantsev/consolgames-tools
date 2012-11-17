@@ -21,10 +21,6 @@ PatchWizard::PatchWizard(QWidget* parent)
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);
 
-	setButtonText(QWizard::NextButton, QString::fromWCharArray(L"Далее >"));
-	setButtonText(QWizard::BackButton, QString::fromWCharArray(L"< Назад"));
-	setButtonText(QWizard::CancelButton, QString::fromWCharArray(L"Отмена"));
-	setButtonText(QWizard::FinishButton, QString::fromWCharArray(L"Завершить"));
 	setButtonText(QWizard::CommitButton, QString::fromWCharArray(L"Применить!"));
 
 	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/watermark.png"));

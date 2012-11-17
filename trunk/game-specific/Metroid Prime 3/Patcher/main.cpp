@@ -3,6 +3,7 @@
 #include <QIcon>
 #include <QLocale>
 #include <QFile>
+#include <QTranslator>
 
 QString loadTextFile(const QString& filename, const QString& defaultText = "")
 {
@@ -20,6 +21,11 @@ int main(int argc, char* argv[])
 
 	QApplication application(argc, argv);
 
+	QTranslator *translator = new QTranslator(&application); 
+	if (translator->load(":/qt_ru.qm")) 
+	{
+		application.installTranslator(translator);
+	}
 	application.setStyleSheet(loadTextFile(":/Patcher.css"));
 	application.setWindowIcon(QIcon(":/SamusHelmet.png"));
 	application.setApplicationName("Metroid Prime 3 Translation Patch");

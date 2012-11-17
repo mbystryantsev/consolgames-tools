@@ -1,6 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 	<qresource>
+		<file>qt_ru.qm</file>
 		<file>SamusHelmet.png</file>
 		<file>watermark.png</file>
 		<file>eula.txt</file>
