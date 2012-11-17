@@ -2,13 +2,15 @@
 #include "QtFileStream.h"
 #include <QString>
 #include <QFile>
+#include <QDir>
 
 std::string QtPakArchive::findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const 
 {
 	const QString filename = QString::fromStdString(hashToStr(hash)) + QString(".") + QString::fromStdString(res.toString());
 	for (size_t i = 0; i < inputDirs.size(); i++)
 	{
-		const QString path = QString::fromStdString(inputDirs[i]) + QString(PATH_SEPARATOR_STR) + filename;
+		QDir dir(QString::fromStdString(inputDirs[i]));
+		const QString path = dir.absoluteFilePath(filename);
 		QFile file(path);
 		if(file.exists())
 		{
