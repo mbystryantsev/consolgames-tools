@@ -14,25 +14,39 @@
    <string>Form</string>
   </property>
   <property name="title" stdset="0">
-   <string>Ololo</string>
+   <string>Процесс успешно завершён</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string/>
+      <string>Патч успешно применён или сгенерирован.
+&lt;br/&gt;&lt;br/&gt;
+Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;http://consolgames.ru/translations/Metroid_Prime_3&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
      <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
       <bool>true</bool>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>TextLabel</string>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-    </widget>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <widget class="QCheckBox" name="openProjectPage">
@@ -45,6 +59,13 @@
     <widget class="QCheckBox" name="openForumThread">
      <property name="text">
       <string>Открыть тему на форуме</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openVKGroup">
+     <property name="text">
+      <string>Открыть страницу группы «В Контакте»</string>
      </property>
     </widget>
    </item>
