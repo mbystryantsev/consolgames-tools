@@ -3,6 +3,7 @@
 #include "ui_ImagePatchPage.h"
 
 class FreeSpaceChecker;
+class ImageFileChecker;
 
 class ImagePatchPage : public Page<Ui_ImagePatchPage>
 {
@@ -18,13 +19,17 @@ public:
 
 	Q_SLOT void onImageSelectPressed();
 	Q_SLOT void onTempPathSelectPressed();
-	Q_SLOT void onFreeSpaceError(quint64 space);
-	Q_SLOT void onPathError();
-	Q_SLOT void onResetError();
+	Q_SLOT void onTempPathFreeSpaceError(quint64 space);
+	Q_SLOT void onTempPathError();
+	Q_SLOT void onTempPathResetError();
+	Q_SLOT void onImagePathError();
+	Q_SLOT void onImagePathAccessError();
+	Q_SLOT void onImagePathResetError();
 
-	void showToolTip(QWidget* widget, const QString& text);
-	void hideToolTip(QWidget* widget);
+	static void showToolTip(QWidget* widget, const QString& text);
+	static void hideToolTip(QWidget* widget);
 
 private:
 	FreeSpaceChecker* m_freeSpaceChecker;
+	ImageFileChecker* m_imageFileChecker;
 };
