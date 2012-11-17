@@ -3,8 +3,8 @@ QT += core
 CONFIG += static
 TEMPLATE = lib
 
-HEADERS = *.h
-SOURCES = *.cpp
+HEADERS = $$files(*.h)
+SOURCES = $$files(*.cpp)
 LIBS = ExtractorLib.lib WiiStreams.lib
 
 include(../Corruption.pri)
