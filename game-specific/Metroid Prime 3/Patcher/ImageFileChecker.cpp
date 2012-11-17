@@ -1,6 +1,5 @@
 #include "ImageFileChecker.h"
 #include <QLineEdit>
-#include <QFile>
 #include <QFileInfo>
 
 ImageFileChecker::ImageFileChecker(QLineEdit* pathEdit, QObject* parent) : PathChecker(pathEdit, parent)
@@ -11,15 +10,15 @@ void ImageFileChecker::onPathChanged()
 {
 	const QString path = m_edit->text();
 
-	QFile file(path);
-	if (!file.exists())
+	QFileInfo info(path);
+	if (!info.exists() || !info.isFile())
 	{
 		setError();
 		emit pathError();
 		return;
 	}
 
-	if (!QFileInfo(file).isWritable())
+	if (!info.isWritable())
 	{
 		setError();
 		emit accessError();
