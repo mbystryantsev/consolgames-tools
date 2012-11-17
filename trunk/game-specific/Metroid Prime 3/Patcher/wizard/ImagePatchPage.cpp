@@ -1,6 +1,7 @@
 #include "ImagePatchPage.h"
 #include "PatchWizard.h"
 #include "FreeSpaceChecker.h"
+#include "ImageFileChecker.h"
 #include <QToolTip>
 #include <QFileDialog>
 
@@ -11,10 +12,15 @@ ImagePatchPage::ImagePatchPage() : Page<Ui_ImagePatchPage>()
 	registerField("imagePath", m_ui.imagePath);
 	registerField("tempPath", m_ui.tempPath);
 
-	m_freeSpaceChecker = new FreeSpaceChecker(m_ui.tempPath);
-	VERIFY(connect(m_freeSpaceChecker, SIGNAL(pathError()), SLOT(onPathError())));
-	VERIFY(connect(m_freeSpaceChecker, SIGNAL(freeSpaceError(quint64)), SLOT(onFreeSpaceError(quint64))));
-	VERIFY(connect(m_freeSpaceChecker, SIGNAL(errorReset()), SLOT(onResetError())));
+	m_freeSpaceChecker = new FreeSpaceChecker(m_ui.tempPath, this);
+	m_imageFileChecker = new ImageFileChecker(m_ui.imagePath, this);
+
+	VERIFY(connect(m_freeSpaceChecker, SIGNAL(pathError()), SLOT(onTempPathError())));
+	VERIFY(connect(m_freeSpaceChecker, SIGNAL(freeSpaceError(quint64)), SLOT(onTempPathFreeSpaceError(quint64))));
+	VERIFY(connect(m_freeSpaceChecker, SIGNAL(errorReset()), SLOT(onTempPathResetError())));
+	VERIFY(connect(m_imageFileChecker, SIGNAL(pathError()), SLOT(onImagePathError())));
+	VERIFY(connect(m_imageFileChecker, SIGNAL(accessError()), SLOT(onImagePathAccessError())));
+	VERIFY(connect(m_imageFileChecker, SIGNAL(errorReset()), SLOT(onImagePathResetError())));
 	VERIFY(connect(m_ui.selectImageButton, SIGNAL(clicked()), SLOT(onImageSelectPressed())));
 	VERIFY(connect(m_ui.selectTempPathButton, SIGNAL(clicked()), SLOT(onTempPathSelectPressed())));
 	
@@ -78,22 +84,41 @@ void ImagePatchPage::onTempPathSelectPressed()
 	}
 }
 
-void ImagePatchPage::onFreeSpaceError(quint64 space)
+void ImagePatchPage::onTempPathFreeSpaceError(quint64 space)
 {
 	const quint64 megabytes = space / (1024 * 1024);
 	const double gygabytes = static_cast<double>(megabytes) / 1024.0;
 	showToolTip(m_ui.tempPath, QString::fromLocal8Bit("Доступно %1 ГБ из необходимых 3 ГБ!").arg(gygabytes, 0, 'f', 2));
 }
 
-void ImagePatchPage::onPathError()
+void ImagePatchPage::onTempPathError()
 {
 	showToolTip(m_ui.tempPath, QString::fromLocal8Bit("Указанный путь неверен!"));
 }
 
-void ImagePatchPage::onResetError()
+void ImagePatchPage::onTempPathResetError()
 {
 	hideToolTip(m_ui.tempPath);
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+void ImagePatchPage::onImagePathError()
+{
+	showToolTip(m_ui.imagePath, QString::fromLocal8Bit("Указанный путь неверен!"));
+}
+
+void ImagePatchPage::onImagePathAccessError()
+{
+	showToolTip(m_ui.imagePath, QString::fromLocal8Bit("Указанный файл недоступен для записи!"));
+}
+
+void ImagePatchPage::onImagePathResetError()
+{
+	hideToolTip(m_ui.imagePath);
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 void ImagePatchPage::showToolTip(QWidget* widget, const QString& text)
 {

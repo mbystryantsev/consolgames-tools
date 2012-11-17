@@ -1,16 +1,16 @@
 #pragma once
 #include "PathChecker.h"
 
-class FreeSpaceChecker : public PathChecker
+class ImageFileChecker: public PathChecker
 {
 	Q_OBJECT
 
 public:
-	FreeSpaceChecker(QLineEdit* pathEdit, QObject* parent = NULL);
+	ImageFileChecker(QLineEdit* pathEdit, QObject* parent = NULL);
 
 public:
 	Q_SIGNAL void pathError();
-	Q_SIGNAL void freeSpaceError(quint64);
+	Q_SIGNAL void accessError();
 
 private:
 	virtual void onPathChanged() override;

@@ -12,25 +12,9 @@ static quint64 getFreeSpace(const QString& path)
 	return success ? freeBytes : 0;
 }
 
-FreeSpaceChecker::FreeSpaceChecker(QLineEdit* pathEdit)
-	: QObject(pathEdit)
-	, m_edit(pathEdit)
+FreeSpaceChecker::FreeSpaceChecker(QLineEdit* pathEdit, QObject* parent)
+	: PathChecker(pathEdit, parent)
 {
-	VERIFY(connect(m_edit, SIGNAL(editingFinished()), SLOT(onPathChanged())));
-	VERIFY(connect(m_edit, SIGNAL(textChanged(const QString&)), SLOT(onPathEdited())));
-	VERIFY(connect(&m_timer, SIGNAL(timeout()), SLOT(onPathChanged())));
-	m_timer.setInterval(500);
-	m_timer.setSingleShot(true);
-}
-
-void FreeSpaceChecker::check()
-{
-	onPathChanged();
-}
-
-void FreeSpaceChecker::onPathEdited()
-{
-	m_timer.start();
 }
 
 void FreeSpaceChecker::onPathChanged()
@@ -56,15 +40,4 @@ void FreeSpaceChecker::onPathChanged()
 	}
 
 	resetError();
-}
-
-void FreeSpaceChecker::setError()
-{
-	m_edit->setStyleSheet("QLineEdit { background-color: #FCC;}");
-}
-
-void FreeSpaceChecker::resetError()
-{
-	m_edit->setStyleSheet("");
-	emit errorReset();
 }
