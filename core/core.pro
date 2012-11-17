@@ -1,16 +1,16 @@
 QT -= core gui
 CONFIG += static
-CONFIG -= flat
+CONFIG -= qt flat
 TEMPLATE = lib
 
 HEADERS = \
-	*.h \
-	classes/*.h \
-	streams/*.h \
+	$$files(*.h) \
+	$$files(classes/*.h) \
+	$$files(streams/*.h) \
 
 SOURCES = \
-	classes/*.cpp \
-	streams/*.cpp \
+	$$files(classes/*.cpp) \
+	$$files(streams/*.cpp) \
 
 INCLUDEPATH += \
 	. \
