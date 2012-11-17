@@ -22,14 +22,13 @@ FileStream::FileStream(const std::string& filename, OpenMode mode) : Stream()
 		desiredAccess |= GENERIC_READ;
 		creationDisposition = OPEN_EXISTING;
 	}
-	if (mode == modeWrite || mode == modeReadWrite)
-	{
-		creationDisposition = OPEN_ALWAYS;
-		desiredAccess |= GENERIC_WRITE;
-	}
 	if (mode == modeWrite)
 	{
-		 creationDisposition = CREATE_ALWAYS;
+		creationDisposition = OPEN_ALWAYS;
+	}
+	if (mode == modeWrite || mode == modeReadWrite)
+	{
+		desiredAccess |= GENERIC_WRITE;
 	}
 	m_handle = CreateFileA(filename.c_str(), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
     
