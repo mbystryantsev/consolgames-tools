@@ -150,7 +150,13 @@ void PatcherWorker::rebuildPaks()
 	}
 
 	ASSERT(thread() == QThread::currentThread());
-	const std::vector<std::string> inputDirs(1, ":/patchData/");
+	
+	std::vector<std::string> inputDirs;
+	inputDirs.reserve(m_resourcesPaths.size());
+	foreach (const QString& path, m_resourcesPaths)
+	{
+		inputDirs.push_back(path.toStdString());
+	}
 
 	if (!m_paster->rebuildPaks(s_pakList, inputDirs, m_pakTempPath.toStdString()))
 	{
@@ -166,8 +172,7 @@ void PatcherWorker::rebuildPaks()
 void PatcherWorker::checkData()
 {	
 	ASSERT(thread() == QThread::currentThread());
-	const QStringList inputDirs(":/patchData/");
-	if (!m_paster->checkData(s_pakList, inputDirs, m_pakTempPath, m_pakTempPath))
+	if (!m_paster->checkData(s_pakList, m_resourcesPaths, m_pakTempPath, m_pakTempPath))
 	{
 		return processError(
 			QString::fromLocal8Bit("Файлы игры не прошли проверку на правильность установки патча."),
