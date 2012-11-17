@@ -4,6 +4,7 @@
 #include "ImageFileChecker.h"
 #include <QToolTip>
 #include <QFileDialog>
+#include <QMessageBox>
 
 ImagePatchPage::ImagePatchPage() : Page<Ui_ImagePatchPage>()
 {
@@ -44,6 +45,19 @@ void ImagePatchPage::initializePage()
 
 bool ImagePatchPage::validatePage()
 {
+	if (m_imageFileChecker->hasError() || m_freeSpaceChecker->hasError())
+	{
+		const int answer = QMessageBox::question(this,
+			QString::fromLocal8Bit("Обнаружены ошибки"),
+			QString::fromLocal8Bit("Вероятно, указан один или несколько ошибочных параметров.\r\n"
+				"Вы уверены, что хотите продолжить процесс несмотря на возможные ошибки?")
+			, QMessageBox::Yes, QMessageBox::No);
+
+		if (answer == QMessageBox::No)
+		{
+			return false;
+		}
+	}
 	return true;
 }
 
