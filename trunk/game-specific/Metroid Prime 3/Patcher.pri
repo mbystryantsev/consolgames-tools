@@ -19,5 +19,5 @@ INCLUDEPATH += \
 QMAKE_LIBDIR += \
 	$$PWD/ExtractorLib/$$CONFIG_NAME \
 	$$PWD/PasterLib/$$CONFIG_NAME \
-	$$EXTERNALS/core/$$CONFIG_NAME \
-	$$EXTERNALS/WiiStreams/$$CONFIG_NAME \
+	$$PWD/externals/core/$$CONFIG_NAME \
+	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
