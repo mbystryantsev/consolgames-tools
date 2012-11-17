@@ -17,4 +17,5 @@ SOURCES = \
 INCLUDEPATH += \
 	. \
 	aes \
+	include \
 	include/openssl \
