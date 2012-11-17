@@ -18,11 +18,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="introLabel">
      <property name="text">
-      <string>Вас приветствует программа применения патча-перевода Metroid Prime 3: Corruption.
-
-Нажмите «Далее» для начала процесса.</string>
+      <string>Вас приветствует программа применения патча-перевода Metroid Prime 3: Corruption.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -41,6 +39,16 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Нажмите «Далее» для начала процесса.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
