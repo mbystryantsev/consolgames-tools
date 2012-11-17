@@ -98,7 +98,9 @@
    <item>
     <widget class="QLabel" name="errorInfo">
      <property name="text">
-      <string>&lt;table&gt;&lt;tr&gt;&lt;td&gt;Код ошибки:  &lt;/td&gt;&lt;td&gt;%1&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Техническая информация:  &lt;/td&gt;&lt;td&gt;%2&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;</string>
+      <string>&lt;html&gt;&lt;head&gt;
+&lt;/head&gt;&lt;body&gt;
+&lt;table&gt;&lt;tr&gt;&lt;td&gt;Код ошибки:  &lt;/td&gt;&lt;td&gt;%1&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Информация:  &lt;/td&gt;&lt;td&gt;%2&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

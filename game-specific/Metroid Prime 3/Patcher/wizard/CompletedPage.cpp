@@ -23,4 +23,8 @@ void CompletedPage::operURLs()
 	{
 		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/"));
 	}
+	if (m_ui.openVKGroup->isChecked())
+	{
+		QDesktopServices::openUrl(QUrl("http://vk.com/club18909038"));
+	}
 }
