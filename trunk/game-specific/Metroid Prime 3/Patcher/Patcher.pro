@@ -21,7 +21,7 @@ RESOURCES = \
 	resources/Patcher.qrc \
 	patchdata.qrc \
 
-RC_FILE = resources/Patcher.rc
+RC_FILE = Patcher.rc
  
 TEMPLATE = app
 QMAKE_LFLAGS += /OPT:REF
