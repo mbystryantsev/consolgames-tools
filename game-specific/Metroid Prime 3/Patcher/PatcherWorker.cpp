@@ -158,6 +158,17 @@ void PatcherWorker::rebuildPaks()
 		inputDirs.push_back(path.toStdString());
 	}
 
+	std::map<Hash,Hash> mergeMap;
+	foreach (const QString& dir, m_resourcesPaths)
+	{
+		const QString filename = QDir(dir).absoluteFilePath("mergemap.bin");
+		if (QFileInfo(filename).exists())
+		{
+			DataPaster::loadMergeMap(filename, mergeMap);
+		}
+	}
+	m_paster->setMergeMap(mergeMap);
+
 	if (!m_paster->rebuildPaks(s_pakList, inputDirs, m_pakTempPath))
 	{
 		return processError(
