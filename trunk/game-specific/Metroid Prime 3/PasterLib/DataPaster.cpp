@@ -5,6 +5,7 @@
 #include <Stream.h>
 #include <QStringList>
 #include <QDir>
+#include <QFileInfo>
 #include <memory>
 
 LOG_CATEGORY("DataPaster")
@@ -66,7 +67,7 @@ bool DataPaster::open()
 	return true;
 }
 
-bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<std::string>& inputDirs, const std::string& outDir)
+bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<std::string>& inputDirs, const QString& outDir)
 {
 	int paksRebuilded = 0;
 
@@ -101,7 +102,7 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 			return false;
 		}
 
-		const std::string filename = outDir + std::string(PATH_SEPARATOR_STR) + pakName.toStdString();
+		const std::string filename = QDir::toNativeSeparators(QDir(outDir).absoluteFilePath(pakName)).toStdString();
 
 		DLOG << "Rebuilding pak: " << pakName;
 		if (!pak.rebuild(filename, inputDirs, std::set<ResType>(), m_mergeMap))
@@ -226,8 +227,8 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 			QString resultName;
 			foreach (const QString& dir, inputDirs)
 			{
-				const QString filePath = dir + QDir::separator() + filename;
-				if (QFile::exists(filePath))
+				const QString filePath = QDir(dir).absoluteFilePath(filename);
+				if (QFileInfo(filePath).exists())
 				{
 					resultName = filePath;
 					break;
@@ -241,7 +242,7 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 					break;
 				}
 
-				FileStream file(resultName.toStdString(), Stream::modeRead);
+				QtFileStream file(resultName, QIODevice::ReadOnly);
 				if (!file.opened())
 				{
 					DLOG << "Unable to open file!";

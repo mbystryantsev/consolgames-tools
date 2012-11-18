@@ -158,7 +158,7 @@ void PatcherWorker::rebuildPaks()
 		inputDirs.push_back(path.toStdString());
 	}
 
-	if (!m_paster->rebuildPaks(s_pakList, inputDirs, m_pakTempPath.toStdString()))
+	if (!m_paster->rebuildPaks(s_pakList, inputDirs, m_pakTempPath))
 	{
 		return processError(
 			QString::fromLocal8Bit("Ошибка при обработке файлов игры."),

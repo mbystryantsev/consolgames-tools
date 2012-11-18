@@ -63,7 +63,7 @@ bool PasterThread::rebuildPaks(const QStringList& paks, const QStringList& input
 	}
 
 	m_paster->setMergeMap(mergeMap);
-	return m_paster->rebuildPaks(paks, inputDirList, outDir.toStdString());
+	return m_paster->rebuildPaks(paks, inputDirList, outDir);
 }
 
 bool PasterThread::replacePaks(const QStringList& paks, const QString& inputDir)
