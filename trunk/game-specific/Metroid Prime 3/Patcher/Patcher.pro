@@ -30,12 +30,19 @@ CONFIG(debug, debug|release){
 	CONFIG += console
 }
 
-INCLUDEPATH += \
-	$$PWD/wizard \
-	
 LIBS += \
 	WiiStreams.lib \
 	PasterLib.lib \
 	core.lib \
 
 TRANSLATIONS += qt_ru.ts
+
+MOC_DIR = generatedfiles/moc
+UI_HEADERS_DIR = generatedfiles/ui
+UI_SOURCES_DIR = generatedfiles/ui
+RCC_DIR = generatedfiles/rcc
+
+INCLUDEPATH += \
+	$$PWD \
+	$$PWD/wizard \
+	$$PWD/$$UI_HEADERS_DIR \
