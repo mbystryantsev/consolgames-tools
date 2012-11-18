@@ -14,11 +14,11 @@ BEGIN
 		BEGIN
 			VALUE "CompanyName",        "Consolgames.ru"
 			VALUE "FileDescription",    "Metroid Prime 3: Corruption Russian Translation Patch"
-			VALUE "FileVersion",        "1.0"
+			VALUE "FileVersion",        VER_FILEVERSION_STR
 			VALUE "LegalCopyright",     "Copyright © 2012 Consolgames.ru"
 			VALUE "OriginalFilename",   "MP3C_Patch.exe"
 			VALUE "ProductName",        "MP3C Russian Translation Patch"
-			VALUE "ProductVersion",     "1.0"
+			VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
 		END
     END
 	BLOCK "VarFileInfo"
