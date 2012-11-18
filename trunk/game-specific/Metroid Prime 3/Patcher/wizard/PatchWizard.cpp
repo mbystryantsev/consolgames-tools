@@ -1,3 +1,4 @@
+#include "version.h"
 #include "PatchWizard.h"
 #include "IntroPage.h"
 #include "EulaPage.h"
@@ -28,7 +29,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	QWidget* sideWidget = new QWidget(this);
 	Ui_SideWidget ui;
 	ui.setupUi(sideWidget);
-	ui.version->setText(ui.version->text().arg(version()));
+	ui.version->setText(QString("v%1").arg(version()));
 	
 	setSideWidget(sideWidget);
 
@@ -89,5 +90,5 @@ QString PatchWizard::errorData() const
 
 QString PatchWizard::version() const
 {
-	return "0.7a";
+	return VER_PRODUCTVERSION_STR;
 }
