@@ -148,7 +148,7 @@ bool WiiImage::loadParitions()
 	io_read(buffer, 16, 0x40000);
 	m_partitionCount = be32(buffer);
 	m_channelCount = be32(&buffer[8]);
-	m_generalPartitionCount = m_partitionCount + 1 + m_channelCount;
+	m_generalPartitionCount = m_partitionCount + m_channelCount;
 
 	// number of partitions is out by one
 	DLOG << "Number of partitions: " << m_partitionCount;
@@ -161,11 +161,11 @@ bool WiiImage::loadParitions()
 	DLOG << "Partition table offset: " << part_tbl_offset;
 	DLOG << "Channel table offset: " << chan_tbl_offset;
 
-	m_partitions.resize(m_partitionCount);
+	m_partitions.resize(m_generalPartitionCount);
 
 	for (int i = 0; i < m_partitionCount + m_channelCount; i++)
 	{
-		if (i < m_generalPartitionCount - m_channelCount)
+		if (i < m_partitionCount)
 		{
 			m_partitions[i].m_index = i;
 
@@ -198,7 +198,7 @@ bool WiiImage::loadParitions()
 			// partitions before VC games
 
 			// changed to a generic version
-			io_read(buffer, 8, chan_tbl_offset + (i - m_partitionCount - 1) * 8);
+			io_read(buffer, 8, chan_tbl_offset + (i - m_partitionCount) * 8);
 
 			m_partitions[i].type = PART_VC;
 			m_partitions[i].chan_id[0] = buffer[4];
@@ -966,7 +966,7 @@ bool WiiImage::setDataPartition()
 
 int WiiImage::findDataPartitionIndex() const
 {
-	for (int i = 1; i < m_partitionCount + 1; i++)
+	for (size_t i = 0; i < m_partitions.size(); i++)
 	{
 		if (m_partitions[i].type == PART_DATA)
 		{
