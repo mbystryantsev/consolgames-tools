@@ -1,5 +1,5 @@
 HEADERS += \
-	$$PWD/include/lzo/*.h \
+	$$files($$PWD/include/lzo/*.h) \
 	$$PWD/compr1b.h \
 	$$PWD/compr1c.h \
 	$$PWD/config1.h \
