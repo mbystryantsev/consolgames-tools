@@ -2,6 +2,10 @@
 #define __CONSOLGAMES_COMMON_H
 
 #ifdef _DEBUG
+#define CG_DEBUG
+#endif
+
+#ifdef CG_DEBUG
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -60,7 +64,7 @@ inline u64 endian64(u64 v)
 		| ((v << 8) & (0xFFULL << 32));
 }
 
-#ifdef _DEBUG
+#ifdef CG_DEBUG
 class AssertException
 {
 public:
@@ -108,7 +112,7 @@ public:
 #ifdef ASSERT
 #undef ASSERT
 #endif
-#ifdef _DEBUG
+#ifdef CG_DEBUG
 #define ASSERT(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
 #else
 #define ASSERT(expression) ((void)0)
@@ -117,7 +121,7 @@ public:
 #ifdef VERIFY
 #undef VERIFY
 #endif
-#ifdef _DEBUG
+#ifdef CG_DEBUG
 #define VERIFY(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
 #else
 #define VERIFY(expression) (expression)
@@ -134,7 +138,7 @@ public:
 		LogModifiers(Type t) : type(t){}
 		Type type;
 	};
-#ifdef _DEBUG
+#ifdef CG_DEBUG
 	~DLog(){std::cout << std::endl;}
 	DLog& operator ()(const char* s, ...){std::cout << s; return *this;}
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
