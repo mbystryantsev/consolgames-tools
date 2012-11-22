@@ -1,7 +1,7 @@
 #ifndef __CONSOLGAMES_COMMON_H
 #define __CONSOLGAMES_COMMON_H
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && !defined(CG_DEBUG)
 #define CG_DEBUG
 #endif
 
