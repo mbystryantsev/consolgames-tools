@@ -151,11 +151,11 @@ void PatcherWorker::rebuildPaks()
 
 	ASSERT(thread() == QThread::currentThread());
 	
-	std::vector<std::string> inputDirs;
+	std::vector<std::wstring> inputDirs;
 	inputDirs.reserve(m_resourcesPaths.size());
 	foreach (const QString& path, m_resourcesPaths)
 	{
-		inputDirs.push_back(path.toStdString());
+		inputDirs.push_back(path.toStdWString());
 	}
 
 	std::map<Hash,Hash> mergeMap;
