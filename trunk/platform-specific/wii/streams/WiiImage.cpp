@@ -1949,6 +1949,22 @@ bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, larg
 
 //////////////////////////////////////////////////////////////////////////
 
+template<typename T1, typename T2, typename T3>
+static std::string formatErrorData(T1 v1, T2 v2, T3 v3)
+{
+	std::stringstream result;
+	result << v1 << ';' << v2 << ';' << v3;
+	return result.str();
+}
+
+template<typename T1, typename T2, typename T3, typename T4>
+static std::string formatErrorData(T1 v1, T2 v2, T3 v3, T4 v4)
+{
+	std::stringstream result;
+	result << v1 << ';' << v2 << ';' << v3 << ';' << v4;
+	return result.str();
+}
+
 bool WiiImage::checkPartition(int partition)
 {
 	const int groupCount = static_cast<int>(m_partitions[partition].dataSize / (SIZE_CLUSTER * NB_CLUSTER_GROUP));
@@ -2020,6 +2036,7 @@ bool WiiImage::checkPartition(int partition)
 				{
 					DLOG << "h0 does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
 						<< ", physical offset: " << clusterPhOffset << ")";
+					m_lastErrorData = formatErrorData(partition, "h0", i);
 					return false;
 				}
 			}
@@ -2052,6 +2069,7 @@ bool WiiImage::checkPartition(int partition)
 			{
 				DLOG << "h2 does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
 					<< ", physical offset: " << clusterPhOffset << ")";
+				m_lastErrorData = formatErrorData(partition, "h2", cluster);
 				return false;
 			}
 			for (int i = 0; i < 8; i++)
@@ -2060,6 +2078,7 @@ bool WiiImage::checkPartition(int partition)
 				{
 					DLOG << "h1 of " << i << " cluster does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
 						<< ", physical offset: " << clusterPhOffset << ")";
+					m_lastErrorData = formatErrorData(partition, "h1", cluster, i);
 					return false;
 				}
 			}
@@ -2069,6 +2088,7 @@ bool WiiImage::checkPartition(int partition)
 		if (!std::equal(&expectedH3Hashes[group][0], &expectedH3Hashes[group][0] + sizeof(HashData), &actualH3Hashes[group][0]))
 		{
 			DLOG << "h0 does not match! Cluster group: " << group;
+			m_lastErrorData = formatErrorData(partition, "h0_group", group);
 			return false;
 		}
 
@@ -2082,6 +2102,11 @@ bool WiiImage::checkPartition(int partition)
 std::string WiiImage::discId() const
 {
 	return m_header.discId();
+}
+
+std::string WiiImage::lastErrorData() const
+{
+	return m_lastErrorData;
 }
 
 }

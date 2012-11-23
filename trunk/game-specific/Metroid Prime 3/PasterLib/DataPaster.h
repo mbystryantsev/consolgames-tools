@@ -74,6 +74,7 @@ public:
 		CheckPaks_UnableToOpenResultPak = 0x51,
 		CheckPaks_InvalidPakSize = 0x52,
 		CheckPaks_PaksAreNotEqual = 0x53,
+		CheckImage_Failed = 0x60
 	};
 
 public:
