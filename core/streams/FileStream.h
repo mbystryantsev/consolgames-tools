@@ -16,7 +16,7 @@ namespace Consolgames
 class FileStream: public Stream
 {
 public:
-	FileStream(const std::string& filename, OpenMode mode);
+	FileStream(const std::wstring& filename, OpenMode mode);
     virtual ~FileStream();
 
     virtual offset_t tell() const override;

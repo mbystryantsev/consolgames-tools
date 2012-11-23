@@ -9,7 +9,7 @@
 namespace Consolgames
 {
 
-FileStream::FileStream(const std::string& filename, OpenMode mode) : Stream()
+FileStream::FileStream(const std::wstring& filename, OpenMode mode) : Stream()
 {
 	m_openMode = mode;
 	m_handle = INVALID_HANDLE_VALUE;
@@ -30,7 +30,7 @@ FileStream::FileStream(const std::string& filename, OpenMode mode) : Stream()
 	{
 		desiredAccess |= GENERIC_WRITE;
 	}
-	m_handle = CreateFileA(filename.c_str(), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+	m_handle = CreateFileW(filename.c_str(), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
     
 	if (m_handle == INVALID_HANDLE_VALUE)
 	{

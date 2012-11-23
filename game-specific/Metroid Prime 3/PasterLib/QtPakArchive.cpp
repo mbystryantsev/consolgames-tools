@@ -4,24 +4,24 @@
 #include <QFileInfo>
 #include <QDir>
 
-std::string QtPakArchive::findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const 
+std::wstring QtPakArchive::findFile(const std::vector<std::wstring>& inputDirs, Hash hash, ResType res) const 
 {
 	const QString filename = QString::fromStdString(hashToStr(hash)) + QString(".") + QString::fromStdString(res.toString());
 	for (size_t i = 0; i < inputDirs.size(); i++)
 	{
-		QDir dir(QString::fromStdString(inputDirs[i]));
+		QDir dir(QString::fromStdWString(inputDirs[i]));
 		const QString path = dir.absoluteFilePath(filename);
 		QFileInfo info(path);
 		if(info.exists())
 		{
-			return path.toStdString();
+			return path.toStdWString();
 		}
 	}
-	return std::string();
+	return std::wstring();
 }
 
-u32 QtPakArchive::storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags)
+u32 QtPakArchive::storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags)
 {
-	QtFileStream inputStream(QString::fromStdString(filename));
+	QtFileStream inputStream(QString::fromStdWString(filename));
 	return PakArchive::storeFile(&inputStream, stream, isPacked, isTexture, flags);
 }

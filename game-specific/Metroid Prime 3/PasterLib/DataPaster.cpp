@@ -53,7 +53,7 @@ DataPaster::DataPaster(const QString& wiiImageFile)
 
 bool DataPaster::open()
 {
-	if (!m_image.open(m_imageFilename.toStdString(), Stream::modeReadWrite))
+	if (!m_image.open(m_imageFilename.toStdWString(), Stream::modeReadWrite))
 	{
 		m_errorCode = Open_UnableToOpenImage;
 		return false;
@@ -67,7 +67,7 @@ bool DataPaster::open()
 	return true;
 }
 
-bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<std::string>& inputDirs, const QString& outDir)
+bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<std::wstring>& inputDirs, const QString& outDir)
 {
 	int paksRebuilded = 0;
 
@@ -102,7 +102,7 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 			return false;
 		}
 
-		const std::string filename = QDir::toNativeSeparators(QDir(outDir).absoluteFilePath(pakName)).toStdString();
+		const std::wstring filename = QDir::toNativeSeparators(QDir(outDir).absoluteFilePath(pakName)).toStdWString();
 
 		DLOG << "Rebuilding pak: " << pakName;
 		if (!pak.rebuild(filename, inputDirs, std::set<ResType>(), m_mergeMap))
@@ -138,7 +138,7 @@ bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inpu
 			return false;
 		}
 
-		FileStream inputFile(filename.toStdString(), Stream::modeRead);	
+		FileStream inputFile(filename.toStdWString(), Stream::modeRead);	
 		if (!inputFile.opened())
 		{
 			DLOG << "Unable to open input pak: " << pakName;
@@ -213,7 +213,7 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 
 		const QString pakPath = outDir + QDir::separator() + pakName;
 		QtPakArchive resultPak;
-		if (!resultPak.open(pakPath.toStdString()))
+		if (!resultPak.open(pakPath.toStdWString()))
 		{
 			DLOG << "CheckData: Unable to parse result pak: " << pakName;
 			m_errorCode = CheckData_UnableToParseResultPak;
