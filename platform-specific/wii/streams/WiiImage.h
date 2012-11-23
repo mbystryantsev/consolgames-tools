@@ -139,6 +139,7 @@ public:
 	{
 		return m_generalPartitionCount;
 	}
+	std::string lastErrorData() const;
 
 	bool m_isWii;
 
@@ -162,6 +163,8 @@ public:
 
 	AES_KEY m_key;
 
+
+	std::string m_lastErrorData;
 
 	std::auto_ptr<FileStream> m_stream;	
 	// save the tables instead of reading and writing them all the time

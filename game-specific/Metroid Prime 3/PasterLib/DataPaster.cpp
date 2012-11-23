@@ -433,7 +433,13 @@ QString DataPaster::errorData() const
 
 bool DataPaster::checkImage()
 {
-	return m_image.checkPartition(m_image.dataPartition());
+	if (!m_image.checkPartition(m_image.dataPartition()))
+	{
+		m_errorCode = CheckImage_Failed;
+		m_errorData = QString::fromStdString(m_image.lastErrorData());
+		return false;
+	}
+	return true;
 }
 
 void DataPaster::setActionProgressHandler(IPakProgressHandler* handler)
