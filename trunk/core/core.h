@@ -37,9 +37,13 @@ namespace Consolgames
 #if defined(_WIN32) || defined(__WIN32)
 #define PATH_SEPARATOR '\\'
 #define PATH_SEPARATOR_STR "\\"
+#define PATH_SEPARATOR_L L'\\'
+#define PATH_SEPARATOR_STR_L L"\\"
 #else
 #define PATH_SEPARATOR '/'
 #define PATH_SEPARATOR_STR "/"
+#define PATH_SEPARATOR_L L'/'
+#define PATH_SEPARATOR_STR_L L"/"
 #endif
 
 inline u16 endian16(u16 v)

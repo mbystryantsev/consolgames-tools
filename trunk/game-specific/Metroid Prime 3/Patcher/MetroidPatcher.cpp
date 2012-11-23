@@ -5,7 +5,7 @@ namespace Consolgames
 
 void MetroidPatcher::openImage(const QString& filename)
 {
-	const bool success = m_image.open(filename.toStdString(), Stream::modeRead);
+	const bool success = m_image.open(filename.toStdWString(), Stream::modeRead);
 	emit stepCompleted(success, tr("Unable to open an image file!"));
 }
 

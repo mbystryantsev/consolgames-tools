@@ -82,7 +82,7 @@ public:
 	DataPaster(const QString& wiiImageFile);
 
 	bool open();
-	bool rebuildPaks(const QStringList& pakArchives, const std::vector<std::string>& inputDirs, const QString& outDir);
+	bool rebuildPaks(const QStringList& pakArchives, const std::vector<std::wstring>& inputDirs, const QString& outDir);
 	bool replacePaks(const QStringList& pakArchives, const QString& inputDir);
 	bool checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir, const QString& tempDir = QString());
 	bool checkPaks(const QStringList& pakArchives, const QString& paksDir);

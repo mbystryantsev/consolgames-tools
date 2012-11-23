@@ -154,16 +154,16 @@ public:
 	PakArchive();
 
 	bool open(Consolgames::Stream* pak);
-	bool open(const std::string& filename);
+	bool open(const std::wstring& filename);
 
-	bool extract(const std::string& OutDir, const std::set<ResType>& types = std::set<ResType>(), bool useNames = false);
+	bool extract(const std::wstring& OutDir, const std::set<ResType>& types = std::set<ResType>(), bool useNames = false);
 
 	//! Rebuilds pak, use files for replace from input directories.
-	bool rebuild(Consolgames::Stream* out, const std::vector<std::string>& inputDirs,
+	bool rebuild(Consolgames::Stream* out, const std::vector<std::wstring>& inputDirs,
 		const std::set<ResType>& types = std::set<ResType>(),
 		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
 
-	bool rebuild(const std::string& destName, const std::vector<std::string>& inputDirs,
+	bool rebuild(const std::wstring& destName, const std::vector<std::wstring>& inputDirs,
 		const std::set<ResType>& types = std::set<ResType>(),
 		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
 
@@ -196,8 +196,8 @@ protected:
 
 	bool extractFile(const FileRecord& file, Consolgames::Stream* out);
 	u32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
-	virtual std::string findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const;
-	virtual u32 storeFile(const std::string& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
+	virtual std::wstring findFile(const std::vector<std::wstring>& inputDirs, Hash hash, ResType res) const;
+	virtual u32 storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags = 0xFF);
 	int findSegment(ResType type) const;
 	int getSegmentOffset(int index) const;
 	static void swapFileEndian(FileRecord& fileRecord);

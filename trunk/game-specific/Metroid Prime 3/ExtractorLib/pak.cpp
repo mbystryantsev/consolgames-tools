@@ -9,6 +9,12 @@
 
 static int lzo1x_init_code = lzo_init();
 
+static std::wstring strToWStr(const std::string& str)
+{
+	std::wstring result(str.begin(), str.end());
+	return result;
+}
+
 using namespace Consolgames;
 
 #define ALIGN 0x40
@@ -228,7 +234,7 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 	return totalSize;
 }
 
-u32 PakArchive::storeFile(const std::string& filename, Stream* stream, bool isPacked, bool isTexture, u8 flags)
+u32 PakArchive::storeFile(const std::wstring& filename, Stream* stream, bool isPacked, bool isTexture, u8 flags)
 {
 	FileStream file(filename, Stream::modeRead);
 	return storeFile(&file, stream, isPacked, isTexture, flags);
@@ -339,7 +345,7 @@ bool PakArchive::open(Stream* pak)
 	return true;
 }
 
-bool PakArchive::open(const std::string& filename)
+bool PakArchive::open(const std::wstring& filename)
 {
 	m_fileStream.reset(new FileStream(filename, Stream::modeRead));
 	if (!m_fileStream->opened())
@@ -362,7 +368,7 @@ std::string PakArchive::findName(const Hash& hash) const
 	return std::string();
 }
 
-bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& types, bool useNames)
+bool PakArchive::extract(const std::wstring& outDir, const std::set<ResType>& types, bool useNames)
 {
 	if (!opened())
 	{
@@ -383,21 +389,21 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 			std::string filename = m_files[i].name();
 			progress(i, filename.c_str());
 			
-			std::string path;
+			std::wstring path;
 
 			bool nameFound = false;
 			if (useNames)
 			{
-				std::string name = findName(m_files[i].hash);
+				std::wstring name = strToWStr(findName(m_files[i].hash));
 				if (!name.empty())
 				{
-					path = outDir + std::string(PATH_SEPARATOR_STR) + name + std::string(".") + m_files[i].res.toString();
+					path = outDir + std::wstring(PATH_SEPARATOR_STR_L) + name + std::wstring(L".") + strToWStr(m_files[i].res.toString());
 					nameFound = true;
 				}
 			}
 			if (!nameFound)
 			{
-				path = outDir + std::string(PATH_SEPARATOR_STR) + filename;
+				path = outDir + std::wstring(PATH_SEPARATOR_STR_L) + strToWStr(filename);
 			}
 		  
 			FileStream stream(path, Stream::modeWrite);
@@ -415,21 +421,21 @@ bool PakArchive::extract(const std::string& outDir, const std::set<ResType>& typ
 	return true;
 }
 
-std::string PakArchive::findFile(const std::vector<std::string>& inputDirs, Hash hash, ResType res) const
+std::wstring PakArchive::findFile(const std::vector<std::wstring>& inputDirs, Hash hash, ResType res) const
 {
-	const std::string filename = hashToStr(hash) + "." + res.toString();
+	const std::wstring filename = strToWStr(hashToStr(hash)) + L"." + strToWStr(res.toString());
 	for (size_t i = 0; i < inputDirs.size(); i++)
 	{
-		std::string path = inputDirs[i] + PATH_SEPARATOR_STR + filename;
-		if(_access(path.c_str(), 0) == 0)
+		std::wstring path = inputDirs[i] + PATH_SEPARATOR_STR_L + filename;
+		if(_waccess(path.c_str(), 0) == 0)
 		{
 			return path;
 		}
 	}
-	return std::string();
+	return std::wstring();
 }
 
-bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::string>& inputDirs,
+bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::wstring>& inputDirs,
 		const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
 	for (std::map<Hash,Hash>::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
@@ -467,7 +473,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 		bool fileReplaced = false;
 		if(types.empty() || types.find(files[i].res) != types.end())
 		{
-			std::string filename = findFile(inputDirs, files[i].hash, files[i].res);
+			std::wstring filename = findFile(inputDirs, files[i].hash, files[i].res);
 			if (!filename.empty())
 			{
 				bool isTexture = false;
@@ -545,7 +551,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	return true;
 }
 
-bool PakArchive::rebuild(const std::string& destName, const std::vector<std::string>& inputDirs, const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
+bool PakArchive::rebuild(const std::wstring& destName, const std::vector<std::wstring>& inputDirs, const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
 	FileStream stream(destName, Stream::modeWrite);
 	if (!stream.opened())

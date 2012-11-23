@@ -53,7 +53,7 @@ void WiiImage::setProgressHandler(IProgressHandler* handler)
 	m_progressHandler = handler;
 }
 
-bool WiiImage::open(const std::string& filename, Stream::OpenMode mode)
+bool WiiImage::open(const std::wstring& filename, Stream::OpenMode mode)
 {
 	m_stream.reset(new FileStream(filename, mode));
 	if (!m_stream->opened())
@@ -419,13 +419,14 @@ u32 WiiImage::parse_fst_and_save(u8 *fst, const char* names, int i, int part)
 			offset *= 4;
 		}
 
-		saveDecryptedFile(name, part, offset, size);
+		std::wstring str(name, name + strlen(name));
+		saveDecryptedFile(str, part, offset, size);
 		return i + 1;
 	}
 	return -1;
 }
 
-void WiiImage::saveDecryptedFile(const std::string& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt)
+void WiiImage::saveDecryptedFile(const std::wstring& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt)
 {
 	u32 block = static_cast<u32>(offset / 0x7C00);
 	u32 cacheOffset = static_cast<u32>(offset % 0x7C00);
@@ -433,7 +434,7 @@ void WiiImage::saveDecryptedFile(const std::string& destFilename, int partition,
 
 	unsigned char cBuffer[0x8000];
 
-	FileStream outStream(destFilename.data(), Stream::modeWrite);
+	FileStream outStream(destFilename, Stream::modeWrite);
 
 	if (!m_partitions[partition].isEncrypted || overrideEncrypt)
 	{
@@ -528,7 +529,7 @@ largesize_t WiiImage::io_read_part(void* ptr, largesize_t size, int partition, o
 	return static_cast<u32>(dst - reinterpret_cast<unsigned char*>(ptr));
 }
 
-bool WiiImage::loadDecryptedFile(const std::string& filename, u32 partition, offset_t offset, largesize_t size, int fstReference)
+bool WiiImage::loadDecryptedFile(const std::wstring& filename, u32 partition, offset_t offset, largesize_t size, int fstReference)
 {
 	u8 bootBin[0x440];
 

@@ -49,7 +49,7 @@ private:
 	};
 
 public:
-	bool open(const std::string& filename, Stream::OpenMode mode);
+	bool open(const std::wstring& filename, Stream::OpenMode mode);
 	void close();
 	bool readHeader();
 	bool checkAndLoadKey(bool loadCrypto);
@@ -69,7 +69,7 @@ public:
 	int findDataPartitionIndex() const;
 
 protected:
-	void saveDecryptedFile(const std::string& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt = false);
+	void saveDecryptedFile(const std::wstring& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt = false);
 	u32 parse_fst_and_save(u8 *fst, const char* names, int i, int part);
 
 public:
@@ -90,7 +90,7 @@ public:
 	void readDirect(offset_t offset, void* data, largesize_t size);
 	bool writeDirect(offset_t offset, const void* data, largesize_t size);
 	bool writeDirect(offset_t offset, Stream* stream, largesize_t size){offset;stream;size;return false;};
-	bool loadDecryptedFile(const std::string& filename, u32 partition, offset_t offset, largesize_t size, int fstReference);
+	bool loadDecryptedFile(const std::wstring& filename, u32 partition, offset_t offset, largesize_t size, int fstReference);
 	
 	//! http://wiibrew.org/wiki/Signing_bug
 	//! http://hackmii.com/2008/04/keys-keys-keys/
