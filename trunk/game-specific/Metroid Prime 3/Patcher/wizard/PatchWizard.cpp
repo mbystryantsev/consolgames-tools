@@ -19,6 +19,8 @@ PatchWizard::PatchWizard(QWidget* parent)
 	, m_patchType(ImagePatch)
 	, m_errorCode(0)
 {
+	setWindowTitle(QString::fromLocal8Bit("Патч-перевод Metroid Prime 3: Corruption"));
+
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);
 
