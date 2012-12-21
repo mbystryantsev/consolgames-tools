@@ -50,7 +50,7 @@ public:
 
 	bool load(const QString& fontFile, const QString& textureFile);
 	bool save(const QString& fontFile, const QString& textureFile);
-	bool loadFromEditorFormat(const QString& filename);
+	bool loadFromEditorFormat(const QString& filename, bool interpolationHint = false);
 
 	int layerCount() const;
 	const SimpleImage& layerTexture(int layer) const;

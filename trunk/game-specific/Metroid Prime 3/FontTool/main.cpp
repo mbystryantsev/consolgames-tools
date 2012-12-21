@@ -7,18 +7,25 @@
 using namespace std;
 using namespace Consolgames;
 
+static const QString s_interpolationHintStr = "--interpolation-hint";
+
 void printUsage()
 {
 	cout << "Metroid Prime 3 Font Tool by consolgames.ru" << endl;
 	cout << "Usage: " << endl;
-	cout << "  -c, --convert <source file in editor format> <dest FONT file> <dest TXTR file>" << endl;
+	cout << "  -c, --convert <source file in editor format> <dest FONT file> <dest TXTR file> [--interpolation-hint]" << endl;
 	cout << "    You can use %TEXHASH% macro to define texture hash in TXTR filename." << endl;
 	cout << "    Example: --convert font.mft 8E959CB18B3E28C1.FONT %TEXHASH%.TXTR" << endl;
 }
 
 bool checkAction(const QStringList& args, int argumentCount, const QString& shortCmd, const QString& cmd)
 {
-	return (args.size() == argumentCount + 2 && (args[1] == shortCmd || args[1] == cmd));
+	if (args.size() == argumentCount + 3 && args[5] != s_interpolationHintStr)
+	{
+		cout << "Unknown argument: " << args[5].constData() << endl;
+		return false;
+	}
+	return (args.size() >= argumentCount + 2 && (args[1] == shortCmd || args[1] == cmd));
 }
 
 const QString& extractArg(const QStringList& args, int index)
@@ -34,10 +41,10 @@ QString hashToStr(quint64 hash)
 	return hashStr;
 }
 
-int convertFromEditorFormat(const QString& sourceFontFilename, const QString& destFontFilename, const QString& destTextureFilename)
+int convertFromEditorFormat(const QString& sourceFontFilename, const QString& destFontFilename, const QString& destTextureFilename, bool interpolationHint)
 {
 	MetroidFont font;
-	if (!font.loadFromEditorFormat(sourceFontFilename))
+	if (!font.loadFromEditorFormat(sourceFontFilename, interpolationHint))
 	{
 		cout << "Unable to load font file!" << endl;
 		return -1;
@@ -62,10 +69,11 @@ int main(int argc, char* argv[])
 		const QString& sourceFontFilename = extractArg(arguments, 0);
 		const QString& destFontFilename = extractArg(arguments, 1);
 		const QString& destTextureFilename = extractArg(arguments, 2);
-		return convertFromEditorFormat(sourceFontFilename, destFontFilename, destTextureFilename);
+		const bool interpolationHint = arguments.contains(s_interpolationHintStr);
+		return convertFromEditorFormat(sourceFontFilename, destFontFilename, destTextureFilename, interpolationHint);
 	}
 
 	printUsage();
 
-	return 0;
+	return (arguments.size() == 1 ? 0 : -1);
 }

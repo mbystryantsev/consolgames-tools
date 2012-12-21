@@ -59,12 +59,17 @@ const TextureAtlas::Node* TextureAtlas::Node::insert(int width, int height)
 	return firstChild->insert(width, height);
 }
 
-TextureAtlas::TextureAtlas(int width, int height, int layerCount)
+TextureAtlas::TextureAtlas(int width, int height, int layerCount, bool interpolationHint)
 {
 	m_rootNodes.resize(layerCount);
 	for (int i = 0; i < layerCount; i++)
 	{
 		m_rootNodes[i].reset(new Node(width, height, i));
+		if (interpolationHint)
+		{
+			m_rootNodes[i]->insert(width, 1);
+			m_rootNodes[i]->insert(1, height - 1);
+		}
 	}
 }
 

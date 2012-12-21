@@ -391,7 +391,7 @@ static void copyCharRect(const EditorCharData& data, int left, int top,
 	}
 }
 
-bool MetroidFont::loadFromEditorFormat(const QString& filename)
+bool MetroidFont::loadFromEditorFormat(const QString& filename, bool interpolationHint)
 {
 	// TODO: Extract methods and this method to import class
 
@@ -474,7 +474,7 @@ bool MetroidFont::loadFromEditorFormat(const QString& filename)
 		m_textures.last().clear();
 	}
 
-	TextureAtlas atlas(m_textureHeader.width, m_textureHeader.height, layerCount);
+	TextureAtlas atlas(m_textureHeader.width, m_textureHeader.height, layerCount, interpolationHint);
 
 	for (int i = 0; i < charData.size(); i++)
 	{
