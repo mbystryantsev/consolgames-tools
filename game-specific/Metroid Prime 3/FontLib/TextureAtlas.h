@@ -41,7 +41,7 @@ public:
 	};
 
 public:
-	TextureAtlas(int width, int height, int layerCount = 1);
+	TextureAtlas(int width, int height, int layerCount = 1, bool interpolationHint = false);
 	const Node* insert(int width, int height);
 
 protected:
