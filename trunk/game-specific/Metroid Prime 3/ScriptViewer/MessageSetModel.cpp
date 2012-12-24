@@ -87,3 +87,8 @@ void MessageSetModel::setSourceMessages(const MessageMap& sourceMessages)
 {
 	m_sourceMessages = &sourceMessages;
 }
+
+const MessageSetModel::MessageMap* MessageSetModel::sourceMessages() const
+{
+	return m_sourceMessages;
+}

@@ -36,5 +36,26 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 	const MessageSetModel& model = dynamic_cast<const MessageSetModel&>(*sourceModel());
 	const QString& text = model.messages()[sourceParent.row()].messages[sourceRow].text;
 
-	return text.contains(m_pattern, Qt::CaseInsensitive);
+	if (text.contains(m_pattern, Qt::CaseInsensitive))
+	{
+		return true;
+	}
+
+	if (model.sourceMessages() != NULL)
+	{
+		const quint64 hash = model.messages()[sourceParent.row()].nameHashes[0];
+		if (model.sourceMessages()->contains(hash))
+		{
+			const MessageSet& messageSet = *(*model.sourceMessages())[hash];
+			if (messageSet.messages.size() > sourceRow)
+			{
+				if (messageSet.messages[sourceRow].text.contains(m_pattern, Qt::CaseInsensitive))
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
