@@ -18,6 +18,7 @@ public:
 
 	typedef QMap<quint64,const MessageSet*> MessageMap;
 	void setSourceMessages(const MessageMap& sourceMessages);
+	const MessageMap* sourceMessages() const;
 
 protected:
 	enum Column
