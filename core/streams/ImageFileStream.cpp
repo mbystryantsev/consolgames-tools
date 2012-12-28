@@ -11,7 +11,7 @@ ImageFileStream::ImageFileStream(Stream* stream, offset_t size, OpenMode mode)
 	, m_fileSize(size)
 	, m_mode(mode)
 {
-	m_imagePosition = m_stream->tell();
+	m_imagePosition = m_stream->position();
 }
 
 ImageFileStream::ImageFileStream(Stream* stream, offset_t offset, offset_t size, OpenMode mode)
@@ -27,7 +27,7 @@ largesize_t ImageFileStream::read(void* buf, largesize_t size)
 {
 	ASSERT(m_mode == modeRead || m_mode == modeReadWrite);
 
-	offset_t position = m_stream->tell();
+	offset_t position = m_stream->position();
 	m_stream->seek(m_imagePosition + m_position, seekSet);
 	offset_t count = m_stream->read(buf, min(size, m_fileSize - m_position));
 	m_position += count;
@@ -39,7 +39,7 @@ largesize_t ImageFileStream::write(const void* buf, largesize_t size)
 {
 	ASSERT(m_mode == modeWrite || m_mode == modeReadWrite);
 
-	largesize_t position = m_stream->tell();
+	largesize_t position = m_stream->position();
 	m_stream->seek(m_imagePosition + m_position, seekSet);
 	largesize_t count = m_stream->write(buf, size);
 	m_position += count;
@@ -74,7 +74,7 @@ offset_t ImageFileStream::seek(offset_t offset, SeekOrigin origin)
 	return m_position;
 }
 
-offset_t ImageFileStream::tell() const
+offset_t ImageFileStream::position() const
 {
 	return m_position;
 }

@@ -98,7 +98,7 @@ offset_t MemoryStream::seek(offset_t offset, SeekOrigin origin)
 	return offset;
 }
 
-offset_t MemoryStream::tell() const
+offset_t MemoryStream::position() const
 {
 	return m_position;
 }

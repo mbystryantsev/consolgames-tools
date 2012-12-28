@@ -166,7 +166,7 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 {
 	int size = static_cast<int>(file->size());
 	u32 totalSize = 0;
-	offset_t offset = stream->tell();
+	offset_t offset = stream->position();
 
 	if (isPacked)
 	{

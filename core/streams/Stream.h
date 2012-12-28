@@ -50,11 +50,11 @@ public:
 	virtual largesize_t read(void* buf, largesize_t size) = 0;
 	virtual largesize_t write(const void* buf, largesize_t size) = 0;
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) = 0;
-	virtual offset_t tell() const = 0;
+	virtual offset_t position() const = 0;
 	virtual void flush() = 0;
 	virtual offset_t size() const = 0;
 	virtual bool opened() const;
-	virtual bool eof() const;
+	virtual bool atEnd() const;
 
 	virtual largesize_t readStream(Stream *stream, largesize_t size);
 	virtual largesize_t writeStream(Stream *stream, largesize_t size);
@@ -67,6 +67,10 @@ public:
 	virtual u16 read16();
 	virtual u32 read32();
 	virtual u64 read64();
+
+	int readInt();
+	u32 readUInt();
+
 	virtual void write8(u8 value);
 	virtual void write16(u16 value);
 	virtual void write32(u32 value);

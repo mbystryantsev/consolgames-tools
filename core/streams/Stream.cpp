@@ -151,9 +151,19 @@ bool Stream::opened() const
 	return true;
 }
 
-bool Stream::eof() const
+bool Stream::atEnd() const
 {
 	return false;
+}
+
+int Stream::readInt()
+{
+	return read<int>();
+}
+
+u32 Stream::readUInt()
+{
+	return read<u32>();
 }
 
 }
