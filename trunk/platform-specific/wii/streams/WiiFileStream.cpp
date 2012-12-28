@@ -55,7 +55,7 @@ offset_t WiiFileStream::seek(offset_t offset, Stream::SeekOrigin origin)
 	return m_position;
 }
 
-offset_t WiiFileStream::tell() const 
+offset_t WiiFileStream::position() const 
 {
 	return m_position;
 }

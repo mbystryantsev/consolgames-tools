@@ -29,7 +29,7 @@ offset_t QtFileStream::seek(offset_t offset, SeekOrigin origin)
 	return offset;
 }
 
-offset_t QtFileStream::tell() const 
+offset_t QtFileStream::position() const 
 {
 	return m_file.pos();
 }
@@ -49,7 +49,7 @@ bool QtFileStream::opened() const
 	return m_file.isOpen();
 }
 
-bool QtFileStream::eof() const 
+bool QtFileStream::atEnd() const 
 {
 	return m_file.atEnd();
 }

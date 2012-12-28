@@ -5,11 +5,14 @@
 #   include <fcntl.h>
 #   include <sys/stat.h>
 #endif
+#include <io.h>
 
 namespace Consolgames
 {
 
-FileStream::FileStream(const std::wstring& filename, OpenMode mode) : Stream()
+FileStream::FileStream(const std::wstring& filename, OpenMode mode)
+	: Stream(),
+	m_path(filename)
 {
 	m_openMode = mode;
 	m_handle = INVALID_HANDLE_VALUE;
@@ -88,7 +91,7 @@ largesize_t FileStream::read(void *buf, largesize_t size)
 #endif
 }
 
-offset_t FileStream::tell() const
+offset_t FileStream::position() const
 {
 #ifdef USE_WINDOWS_FILES
 	_LARGE_INTEGER ret = {0, 0};
@@ -159,10 +162,10 @@ bool FileStream::fileExists(const std::string& path)
 	return fileExists(path.c_str());
 }
 
-bool FileStream::eof() const 
+bool FileStream::atEnd() const 
 {
 #ifdef USE_WINDOWS_FILES
-	return (tell() >= size());
+	return (position() >= size());
 #else
 	return feof(m_descriptor);
 #endif
@@ -171,6 +174,11 @@ bool FileStream::eof() const
 Stream::OpenMode FileStream::openMode() const
 {
 	return m_openMode;
+}
+
+std::wstring FileStream::filename() const
+{
+	return m_path;
 }
 
 }

@@ -19,7 +19,7 @@ public:
 	virtual void flush() override;
 	virtual bool opened() const override;
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) override;
-	virtual offset_t tell() const override;
+	virtual offset_t position() const override;
 	virtual offset_t size() const override;
 
 private:
