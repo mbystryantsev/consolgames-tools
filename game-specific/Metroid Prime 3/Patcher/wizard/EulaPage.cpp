@@ -14,7 +14,7 @@ EulaPage::EulaPage() : Page<Ui_EulaPage>()
 
 int EulaPage::nextId() const 
 {
-	return PatchWizard::PagePatchType;
+	return PatchWizard::PageImagePatch;
 }
 
 bool EulaPage::isComplete() const 
