@@ -1,10 +1,9 @@
-#include <cstdio>
-#include <io.h>
-#include <windows.h>
-#include "TexDicParserWII.h"
-#include "Streams/FileStream.h"
-#include "../TextureDatabase/TextureDatabase.h"
-#include <errno.h>
+#include "DataStreamParserWii.h"
+#include "TextureDictionaryParserWii.h"
+#include <FileStream.h>
+
+using namespace Consolgames;
+using namespace ShatteredMemories;
 
 /*
     10000000 - DXT3
@@ -12,14 +11,13 @@
     11000001 - 4BPP, 16 colors
 */
 
-
-size_t CalcImageDataSize(int width, int height, int mipmaps)
+static size_t CalcImageDataSize(int width, int height, int mipmaps)
 {
     size_t size = 0;
-    while(mipmaps--)
+    while (mipmaps--)
     {
-        if(width < 64) width = 64;
-        if(height < 64) height = 64;
+        width = max(width, 64);
+        height = max(height, 64);
         size += width * height / 2;
         width /= 2;
         height /= 2;
@@ -27,12 +25,13 @@ size_t CalcImageDataSize(int width, int height, int mipmaps)
     return size;
 }
 
+/*
 int replaceTextures(const char *texdir, const char *infofile, const char *datafile)
 {
     char name[0x40], path[MAX_PATH], filename[MAX_PATH];
     _finddata_t rec;
     int hf, done, errors = 0;
-    const shsm::TextureInfo *p_info;
+    const ShatteredMemories::TextureInfo *p_info;
 
     strcpy(path, texdir);
     strcat(path, "\\*");
@@ -43,8 +42,8 @@ int replaceTextures(const char *texdir, const char *infofile, const char *datafi
         puts("Database open error!\n");
         return -1;
     }
-    shsm::TexDicParserWII parser;
-    shsm::TextureDatabase db(&db_stream);
+    ShatteredMemories::TexDicParserWII parser;
+    ShatteredMemories::TextureDatabase db(&db_stream);
     if(!db.loadFromFile(infofile))
     {
         puts("Load database info error!\n");
@@ -109,15 +108,49 @@ int replaceTextures(const char *texdir, const char *infofile, const char *datafi
     free(tex_buf);
     return 0;
 }
-
+*/
 
 int main(int argc, char* argv[])
 {
 
-    replaceTextures("F:\\temp\\shsm\\data\\",
-                    "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.info",
-                    "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.data"
-                   );
+//     replaceTextures("F:\\temp\\shsm\\data\\",
+//                     "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.info",
+//                     "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.data"
+//                    );
+
+	DataStreamParserWii parser;
+	FileStream stream(L"e:\\_job\\SHSM\\wii\\test\\00000F7C.BIN", Stream::modeRead);
+	ASSERT(stream.opened());
+	parser.open(&stream);
+	
+	while (parser.initSegment())
+	{
+		while (parser.fetch())
+		{
+			if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
+			{
+				FileStream dictStream(stream.filename(), Stream::modeRead);
+				ASSERT(dictStream.opened());
+				dictStream.seek(stream.tell(), Stream::seekSet);
+
+				TextureDictionaryParserWii dictParser;
+				dictParser.open(&stream);
+				while (dictParser.initSegment())
+				{
+					while (dictParser.fetch())
+					{
+						std::cout << dictParser.metaInfo().name << std::endl;
+					}
+				}
+			}
+		}
+	}
+
+	if (!parser.atEnd())
+	{
+		std::cout << "WARNING: End is not reached!" << std::endl;
+	}
+
     return 0;
 
 
