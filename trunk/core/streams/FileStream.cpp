@@ -117,7 +117,12 @@ void FileStream::flush()
 largesize_t FileStream::write(const void* buf, largesize_t size)
 {
 #ifdef USE_WINDOWS_FILES
-    unsigned long writed;
+	if (size == 0)
+	{
+		return 0;
+	}
+
+    unsigned long writed = 0;
     if(!WriteFile(m_handle, buf, static_cast<DWORD>(size), &writed, NULL))
     {
         return - 1;

@@ -46,20 +46,13 @@ largesize_t Stream::writeStream(Stream *stream, largesize_t size)
     largesize_t left = size;
     while (left > 0)
 	{
-        largesize_t count = left;
-        if (count > S_BUF_SIZE)
-		{
-			count = S_BUF_SIZE;
-		}
-        largesize_t readed = stream->read(buf, count);
-		ASSERT(readed == count);
-
-        largesize_t writed = write(buf, readed);
-        ASSERT(writed == readed);
+        const largesize_t count = min(left, S_BUF_SIZE);
+        const largesize_t readed = stream->read(buf, count);
+        const largesize_t writed = write(buf, readed);
 
 		left -= writed;
 		
-		if (writed != count)
+		if (readed != count || writed != readed)
 		{
 			return size - left;
 		}
