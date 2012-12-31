@@ -73,10 +73,13 @@ void ProgressPage::startPatching(const QStringList& actions)
 	m_patcherController.setImagePath(field("imagePath").toString());
 	m_patcherController.setTempPath(field("tempPath").toString());
 	m_patcherController.start();
+
+	m_ui.staff->start();
 }
 
 void ProgressPage::finalizePatching()
 {
+	m_ui.staff->stop();
 }
 
 void ProgressPage::initializePage()
@@ -126,6 +129,7 @@ void ProgressPage::onPatchingCompleted()
 
 	emit completeChanged();
 	wizard()->button(QWizard::CancelButton)->setEnabled(false);
+	finalizePatching();
 }
 
 void ProgressPage::onStepStarted(const QByteArray& step)
@@ -157,6 +161,8 @@ void ProgressPage::onPatchingFailed(const QByteArray& step, int errorCode, const
 
 	emit completeChanged();
 	wizard()->button(QWizard::CancelButton)->setEnabled(false);
+
+	finalizePatching();
 }
 
 void ProgressPage::onPatchingCanceled(const QByteArray& step)
@@ -168,6 +174,7 @@ void ProgressPage::onPatchingCanceled(const QByteArray& step)
 	m_ui.actionList->setActionState(QString::fromLatin1(step), ActionListWidget::Canceled);
 
 	emit completeChanged();
+	finalizePatching();
 }
 
 void ProgressPage::onProgress(int, const QString& message)

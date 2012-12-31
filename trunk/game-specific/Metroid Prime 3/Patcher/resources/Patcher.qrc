@@ -16,5 +16,6 @@
 		<file>cancel16.png</file>
 		<file>ok16.png</file>
 		<file>clock16.png</file>
+		<file>staff.txt</file>
 	</qresource>
 </RCC>
