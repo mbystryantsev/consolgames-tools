@@ -35,7 +35,7 @@ bool UsbDriveListener::winEvent(MSG* message, long* result)
 			{
 				if (pMsgPtr->dbch_devicetype == DBT_DEVTYP_VOLUME)
 				{
-					const DEV_BROADCAST_VOLUME* volume = reinterpret_cast<DEV_BROADCAST_VOLUME*>(pMsgPtr);
+					const DEV_BROADCAST_VOLUME* volume = reinterpret_cast<const DEV_BROADCAST_VOLUME*>(pMsgPtr);
 					
 					QList<QChar> letterList;
 					for (int i = 0; i < 32; i++)
