@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
 	application.setOrganizationDomain("consolgames.ru");
 
 #if !defined(PRODUCTION)
-	const bool checkingEnabled = true;
+	const bool checkingEnabled = !application.arguments().contains("--no-check");
 #else
 	const bool checkingEnabled = application.arguments().contains("--check");
 #endif
