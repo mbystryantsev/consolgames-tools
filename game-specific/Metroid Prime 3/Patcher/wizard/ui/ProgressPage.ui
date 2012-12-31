@@ -47,7 +47,7 @@
    <item>
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="progress">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -60,6 +60,22 @@
           <size>
            <width>20</width>
            <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="StaffWidget" name="staff" native="true"/>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
           </size>
          </property>
         </spacer>
@@ -298,6 +314,12 @@
    <class>ActionListWidget</class>
    <extends>QWidget</extends>
    <header>ActionListWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StaffWidget</class>
+   <extends>QWidget</extends>
+   <header>StaffWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
