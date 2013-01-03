@@ -1,0 +1,11 @@
+<IfModule mod_ssl.c>
+  <VirtualHost *:443>
+    ServerName secure.local
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/secure
+    SSLEngine on
+    SSLCertificateKeyFile /etc/apache2/ssl/server.key
+    SSLCertificateFile    /etc/apache2/ssl/server.crt
+  </VirtualHost>
+</IfModule>
+
