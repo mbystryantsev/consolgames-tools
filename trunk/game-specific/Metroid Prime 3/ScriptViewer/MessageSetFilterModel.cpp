@@ -1,9 +1,29 @@
 #include "MessageSetFilterModel.h"
 #include "MessageSetModel.h"
 
+MessageSetFilterModel::MessageSetFilterModel()
+	: QSortFilterProxyModel()
+	, m_patternAtBegin(false)
+	, m_patternAtEnd(false)
+{
+}
+
 void MessageSetFilterModel::setPattern(const QString& pattern)
 {
 	m_pattern = pattern;
+	m_pattern.replace("\\r", "\r");
+	m_pattern.replace("\\n", "\n");
+
+	if (m_pattern.startsWith('^'))
+	{
+		m_patternAtBegin = true;
+		m_pattern = m_pattern.right(m_pattern.size() - 1);
+	}
+	if (m_pattern.endsWith('$'))
+	{
+		m_patternAtEnd = true;
+		m_pattern.truncate(m_pattern.size() - 1);
+	}
 	invalidateFilter();
 }
 
@@ -36,7 +56,7 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 	const MessageSetModel& model = dynamic_cast<const MessageSetModel&>(*sourceModel());
 	const QString& text = model.messages()[sourceParent.row()].messages[sourceRow].text;
 
-	if (text.contains(m_pattern, Qt::CaseInsensitive))
+	if (stringSatisfyFilter(text))
 	{
 		return true;
 	}
@@ -49,7 +69,7 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 			const MessageSet& messageSet = *(*model.sourceMessages())[hash];
 			if (messageSet.messages.size() > sourceRow)
 			{
-				if (messageSet.messages[sourceRow].text.contains(m_pattern, Qt::CaseInsensitive))
+				if (stringSatisfyFilter(messageSet.messages[sourceRow].text))
 				{
 					return true;
 				}
@@ -58,4 +78,21 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 	}
 
 	return false;
+}
+
+bool MessageSetFilterModel::stringSatisfyFilter(const QString& text) const
+{
+	if (m_patternAtEnd && m_patternAtBegin)
+	{
+		return (text.compare(text, Qt::CaseInsensitive) == 0);
+	}
+	if (m_patternAtBegin)
+	{
+		return text.startsWith(m_pattern, Qt::CaseInsensitive);
+	}
+	if (m_patternAtEnd)
+	{
+		return text.endsWith(m_pattern, Qt::CaseInsensitive);
+	}
+	return text.contains(m_pattern, Qt::CaseInsensitive);
 }
