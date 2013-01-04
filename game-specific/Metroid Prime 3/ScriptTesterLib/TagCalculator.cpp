@@ -13,7 +13,7 @@ int TagCalculator::calcTags(const QString& str)
 				tagOpened = false;
 				continue;
 			}
-			if (!(c == '&' || c == '-' || c == '?' || c == '/' || c == '_' || c == '|' || c == '=' || c == ':' || c == '(' || c == ')' || c == '[' || c == ']' || c == '#' || c == ',' || c == '.' || c.isDigit() || (c.toLower() >= 'a' && c.toLower() <= 'z')))
+			if (!(c == ' ' || c == '&' || c == '-' || c == '?' || c == '/' || c == '_' || c == '|' || c == '=' || c == ':' || c == '(' || c == ')' || c == '[' || c == ']' || c == '#' || c == ',' || c == '.' || c.isDigit() || (c.toLower() >= 'a' && c.toLower() <= 'z')))
 			{
 				return -1;
 			}
