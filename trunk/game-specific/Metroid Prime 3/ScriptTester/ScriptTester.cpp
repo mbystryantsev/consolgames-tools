@@ -1,5 +1,6 @@
 #include "ScriptTester.h"
 #include <TagCalculator.h>
+#include <MetroidFont.h>
 #include <QFile>
 #include <QTextStream>
 #include <QRegExp>
@@ -389,6 +390,17 @@ QString ScriptTester::lastErrorData()
 	return s_lastErrorData;
 }
 
+ScriptTester::ErrorType ScriptTester::loadScriptFromDir(const QString& inputDir)
+{
+	QDir dir(inputDir);
+	foreach (const QString& filename, dir.entryList(QStringList("*.txt"), QDir::Files))
+	{
+		m_script << ScriptParser::loadFromFile(inputDir + "/" + filename);
+	}
+
+	return NoError;
+}
+
 QMap<quint64,quint64> ScriptTester::generateMergeMap(const QString& inputDir)
 {
 	QDir dir(inputDir);
@@ -410,4 +422,69 @@ QMap<quint64,quint64> ScriptTester::generateMergeMap(const QString& inputDir)
 	}
 
 	return mergeMap;
+}
+
+ScriptTester::ErrorType ScriptTester::checkCharacters()
+{
+	if (m_script.isEmpty() || m_charSet.isEmpty())
+	{
+		return NoExpectedData;
+	}
+
+	ErrorType error = NoError;
+
+	foreach (const MessageSet& messages, m_script)
+	{
+		int index = 0;
+		foreach (const Message& message, messages.messages)
+		{
+			bool tagMode = false;
+			int charIndex = 0;
+			int line = 0;
+			int charIndexInLine = 0;
+			bool skip = false;
+			foreach (const QChar c, message.text)
+			{
+				if (c == '\n')
+				{
+					line++;
+					charIndexInLine = 0;
+				}
+				if (!tagMode && c == '&')
+				{
+					tagMode = true;
+				}
+				else if (tagMode && c == ';')
+				{
+					tagMode = false;
+				}
+				if (tagMode)
+				{
+					skip = true;
+				}
+				if (!skip && c.unicode() > 0x20 && !m_charSet.contains(c))
+				{
+					std::cout << "Invalid character used: `" << c.toLatin1() << "` (0x" << QString::number(c.unicode(), 16).toLatin1().constData() << " at item ("
+						<< QString::number(messages.nameHashes[0], 16).toUpper().rightJustified(16, '0').toLatin1().constData() << "," << index << ")" << std::endl;
+					std::cout << "Line " << (line + 1) << ", char " << charIndexInLine << ", char index " << charIndex << std::endl;
+					error = DataMismatch;
+				}
+				charIndex++;
+				charIndexInLine++;
+			}
+			index++;
+		}
+	}
+	return error;
+}
+
+ScriptTester::ErrorType ScriptTester::loadFont(const QString& filename)
+{
+	Consolgames::MetroidFont font;
+	if (!font.loadFromEditorFormat(filename))
+	{
+		return InputFileError;
+	}
+	m_charSet = font.charList().toSet();
+	return NoError;
 }

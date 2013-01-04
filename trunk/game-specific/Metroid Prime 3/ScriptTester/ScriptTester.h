@@ -35,9 +35,12 @@ public:
 	ErrorType loadIgnoreData(const QString& filename);
 	ErrorType loadIdentifiers(const QString& filename);
 	ErrorType loadScript(const QString& filename);
+	ErrorType loadScriptFromDir(const QString& inputDir);
+	ErrorType loadFont(const QString& filename);
 	ErrorType detectIdentifiers(const QString& externalScriptFile, const QString& outFile);
 	ErrorType runTests();
 	ErrorType calculateTags(const QString& outFile);
+	ErrorType checkCharacters();
 
 	static ErrorType exec(const QString& filename);
 	static const char* errorString(ErrorType error);
@@ -54,5 +57,6 @@ protected:
 	TestData m_testData;
 	QSet<QPair<quint64, int>> m_ignoredStrings;
 	QMap<QPair<quint64, int>, QString> m_identifiers;
+	QSet<QChar> m_charSet;
 	int m_failedCount;
 };
