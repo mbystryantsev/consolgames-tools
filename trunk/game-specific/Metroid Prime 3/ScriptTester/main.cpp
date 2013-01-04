@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 		std::cout << "Tags check successfully completed!" << std::endl;
 	}	
-	if (args.size() == 4 && (args[1] == "-cn" || args[1] == "--check-count"))
+	else if (args.size() == 4 && (args[1] == "-cn" || args[1] == "--check-count"))
 	{
 		const QString inputPath = app.arguments()[2];
 		const QString inputOriginalPath = app.arguments()[3];
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
 		TESTER_VERIFY(tester.loadFont(fontFile));
 		TESTER_VERIFY(tester.checkCharacters());
 
-		std::cout << "Character check successfully completed!" << std::endl;
+		std::cout << "Text chars check successfully completed!" << std::endl;
 	}
 	else if (args.size() == 1 ||  (args.size() == 2 && (args[1] == "--help" || args[1] == "-h")))
 	{
