@@ -524,3 +524,44 @@ ScriptTester::ErrorType ScriptTester::checkTags()
 	}
 	return error;
 }
+
+ScriptTester::ErrorType ScriptTester::checkMessageCount(const QString& originalPath)
+{
+	if (m_script.isEmpty())
+	{
+		return NoExpectedData;
+	}
+
+	ScriptTester tester;
+	TESTER_VERIFY(tester.loadScriptFromDirOrFile(originalPath));
+
+	QMap<quint64, const MessageSet*> messageMap;
+	foreach (const MessageSet& messages, tester.m_script)
+	{
+		foreach (quint64 hash, messages.nameHashes)
+		{
+			messageMap[hash] = &messages;
+		}
+	}
+
+	ErrorType error = NoError;
+
+	foreach (const MessageSet& messages, m_script)
+	{
+		const quint64 hash = messages.nameHashes[0];
+		if (!messageMap.contains(hash))
+		{
+			std::cout << "Original message set with hash " << hashToStr(hash).toLatin1().constData() << " not found!" << std::endl;
+			return NoExpectedData;
+		}
+		const MessageSet& originalMessages = *messageMap[hash];
+		if (messages.messages.size() != originalMessages.messages.size())
+		{
+			std::cout << "Message count mismatch (" << messages.messages.size() << ", " << originalMessages.messages.size() << ") at item "
+				<< hashToStr(hash).toLatin1().constData() << "!" << std::endl;
+			error = DataMismatch;
+		}
+	}
+
+	return error;
+}
