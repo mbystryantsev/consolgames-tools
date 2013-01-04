@@ -13,7 +13,7 @@ void printUsage()
 	std::cout << "Usage: \n";
 	std::cout << "  -ct, --calc-tags <filename> <outfile>:\n";
 	std::cout << "    Calculate tag count in a file and store it in an out file.\n";
-	std::cout << "  -t, --test <filename> <testdata> [--ignore-tags <ignorefile>] [--identifiers <idsfile>]:\n";
+	std::cout << "  -tt, --test-tags <filename> <testdata> [--ignore-tags <ignorefile>] [--identifiers <idsfile>]:\n";
 	std::cout << "    Check tags with use of a precalculated tags count.\n";
 	std::cout << "  -i, --detect-identifiers <filename> <externalfile> <outfile>:\n";
 	std::cout << "    Create list of identifiers.\n";
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 		tester.loadScript(scriptFile);
 		TESTER_VERIFY(tester.calculateTags(outFile));
 	}
-	else if (QCoreApplication::arguments().size() >= 4 && (QCoreApplication::arguments()[1] == "-t" || QCoreApplication::arguments()[1] == "--test"))
+	else if (QCoreApplication::arguments().size() >= 4 && (QCoreApplication::arguments()[1] == "-tt" || QCoreApplication::arguments()[1] == "--test-tags"))
 	{
 		QMap<QByteArray, QString> args = parseArgs();
 
@@ -127,6 +127,16 @@ int main(int argc, char** argv)
 			stream << baseHash << resultHash;
 		}
 		std::cout << "Done!" << std::endl;
+	}
+	else if (QCoreApplication::arguments().size() == 4 && (QCoreApplication::arguments()[1] == "-cc" || QCoreApplication::arguments()[1] == "--check-chars"))
+	{
+		const QString inputDir = app.arguments()[2];
+		const QString fontFile = app.arguments()[3];
+
+		ScriptTester tester;
+		TESTER_VERIFY(tester.loadScriptFromDir(inputDir));
+		TESTER_VERIFY(tester.loadFont(fontFile));
+		TESTER_VERIFY(tester.checkCharacters());
 	}
 	else
 	{
