@@ -13,10 +13,12 @@ void printUsage()
 	std::cout << "Usage: \n";
 	std::cout << "  -ct, --check-tags <input>:\n";
 	std::cout << "    Check tags in input file or directory.\n";
-	std::cout << "  -cl, --calc-tags <filename> <outfile>:\n";
-	std::cout << "    Calculate tag count in a file and store it in an out file.\n";
 	std::cout << "  -cn, --check-count <input> <original>:\n";
 	std::cout << "    Check message count.\n";
+	std::cout << "  -cc, --check-chars <input> <font>:\n";
+	std::cout << "    Check for supported chars in text.\n";
+	std::cout << "  -cl, --calc-tags <filename> <outfile>:\n";
+	std::cout << "    Calculate tag count in a file and store it in an out file.\n";
 	std::cout << "  -tt, --test-tags <filename> <testdata> [--ignore-tags <ignorefile>] [--identifiers <idsfile>]:\n";
 	std::cout << "    Check tags with use of a precalculated tags count.\n";
 	std::cout << "  -i, --detect-identifiers <filename> <externalfile> <outfile>:\n";
@@ -91,15 +93,6 @@ int main(int argc, char** argv)
 		std::cout << "Message count check successfully completed!" << std::endl;
 	}
 	else if (args.size() == 4 && (args[1] == "-cl" || args[1] == "--calc-tags"))
-	{
-		const QString scriptFile = app.arguments()[2];
-		const QString outFile = app.arguments()[3];
-
-		ScriptTester tester;
-		tester.loadScript(scriptFile);
-		TESTER_VERIFY(tester.calculateTags(outFile));
-	}
-	else if (args.size() == 4 && (args[1] == "-ct" || args[1] == "--check-count"))
 	{
 		const QString scriptFile = app.arguments()[2];
 		const QString outFile = app.arguments()[3];
