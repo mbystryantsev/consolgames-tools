@@ -11,6 +11,11 @@
 
 QString ScriptTester::s_lastErrorData;
 
+static QString hashToStr(quint64 hash)
+{
+	return QString::number(hash, 16).toUpper().rightJustified(16, '0');
+}
+
 ScriptTester::ErrorType ScriptTester::calculateTags(const QString& outFile)
 {
 	if (m_script.isEmpty())
@@ -41,7 +46,7 @@ ScriptTester::ErrorType ScriptTester::calculateTags(const QString& outFile)
 			{
 				isFirst = false;
 			}
-			stream << QString::number(hash, 16).toUpper();
+			stream << hashToStr(hash);
 		}
 		stream << ';' << set.definedCount << ';' << set.idCount << ';' << set.version << ';';
 		isFirst = true;
@@ -183,7 +188,7 @@ ScriptTester::ErrorType ScriptTester::loadScript(const QString& filename)
 	if (!(expr)) { \
 		if (failedCount == 0) std::cout << std::endl; \
 		failedCount++; \
-		std::cout << "FAIL: " << QByteArray::number(hash, 16).toUpper().constData(); \
+		std::cout << "FAIL: " << hashToStr(hash).constData(); \
 		if (index != -1) std::cout << ": " << index; \
 		std::cout << ": " << message.toStdString() << std::endl; \
 		action; \
@@ -211,8 +216,6 @@ ScriptTester::ErrorType ScriptTester::runTests()
 		s_lastErrorData = "Script";
 		return NoExpectedData;
 	}
-
-	QByteArray::number(1, 16).toUpper().constData();
 
 	foreach (const MessageSet& set, m_script)
 	{
@@ -313,12 +316,12 @@ ScriptTester::ErrorType ScriptTester::detectIdentifiers(const QString& externalS
 			const MessageSet* messageSet = findMessageSet(hash);
 			if (messageSet == NULL)
 			{
-				s_lastErrorData = QString("Message set %1").arg(QString::number(hash, 16).toUpper()); 
+				s_lastErrorData = QString("Message set %1").arg(hashToStr(hash)); 
 				return NoExpectedData;
 			}
 			if (externalSet.messages.size() != messageSet->messages.size())
 			{
-				s_lastErrorData = QString("Messages size (%1, %2 != %3)").arg(QString::number(hash, 16).toUpper()).arg(externalSet.messages.size()).arg(messageSet->messages.size());
+				s_lastErrorData = QString("Messages size (%1, %2 != %3)").arg(hashToStr(hash)).arg(externalSet.messages.size()).arg(messageSet->messages.size());
 				return DataMismatch;
 			}
 			for (int i = 0; i < externalSet.messages.size(); i++)
@@ -329,7 +332,7 @@ ScriptTester::ErrorType ScriptTester::detectIdentifiers(const QString& externalS
 					text.replace('\r', "\\r");
 					text.replace('\n', "\\n");
 					text.replace(';', "\\059");
-					stream << QString::number(hash, 16).toUpper() << ';' << i << ';' << text << '\n';
+					stream << hashToStr(hash) << ';' << i << ';' << text << '\n';
 				}
 			}
 		}
@@ -465,7 +468,7 @@ ScriptTester::ErrorType ScriptTester::checkCharacters()
 				if (!skip && c.unicode() > 0x20 && !m_charSet.contains(c))
 				{
 					std::cout << "Invalid character used: `" << c.toLatin1() << "` (0x" << QString::number(c.unicode(), 16).toLatin1().constData() << " at item ("
-						<< QString::number(messages.nameHashes[0], 16).toUpper().rightJustified(16, '0').toLatin1().constData() << "," << index << ")" << std::endl;
+						<< hashToStr(messages.nameHashes[0]).toLatin1().constData() << "," << index << ")" << std::endl;
 					std::cout << "Line " << (line + 1) << ", char " << charIndexInLine << ", char index " << charIndex << std::endl;
 					error = DataMismatch;
 				}
@@ -487,4 +490,37 @@ ScriptTester::ErrorType ScriptTester::loadFont(const QString& filename)
 	}
 	m_charSet = font.charList().toSet();
 	return NoError;
+}
+
+ScriptTester::ErrorType ScriptTester::loadScriptFromDirOrFile(const QString& inputPath)
+{
+	QFileInfo info(inputPath);
+	if (info.isDir())
+	{
+		return loadScriptFromDir(inputPath);
+	}
+	return loadScript(inputPath);
+}
+
+ScriptTester::ErrorType ScriptTester::checkTags()
+{
+	if (m_script.isEmpty())
+	{
+		return NoExpectedData;
+	}
+	ErrorType error = NoError;
+	foreach (const MessageSet& messages, m_script)
+	{
+		int index = 0;
+		foreach (const Message& message, messages.messages)
+		{
+			if (TagCalculator::calcTags(message.text) < 0)
+			{
+				error = DataMismatch;
+				std::cout << "Tag error occured at (" << hashToStr(messages.nameHashes[0]).toLatin1().constData() << "," << index << ")" << std::endl;
+			}
+			index++;
+		}
+	}
+	return error;
 }

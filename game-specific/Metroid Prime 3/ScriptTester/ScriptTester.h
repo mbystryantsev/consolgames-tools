@@ -36,11 +36,13 @@ public:
 	ErrorType loadIdentifiers(const QString& filename);
 	ErrorType loadScript(const QString& filename);
 	ErrorType loadScriptFromDir(const QString& inputDir);
+	ErrorType loadScriptFromDirOrFile(const QString& inputPath);
 	ErrorType loadFont(const QString& filename);
 	ErrorType detectIdentifiers(const QString& externalScriptFile, const QString& outFile);
 	ErrorType runTests();
 	ErrorType calculateTags(const QString& outFile);
 	ErrorType checkCharacters();
+	ErrorType checkTags();
 
 	static ErrorType exec(const QString& filename);
 	static const char* errorString(ErrorType error);

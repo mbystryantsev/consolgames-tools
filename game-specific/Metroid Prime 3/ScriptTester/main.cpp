@@ -11,7 +11,9 @@ void printUsage()
 {
 	std::cout << "ScriptTester for Metroid Prime 3: Corruption by consolgames.ru.\n";
 	std::cout << "Usage: \n";
-	std::cout << "  -ct, --calc-tags <filename> <outfile>:\n";
+	std::cout << "  -ct, --check-tags <input>:\n";
+	std::cout << "    Check tags in input file or directory.\n";
+	std::cout << "  -cl, --calc-tags <filename> <outfile>:\n";
 	std::cout << "    Calculate tag count in a file and store it in an out file.\n";
 	std::cout << "  -tt, --test-tags <filename> <testdata> [--ignore-tags <ignorefile>] [--identifiers <idsfile>]:\n";
 	std::cout << "    Check tags with use of a precalculated tags count.\n";
@@ -34,7 +36,7 @@ void parseArgument(const QByteArray& name, const QString& argName, const QString
 
 QMap<QByteArray, QString> parseArgs()
 {
-	const QStringList args = QCoreApplication::arguments();
+	const QStringList args = args;
 	QMap<QByteArray, QString> result;
 
 	result["scriptFile"] = args[2];
@@ -63,8 +65,19 @@ int checkForError(ScriptTester::ErrorType result)
 int main(int argc, char** argv)
 {
 	QCoreApplication app(argc, argv);
+	const QStringList args = QCoreApplication::arguments();
 
-	if (QCoreApplication::arguments().size() == 4 && (QCoreApplication::arguments()[1] == "-ct" || QCoreApplication::arguments()[1] == "--calc-tags"))
+	if (args.size() == 3 && (args[1] == "-ct" || args[1] == "--check-tags"))
+	{
+		const QString inputPath = app.arguments()[2];
+
+		ScriptTester tester;
+		TESTER_VERIFY(tester.loadScriptFromDirOrFile(inputPath));
+		TESTER_VERIFY(tester.checkTags());
+
+		std::cout << "Tags check successfully completed!" << std::endl;
+	}
+	else if (args.size() == 4 && (args[1] == "-cl" || args[1] == "--calc-tags"))
 	{
 		const QString scriptFile = app.arguments()[2];
 		const QString outFile = app.arguments()[3];
@@ -73,7 +86,7 @@ int main(int argc, char** argv)
 		tester.loadScript(scriptFile);
 		TESTER_VERIFY(tester.calculateTags(outFile));
 	}
-	else if (QCoreApplication::arguments().size() >= 4 && (QCoreApplication::arguments()[1] == "-tt" || QCoreApplication::arguments()[1] == "--test-tags"))
+	else if (args.size() >= 4 && (args[1] == "-tt" || args[1] == "--test-tags"))
 	{
 		QMap<QByteArray, QString> args = parseArgs();
 
@@ -90,7 +103,7 @@ int main(int argc, char** argv)
 		}
 		TESTER_VERIFY(tester.runTests());
 	}
-	else if (QCoreApplication::arguments().size() == 5 && (QCoreApplication::arguments()[1] == "-i" || QCoreApplication::arguments()[1] == "--detect-identifiers"))
+	else if (args.size() == 5 && (args[1] == "-i" || args[1] == "--detect-identifiers"))
 	{
 		const QString scriptFile = app.arguments()[2];
 		const QString externalScriptFile = app.arguments()[3];
@@ -100,12 +113,12 @@ int main(int argc, char** argv)
 		TESTER_VERIFY(tester.loadScript(scriptFile));
 		TESTER_VERIFY(tester.detectIdentifiers(externalScriptFile, outFile));
 	}
-	else if (QCoreApplication::arguments().size() == 3 && (QCoreApplication::arguments()[1] == "-e" || QCoreApplication::arguments()[1] == "--exec"))
+	else if (args.size() == 3 && (args[1] == "-e" || args[1] == "--exec"))
 	{
 		const QString batchFile = app.arguments()[2];
 		TESTER_VERIFY(ScriptTester::exec(batchFile));
 	}
-	else if (QCoreApplication::arguments().size() == 4 && (QCoreApplication::arguments()[1] == "-gm" || QCoreApplication::arguments()[1] == "--generate-mergemap"))
+	else if (args.size() == 4 && (args[1] == "-gm" || args[1] == "--generate-mergemap"))
 	{
 		const QString inputDir = app.arguments()[2];
 		const QString filename = app.arguments()[3];
@@ -128,7 +141,7 @@ int main(int argc, char** argv)
 		}
 		std::cout << "Done!" << std::endl;
 	}
-	else if (QCoreApplication::arguments().size() == 4 && (QCoreApplication::arguments()[1] == "-cc" || QCoreApplication::arguments()[1] == "--check-chars"))
+	else if (args.size() == 4 && (args[1] == "-cc" || args[1] == "--check-chars"))
 	{
 		const QString inputDir = app.arguments()[2];
 		const QString fontFile = app.arguments()[3];
@@ -137,10 +150,17 @@ int main(int argc, char** argv)
 		TESTER_VERIFY(tester.loadScriptFromDir(inputDir));
 		TESTER_VERIFY(tester.loadFont(fontFile));
 		TESTER_VERIFY(tester.checkCharacters());
+
+		std::cout << "Character check successfully completed!" << std::endl;
 	}
-	else
+	else if (args.size() == 1 ||  (args.size() == 2 && (args[1] == "--help" || args[1] == "-h")))
 	{
 		printUsage();
+	}
+	else if (args.size() > 1)
+	{
+		std::cout << "Invalid arguments passed! Run program with no command line or with `--help` argument to view usage." << std::endl;
+		return -1;
 	}
 	return 0;
 }
