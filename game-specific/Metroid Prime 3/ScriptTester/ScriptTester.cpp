@@ -565,3 +565,32 @@ ScriptTester::ErrorType ScriptTester::checkMessageCount(const QString& originalP
 
 	return error;
 }
+
+ScriptTester::ErrorType ScriptTester::checkForDuplicates()
+{
+	if (m_script.isEmpty())
+	{
+		return NoExpectedData;
+	}
+
+	QSet<quint64> items;
+
+	ErrorType error = NoError;
+
+	foreach (const MessageSet& messages, m_script)
+	{
+		foreach (const quint64 hash, messages.nameHashes)
+		{
+			if (items.contains(hash))
+			{
+				error = DataMismatch;
+				std::cout << "Duplicate detected: " << hashToStr(hash).toLatin1().constData() << std::endl;
+			}
+			else
+			{
+				items << hash;
+			}
+		}
+	}
+	return error;
+}

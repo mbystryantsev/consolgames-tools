@@ -44,6 +44,7 @@ public:
 	ErrorType calculateTags(const QString& outFile);
 	ErrorType checkCharacters();
 	ErrorType checkTags();
+	ErrorType checkForDuplicates();
 
 	static ErrorType exec(const QString& filename);
 	static const char* errorString(ErrorType error);

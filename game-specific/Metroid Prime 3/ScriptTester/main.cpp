@@ -17,6 +17,8 @@ void printUsage()
 	std::cout << "    Check message count.\n";
 	std::cout << "  -cc, --check-chars <input> <font>:\n";
 	std::cout << "    Check for supported chars in text.\n";
+	std::cout << "  -cd, --check-dups <input>:\n";
+	std::cout << "    Check for message duplicates.\n";
 	std::cout << "  -cl, --calc-tags <filename> <outfile>:\n";
 	std::cout << "    Calculate tag count in a file and store it in an out file.\n";
 	std::cout << "  -tt, --test-tags <filename> <testdata> [--ignore-tags <ignorefile>] [--identifiers <idsfile>]:\n";
@@ -91,6 +93,15 @@ int main(int argc, char** argv)
 		TESTER_VERIFY(tester.checkMessageCount(inputOriginalPath));
 
 		std::cout << "Message count check successfully completed!" << std::endl;
+	}
+	else if (args.size() == 3 && (args[1] == "-cd" || args[1] == "--check-dups"))
+	{
+		const QString inputPath = app.arguments()[2];
+	
+		ScriptTester tester;
+		tester.loadScriptFromDirOrFile(inputPath);
+		TESTER_VERIFY(tester.checkForDuplicates());
+		std::cout << "Duplicates check successfully completed!" << std::endl;
 	}
 	else if (args.size() == 4 && (args[1] == "-cl" || args[1] == "--calc-tags"))
 	{
