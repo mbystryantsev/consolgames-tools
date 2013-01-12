@@ -16,4 +16,6 @@ protected:
 	QString m_pattern;
 	bool m_patternAtBegin;
 	bool m_patternAtEnd;
+	quint64 m_filterHash;
+	int m_filterIndex;
 };
