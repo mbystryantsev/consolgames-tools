@@ -28,6 +28,12 @@ protected:
 	int m_count;
 };
 
+std::wstring strToWStr(const std::string& str)
+{
+	std::wstring wstr(str.begin(), str.end());
+	return wstr;
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc >= 4 && strcmp(argv[1], "-e") == 0)
@@ -42,13 +48,13 @@ int main(int argc, char* argv[])
 		PakArchive pak;
 		ProgressHandler handler;
 		pak.setProgressHandler(&handler);
-		const std::string filename = argv[2];
+		const std::wstring filename = strToWStr(argv[2]);
 		if (!pak.open(filename))
 		{
-			std::cout << "Unable to open file: " << filename << "!" << std::endl;
+			std::cout << "Unable to open file: " << argv[2] << "!" << std::endl;
 			return -1;
 		}
-		if (pak.extract(argv[3], types, true))
+		if (pak.extract(strToWStr(argv[3]), types, false))
 		{
 			std::cout << "Done!" << std::endl;
 		}
