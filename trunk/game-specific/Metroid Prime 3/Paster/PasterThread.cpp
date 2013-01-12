@@ -46,10 +46,10 @@ bool PasterThread::startPatching()
 
 bool PasterThread::rebuildPaks(const QStringList& paks, const QStringList& inputDirs, const QString& outDir)
 {
-	std::vector<std::string> inputDirList(inputDirs.size());
+	std::vector<std::wstring> inputDirList(inputDirs.size());
 	for (int i = 0; i < inputDirs.size(); i++)
 	{
-		inputDirList[i] = inputDirs[i].toStdString();
+		inputDirList[i] = inputDirs[i].toStdWString();
 	}
 
 	std::map<Hash,Hash> mergeMap;
