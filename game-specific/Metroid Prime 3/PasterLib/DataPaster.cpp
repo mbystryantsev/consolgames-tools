@@ -224,6 +224,14 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 		foreach (const FileRecord& fileRecord, resultPak.files())
 		{
 			const QString filename = QString::fromStdString(fileRecord.name());
+			if ((fileRecord.size & 0x3F) != 0)
+			{
+				DLOG << "Invalid file size alignment!";
+				m_errorCode = CheckData_InvalidFileSizeAlignment;
+				m_errorData = filename;
+				return false;
+			}
+
 			QString resultName;
 			foreach (const QString& dir, inputDirs)
 			{
@@ -275,7 +283,10 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 					return false;
 				}
 
-				if (!compareStreams(&file, fileInPak.get()))
+				const bool ignoreSize = (fileRecord.packed == 0);
+
+				if ((ignoreSize && abs(file.size() - fileInPak->size()) > 0x3F)
+					|| !compareStreams(&file, fileInPak.get()), ignoreSize)
 				{
 					DLOG << "Files are different!";
 					m_errorCode = CheckData_FilesAreDifferent;
