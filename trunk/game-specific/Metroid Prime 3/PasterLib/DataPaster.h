@@ -70,6 +70,7 @@ public:
 		CheckData_UnableToExtractTemporaryFile = 0x42,
 		CheckData_UnableToOpenFileInPak = 0x43,
 		CheckData_FilesAreDifferent = 0x44,
+		CheckData_InvalidFileSizeAlignment = 0x45,
 		CheckPaks_UnableToOpenPak = 0x50,
 		CheckPaks_UnableToOpenResultPak = 0x51,
 		CheckPaks_InvalidPakSize = 0x52,
