@@ -9,12 +9,6 @@
 
 static int lzo1x_init_code = lzo_init();
 
-static std::wstring strToWStr(const std::string& str)
-{
-	std::wstring result(str.begin(), str.end());
-	return result;
-}
-
 using namespace Consolgames;
 
 #define ALIGN 0x40
@@ -22,7 +16,18 @@ using namespace Consolgames;
 #define MAX_CHUNK 0x10000
 #define MAX_LZO_SIZE(size) (size + size / 16 + 64 + 3)
 
-std::string hashToStr(const Hash& hash)
+static std::wstring strToWStr(const std::string& str)
+{
+	std::wstring result(str.begin(), str.end());
+	return result;
+}
+
+static u32 alignSize(u32 size)
+{
+	return ((size + (ALIGN - 1)) / ALIGN) * ALIGN;
+}
+
+static std::string hashToStr(const Hash& hash)
 {
 	std::string str(16, '\0');
 #ifdef _MSC_VER
@@ -484,12 +489,13 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 					m_stream->seek(m_dataOffset + m_files[i].offset, Stream::seekSet);
 					CompressedFileHeader fileHeader = readCmpdFileHeader();
 					isTexture = fileHeader.isTexture();
-					
+					ASSERT(fileHeader.type == CompressedFileHeader::Normal || fileHeader.type == CompressedFileHeader::Texture);
+
 					m_stream->seek(m_dataOffset + m_files[i].offset + sizeof(CompressedFileHeader) + (isTexture ? 8 : 0), Stream::seekSet);
 					flags = m_stream->read8();
 				}
 
-				files[i].size = storeFile(filename, outStream, (files[i].packed != 0), isTexture, flags);
+				files[i].size = alignSize(storeFile(filename, outStream, (files[i].packed != 0), isTexture, flags));
 				fileReplaced = true;
 			}
 		}
