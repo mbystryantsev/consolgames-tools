@@ -27,7 +27,7 @@ static u32 alignSize(u32 size)
 	return ((size + (ALIGN - 1)) / ALIGN) * ALIGN;
 }
 
-static std::string hashToStr(const Hash& hash)
+std::string hashToStr(const Hash& hash)
 {
 	std::string str(16, '\0');
 #ifdef _MSC_VER
