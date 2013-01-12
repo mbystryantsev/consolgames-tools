@@ -284,13 +284,12 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 				}
 
 				const bool ignoreSize = (fileRecord.packed == 0);
-
 				if ((ignoreSize && abs(file.size() - fileInPak->size()) > 0x3F)
-					|| !compareStreams(&file, fileInPak.get()), ignoreSize)
+					|| !compareStreams(&file, fileInPak.get(), ignoreSize))
 				{
 					DLOG << "Files are different!";
 					m_errorCode = CheckData_FilesAreDifferent;
-					m_errorData = pakName + ";" + filename;
+					m_errorData = pakName + ";" + filename + ";" + QString::number(file.size()) + ";" + QString::number(fileInPak->size()) + ";" + QString::number(fileRecord.packed);
 					return false;
 				}
 			}
