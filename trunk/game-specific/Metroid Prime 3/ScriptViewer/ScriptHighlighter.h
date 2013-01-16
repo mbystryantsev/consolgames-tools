@@ -19,4 +19,5 @@ protected:
 	static const QRegExp s_tagExpression;
 	QString m_pattern;
 	QTextCharFormat m_tagFormat;
+	Qt::CaseSensitivity m_caseSensitivity;
 };
