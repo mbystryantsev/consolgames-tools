@@ -8,6 +8,7 @@ MessageSetFilterModel::MessageSetFilterModel()
 	, m_patternAtEnd(false)
 	, m_filterHash(0)
 	, m_filterIndex(-1)
+	, m_caseSensitivity(Qt::CaseInsensitive)
 {
 }
 
@@ -17,11 +18,21 @@ void MessageSetFilterModel::setPattern(const QString& pattern)
 	m_pattern.replace("\\r", "\r");
 	m_pattern.replace("\\n", "\n");
 
+	m_caseSensitivity = Qt::CaseInsensitive;
+	if (m_pattern.startsWith('!'))
+	{
+		m_caseSensitivity = Qt::CaseSensitive;
+		m_pattern = m_pattern.right(m_pattern.size() - 1);
+	}
+
+	m_patternAtBegin = false;
 	if (m_pattern.startsWith('^'))
 	{
 		m_patternAtBegin = true;
 		m_pattern = m_pattern.right(m_pattern.size() - 1);
 	}
+
+	m_patternAtEnd = false;
 	if (m_pattern.endsWith('$'))
 	{
 		m_patternAtEnd = true;
@@ -125,15 +136,15 @@ bool MessageSetFilterModel::stringSatisfyFilter(const QString& text) const
 {
 	if (m_patternAtEnd && m_patternAtBegin)
 	{
-		return (text.compare(text, Qt::CaseInsensitive) == 0);
+		return (text.compare(text, m_caseSensitivity) == 0);
 	}
 	if (m_patternAtBegin)
 	{
-		return text.startsWith(m_pattern, Qt::CaseInsensitive);
+		return text.startsWith(m_pattern, m_caseSensitivity);
 	}
 	if (m_patternAtEnd)
 	{
-		return text.endsWith(m_pattern, Qt::CaseInsensitive);
+		return text.endsWith(m_pattern, m_caseSensitivity);
 	}
-	return text.contains(m_pattern, Qt::CaseInsensitive);
+	return text.contains(m_pattern, m_caseSensitivity);
 }

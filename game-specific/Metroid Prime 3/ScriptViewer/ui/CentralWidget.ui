@@ -24,6 +24,9 @@
       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
        <item>
         <widget class="QLineEdit" name="filterPattern">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;&amp;quot;&lt;/span&gt;&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;^&lt;/span&gt;pattern&amp;quot; - match begin.&lt;/p&gt;&lt;p&gt;&amp;quot;pattern&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;$&lt;/span&gt;&amp;quot; - match end.&lt;/p&gt;&lt;p&gt;&amp;quot;&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;^&lt;/span&gt;pattern&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;$&lt;/span&gt;&amp;quot; - match entire text.&lt;/p&gt;&lt;p&gt;&amp;quot;&lt;span style=&quot; font-weight:600; color:#aa0000;&quot;&gt;!&lt;/span&gt;pattern&amp;quot; - match case-sensivity.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="placeholderText">
           <string>Search...</string>
          </property>

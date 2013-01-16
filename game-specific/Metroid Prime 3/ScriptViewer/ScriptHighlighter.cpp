@@ -3,7 +3,9 @@
 
 const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("&[^;]*;");
 
-ScriptHighlighter::ScriptHighlighter(QPlainTextEdit* parent) : QSyntaxHighlighter(parent->document())
+ScriptHighlighter::ScriptHighlighter(QPlainTextEdit* parent)
+	: QSyntaxHighlighter(parent->document())
+	, m_caseSensitivity(Qt::CaseInsensitive)
 {
 	m_tagFormat.setForeground(QBrush(Qt::gray));
 }
@@ -11,6 +13,22 @@ ScriptHighlighter::ScriptHighlighter(QPlainTextEdit* parent) : QSyntaxHighlighte
 void ScriptHighlighter::setPattern(const QString& pattern)
 {
 	m_pattern = pattern;
+
+	m_caseSensitivity = Qt::CaseInsensitive;
+	if (m_pattern.startsWith('!'))
+	{
+		m_caseSensitivity = Qt::CaseSensitive;
+		m_pattern = m_pattern.right(m_pattern.size() - 1);
+	}
+	if (m_pattern.startsWith('^'))
+	{
+		m_pattern = m_pattern.right(m_pattern.size() - 1);
+	}
+	if (m_pattern.endsWith('$'))
+	{
+		m_pattern.truncate(m_pattern.size() - 1);
+	}
+
 	rehighlight();
 }
 
@@ -36,12 +54,12 @@ void ScriptHighlighter::highlightPattern(const QString& text)
 		return;
 	}
 
-	int index = text.indexOf(m_pattern, 0, Qt::CaseInsensitive);
+	int index = text.indexOf(m_pattern, 0, m_caseSensitivity);
 	while (index >= 0)
 	{
 		QTextCharFormat currentFormat = format(index);
 		currentFormat.setBackground(QBrush(Qt::yellow));
 		setFormat(index, m_pattern.length(), currentFormat);
-		index = text.indexOf(m_pattern, index + m_pattern.length(), Qt::CaseInsensitive);
+		index = text.indexOf(m_pattern, index + m_pattern.length(), m_caseSensitivity);
 	}
 }

@@ -18,4 +18,5 @@ protected:
 	bool m_patternAtEnd;
 	quint64 m_filterHash;
 	int m_filterIndex;
+	Qt::CaseSensitivity m_caseSensitivity;
 };
