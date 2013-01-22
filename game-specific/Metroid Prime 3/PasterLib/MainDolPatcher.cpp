@@ -67,6 +67,10 @@ static QStringList loadMessages(const QString& filename)
 		{
 			messages << message;
 			message.clear();
+			if (stream.atEnd())
+			{
+				break;
+			}
 			continue;
 		}
 		if (!message.isEmpty())
@@ -74,11 +78,6 @@ static QStringList loadMessages(const QString& filename)
 			message.append('\n');
 		}
 		message.append(line);
-
-		if (stream.atEnd())
-		{
-			break;
-		}
 	}
 	return messages;
 }
