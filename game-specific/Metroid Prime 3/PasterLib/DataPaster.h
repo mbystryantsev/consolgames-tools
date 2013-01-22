@@ -75,7 +75,14 @@ public:
 		CheckPaks_UnableToOpenResultPak = 0x51,
 		CheckPaks_InvalidPakSize = 0x52,
 		CheckPaks_PaksAreNotEqual = 0x53,
-		CheckImage_Failed = 0x60
+		CheckImage_Failed = 0x60,
+		PatchMainDol_UnableToOpenFileInImage = 0x70,
+		PatchMainDol_UnableToOpenTempFile = 0x71,
+		PatchMainDol_UnableToExtractFileFromImage = 0x72,
+		PatchMainDol_UnableToOpenFileToPatch = 0x73,
+		PatchMainDol_UnableToPatchMainDol = 0x74,
+		PatchMainDol_UnableToFindMainDolInImage = 0x75,
+		PatchMainDol__UnableToWriteFile = 0x76
 	};
 
 public:
@@ -84,6 +91,7 @@ public:
 
 	bool open();
 	bool rebuildPaks(const QStringList& pakArchives, const std::vector<std::wstring>& inputDirs, const QString& outDir);
+	bool patchMainDol(const QString& inputDir, const QString& outDir);
 	bool replacePaks(const QStringList& pakArchives, const QString& inputDir);
 	bool checkData(const QStringList& pakArchives, const QStringList& inputDirs, const QString& outDir, const QString& tempDir = QString());
 	bool checkPaks(const QStringList& pakArchives, const QString& paksDir);
