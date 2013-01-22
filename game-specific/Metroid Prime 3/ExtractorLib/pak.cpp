@@ -129,7 +129,7 @@ bool PakArchive::extractFile(Hash filenameHash, Consolgames::Stream* out)
 	return false;
 }
 
-u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
+u32 PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkMem)
 {
 	unsigned int lzo_size = 0;
 	const int cChunk = 0x4000;
@@ -142,13 +142,18 @@ u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 		u16 lzoChunkStored = 0;
 		size -= chunk;
 		in->read(buf, chunk);
-		VERIFY(lzo1x_999_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, &m_lzoWorkMem[0]) == LZO_E_OK);
+		VERIFY(lzo1x_999_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, lzoWorkMem) == LZO_E_OK);
 		lzo_size += lzoChunk + 2;
 		lzoChunkStored = endian16(static_cast<u16>(lzoChunk));
 		out->write(&lzoChunkStored, 2);
 		out->write(&compressionBuffer[0], lzoChunk);
 	}
 	return lzo_size;
+}
+
+u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
+{
+	return compressLzo(in, size, out, &m_lzoWorkMem[0]);
 }
 
 void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream)
