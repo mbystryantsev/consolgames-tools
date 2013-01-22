@@ -1,4 +1,5 @@
 #include "DataPaster.h"
+#include "MainDolPatcher.h"
 #include <QtPakArchive.h>
 #include <QtFileStream.h>
 #include <WiiFileStream.h>
@@ -112,6 +113,91 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 			m_errorData = pakName;
 			return false;
  		}
+	}
+
+	return true;
+}
+
+bool DataPaster::patchMainDol(const QString& inputDir, const QString& outDir)
+{
+	std::auto_ptr<WiiFileStream> imageFile(m_image.openFile("main.dol", Stream::modeRead));
+	if(imageFile.get() == NULL)
+	{
+		DLOG << "Unable to open file in image: main.dol";
+		m_errorCode = PatchMainDol_UnableToOpenFileInImage;
+		m_errorData = "main.dol";
+		return false;
+	}
+
+	{
+		QtFileStream outFile(outDir + "/main.dol", QIODevice::WriteOnly);
+		if (!outFile.opened())
+		{
+			DLOG << "Unable to open temp file: main.dol";
+			m_errorCode = PatchMainDol_UnableToOpenTempFile;
+			m_errorData = "main.dol";
+			return false;
+		}
+
+		if (outFile.writeStream(imageFile.get(), imageFile->size()) != imageFile->size())
+		{
+			DLOG << "Unable to extract file from image: main.dol";
+			m_errorCode = PatchMainDol_UnableToExtractFileFromImage;
+			m_errorData = "main.dol";
+			return false;
+		}
+	}
+
+	{
+		MainDolPatcher patcher;
+		if (!patcher.open(outDir + "/main.dol"))
+		{
+			m_errorCode = PatchMainDol_UnableToOpenFileToPatch;
+			m_errorData = "main.dol";
+			return false;
+		}
+
+		const QString messagesPath = inputDir + "/messages.txt";
+		const QString fontPath = inputDir + "/system.FONT";
+		const QString fontTexturePath = inputDir + "/system.TXTR";
+		if (!patcher.patch(messagesPath, fontPath, fontTexturePath))
+		{
+			m_errorCode = PatchMainDol_UnableToPatchMainDol;
+			m_errorData = "main.dol";
+			return false;
+		}
+	}
+
+
+	Tree<FileInfo>::Node* fileRecord = m_image.findFile("main.dol");
+	if (fileRecord == NULL)
+	{
+		DLOG << "Unable to find file in image for replace: main.dol";
+		m_errorCode = PatchMainDol_UnableToFindMainDolInImage;
+		m_errorData = "main.dol";
+		return false;
+	}
+
+	QtFileStream dolFile(outDir + "/main.dol", QIODevice::ReadOnly);
+	if (!dolFile.opened())
+	{
+		DLOG << "Unable to open temp file: main.dol";
+		m_errorCode = PatchMainDol_UnableToOpenTempFile;
+		m_errorData = "main.dol";
+		return false;
+	}
+
+	WiiImage::IProgressHandler* handler = &m_image.progressHandler();
+	m_image.setProgressHandler(NULL);
+	const bool written = m_image.wii_write_data_file(m_image.dataPartition(), fileRecord->data().offset, &dolFile, dolFile.size());
+	m_image.setProgressHandler(handler);
+
+	if (!written)
+	{
+		DLOG << "Unable to write file!";
+		m_errorCode = PatchMainDol__UnableToWriteFile;
+		m_errorData = "main.dol";
+		return false;
 	}
 
 	return true;

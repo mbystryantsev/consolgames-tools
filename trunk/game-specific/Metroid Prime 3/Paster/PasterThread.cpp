@@ -62,6 +62,11 @@ bool PasterThread::rebuildPaks(const QStringList& paks, const QStringList& input
 		}
 	}
 
+	if (QFileInfo(inputDirs[0] + "/messages.txt").exists())
+	{
+		m_paster->patchMainDol(inputDirs[0], outDir);
+	}
+
 	m_paster->setMergeMap(mergeMap);
 	return m_paster->rebuildPaks(paks, inputDirList, outDir);
 }

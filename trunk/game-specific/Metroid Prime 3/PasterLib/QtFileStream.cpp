@@ -53,3 +53,8 @@ bool QtFileStream::atEnd() const
 {
 	return m_file.atEnd();
 }
+
+void QtFileStream::close()
+{
+	m_file.close();
+}
