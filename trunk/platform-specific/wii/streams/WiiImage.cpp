@@ -317,7 +317,6 @@ void WiiImage::loadTmd(int partition)
 	ASSERT(sigType != SIG_UNKNOWN);
 
 	Tmd tmd;
-	memset(&tmd, 0, sizeof(tmd));
 	tmd.sigType = sigType;
 
 	m_partitions[partition].tmdOffset = tmdOffset;
