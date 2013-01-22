@@ -25,6 +25,23 @@ struct TmdContent
 
 struct Tmd 
 {
+	Tmd()
+		: sigType(SIG_UNKNOWN)
+		, version(0)
+		, ca_crl_version(0)
+		, signer_crl_version(0)
+		, sys_version(0)
+		, title_id(0)
+		, title_type(0)
+		, group_id(0)
+		, accessRights(0)
+		, titleVersion(0)
+		, numContents(0)
+		, bootIndex(0)
+	{
+		memset(issuer, sizeof(issuer), 0);
+	}
+
 	TmdSigType sigType;
 	std::vector<u8> signature;
 	char issuer[64];
