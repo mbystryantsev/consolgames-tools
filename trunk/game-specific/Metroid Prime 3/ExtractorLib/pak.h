@@ -177,6 +177,9 @@ public:
 
 	Consolgames::Stream* openFileDirect(Hash hash);
 
+	static u32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out, void* lzoWorkMem);
+	static void decompressLzo(Consolgames::Stream* lzoStream, u32 lzoSize, Consolgames::Stream* outStream);
+
 protected:
 	enum CompressionFlags
 	{
@@ -203,7 +206,6 @@ protected:
 	static void swapFileEndian(FileRecord& fileRecord);
 	std::string findName(const Hash& hash) const;
 	u32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out);
-	static void decompressLzo(Consolgames::Stream* lzoStream, u32 lzoSize, Consolgames::Stream* outStream);
 
 protected:
 	void initProgress(int count);
