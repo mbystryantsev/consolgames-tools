@@ -177,14 +177,6 @@ void PatcherWorker::rebuildPaks()
 		);
 	}
 
-	if (!m_paster->patchMainDol(m_resourcesPaths.first(), m_pakTempPath))
-	{
-		return processError(
-			QString::fromLocal8Bit("Ошибка при обработке исполняемого файла игры."),
-			QString::fromLocal8Bit("")
-		);
-	}
-
 	emit stepCompleted();
 }
 
@@ -209,6 +201,14 @@ void PatcherWorker::replacePaks()
 	{
 		return processError(
 			QString::fromLocal8Bit("Ошибка при замене данных в бэкап-образе."),
+			QString::fromLocal8Bit("")
+		);
+	}
+
+	if (!m_paster->patchMainDol(m_resourcesPaths.first(), m_pakTempPath))
+	{
+		return processError(
+			QString::fromLocal8Bit("Ошибка при обработке исполняемого файла игры."),
 			QString::fromLocal8Bit("")
 		);
 	}
