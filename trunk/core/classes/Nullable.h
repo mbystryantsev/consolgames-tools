@@ -18,6 +18,9 @@ public:
 	}
 	
 	Nullable(const T& value) : m_value(value), m_isNull(false)
+	{
+	}
+
 	T& value()
 	{
 		return m_value;
