@@ -2,9 +2,9 @@ QT -= core gui
 CONFIG += static
 CONFIG -= flat
 TEMPLATE = lib
-DEFINES += _SCL_SECURE_NO_WARNINGS
+DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
-COREDIR = ../../../../core
+COREDIR = $$PWD
 
 HEADERS = \
 	$$COREDIR/*.h \
