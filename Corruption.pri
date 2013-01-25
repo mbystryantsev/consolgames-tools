@@ -14,19 +14,12 @@ INCLUDEPATH += \
 	$$PWD/ExtractorLib \
 	$$PWD/PasterLib \
 	$$PWD/FontLib \
-	$$PWD/../../platform-specific/wii/streams \
-	$$PWD/../../platform-specific/wii/streams/include \
-	$$PWD/../../platform-specific/wii/streams/include/openssl \
-	$$PWD/../../core \
-	$$PWD/../../core/streams \
-	$$PWD/../../core/classes \
-	$$PWD/../../externals/pnglite \
-	$$PWD/../../externals/nvidia-texture-tools/project/vc9 \
-	$$PWD/../../externals/nvidia-texture-tools/src \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvcore \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvmath \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvimage \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvtt \
+	$$PWD/externals/WiiStreams \
+	$$PWD/externals/WiiStreams/include \
+	$$PWD/externals/WiiStreams/include/openssl \
+	$$PWD/externals/core \
+	$$PWD/externals/core/streams \
+	$$PWD/externals/core/classes \
 
 QMAKE_LIBDIR += \
 	$$PWD/ScriptTesterLib/$$CONFIG_NAME \

@@ -2,10 +2,10 @@ QT -= core gui
 CONFIG += static
 #CONFIG -= flat
 TEMPLATE = lib
-DEFINES += _SCL_SECURE_NO_WARNINGS
+DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
-STRDIR = ../../../../platform-specific/wii/streams
-COREDIR = ../../../../core
+STRDIR = $$PWD
+COREDIR = ../core
 
 HEADERS = \
 	$$STRDIR/*.h \
