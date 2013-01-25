@@ -1,25 +1,27 @@
-#ifndef __CONSOLGAMES_COMMON_H
-#define __CONSOLGAMES_COMMON_H
+#pragma once
 
 #if defined(_DEBUG) && !defined(CG_DEBUG)
-#define CG_DEBUG
+# define CG_DEBUG
 #endif
 
 #ifdef CG_DEBUG
-#include <iostream>
-#include <iomanip>
-#include <string>
+# include <iostream>
+# include <iomanip>
+# include <string>
+# ifndef CG_LOG_ENABLED
+#  define CG_LOG_ENABLED
+# endif
 #endif
 
 #ifdef QT_CORE_LIB
-#include <QString>
-#include <QByteArray>
+# include <QString>
+# include <QByteArray>
 #endif
 
 #ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS 1
-#define _CRT_SECURE_NO_DEPRECATE 1
-#include <windows.h>
+# define _CRT_SECURE_NO_WARNINGS 1
+# define _CRT_SECURE_NO_DEPRECATE 1
+# include <windows.h>
 #endif
 
 typedef unsigned int u32;
@@ -35,15 +37,15 @@ namespace Consolgames
 {
 
 #if defined(_WIN32) || defined(__WIN32)
-#define PATH_SEPARATOR '\\'
-#define PATH_SEPARATOR_STR "\\"
-#define PATH_SEPARATOR_L L'\\'
-#define PATH_SEPARATOR_STR_L L"\\"
+# define PATH_SEPARATOR '\\'
+# define PATH_SEPARATOR_STR "\\"
+# define PATH_SEPARATOR_L L'\\'
+# define PATH_SEPARATOR_STR_L L"\\"
 #else
-#define PATH_SEPARATOR '/'
-#define PATH_SEPARATOR_STR "/"
-#define PATH_SEPARATOR_L L'/'
-#define PATH_SEPARATOR_STR_L L"/"
+# define PATH_SEPARATOR '/'
+# define PATH_SEPARATOR_STR "/"
+# define PATH_SEPARATOR_L L'/'
+# define PATH_SEPARATOR_STR_L L"/"
 #endif
 
 inline u16 endian16(u16 v)
@@ -97,7 +99,7 @@ class AssertHandler
 public:
 	AssertHandler(const char* file, int line, const char* function, const char* expression)
 	{
-#ifdef _MSC_VER
+# ifdef _MSC_VER
 		try
 		{
 			DebugBreak();
@@ -106,7 +108,7 @@ public:
 		{
 			throw new AssertException(file, line, function, expression);
 		}
-#endif
+# endif
 	}
 };
 #endif
@@ -114,22 +116,24 @@ public:
 }
 
 #ifdef ASSERT
-#undef ASSERT
+# undef ASSERT
 #endif
 #ifdef CG_DEBUG
-#define ASSERT(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
+# define ASSERT(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
 #else
-#define ASSERT(expression) ((void)0)
+# define ASSERT(expression) ((void)0)
 #endif
 
 #ifdef VERIFY
-#undef VERIFY
+# undef VERIFY
 #endif
+
 #ifdef CG_DEBUG
-#define VERIFY(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
+# define VERIFY(expression) if (!(expression)) Consolgames::AssertHandler(__FILE__, __LINE__, __FUNCTION__, #expression)
 #else
-#define VERIFY(expression) (expression)
+# define VERIFY(expression) (expression)
 #endif
+
 class DLog
 {
 public:
@@ -142,17 +146,17 @@ public:
 		LogModifiers(Type t) : type(t){}
 		Type type;
 	};
-#ifdef CG_DEBUG
+#ifdef CG_LOG_ENABLED
 	~DLog(){std::cout << std::endl;}
 	DLog& operator ()(const char* s, ...){std::cout << s; return *this;}
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
 	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
 	DLog& operator <<(__int64 v){if(modifier == LogModifiers::modHex) std::cout << std::hex; std::cout << v; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
-#ifdef QT_CORE_LIB
+# ifdef QT_CORE_LIB
 	DLog& operator <<(const QString& s){std::cout << s.toStdString(); return *this;}
 	DLog& operator <<(const QByteArray& s){std::cout << s.data(); return *this;}
-#endif
+# endif
 	void setModifier(const LogModifiers& m)
 	{
 		modifier = m.type;
@@ -176,10 +180,8 @@ const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 #define LOG_CATEGORY(category) static const char* __s_consolgames_log_category = category;
 
 #ifndef _MSC_VER
-#define override
+# define override
 #endif
 
 typedef __int64 offset_t;
 typedef __int64 largesize_t;
-
-#endif // __CONSOLGAMES_COMMON_H
