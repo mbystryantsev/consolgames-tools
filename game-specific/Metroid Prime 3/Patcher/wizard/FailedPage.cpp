@@ -51,6 +51,6 @@ void FailedPage::openForumThread()
 {
 	if (m_ui.openThread->isChecked())
 	{
-		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/"));
+		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/index.php?showtopic=204"));
 	}
 }

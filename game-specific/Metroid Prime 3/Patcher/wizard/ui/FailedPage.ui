@@ -69,7 +69,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Если не удаётся устранить её самостоятельно, Вы можете сообщить об этом на &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;нашем форуме&lt;/a&gt;, указав следующие данные:</string>
+      <string>Если не удаётся устранить её самостоятельно, Вы можете сообщить об этом на &lt;a href=&quot;http://consolgames.ru/forum/index.php?showtopic=204&quot;&gt;нашем форуме&lt;/a&gt;, указав следующие данные:</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

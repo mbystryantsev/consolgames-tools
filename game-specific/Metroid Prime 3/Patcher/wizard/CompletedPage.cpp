@@ -21,7 +21,7 @@ void CompletedPage::operURLs()
 	}
 	if (m_ui.openForumThread->isChecked())
 	{
-		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/"));
+		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/index.php?showtopic=204"));
 	}
 	if (m_ui.openVKGroup->isChecked())
 	{

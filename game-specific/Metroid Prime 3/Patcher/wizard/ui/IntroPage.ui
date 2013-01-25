@@ -20,7 +20,11 @@
    <item>
     <widget class="QLabel" name="introLabel">
      <property name="text">
-      <string>Вас приветствует программа применения патча-перевода Metroid Prime 3: Corruption.</string>
+      <string>Вас приветствует программа применения патча-перевода Metroid Prime 3: Corruption.
+
+При необходимости убедитесь, что  перед началом процесса сделали копию бэкап-образа.
+
+Данный патч предназначен только для PAL-версии игры.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
