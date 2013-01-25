@@ -5,12 +5,15 @@
 #endif
 
 #ifdef CG_DEBUG
-# include <iostream>
-# include <iomanip>
-# include <string>
 # ifndef CG_LOG_ENABLED
 #  define CG_LOG_ENABLED
 # endif
+#endif
+
+#ifdef CG_LOG_ENABLED
+# include <iostream>
+# include <iomanip>
+# include <string>
 #endif
 
 #ifdef QT_CORE_LIB
