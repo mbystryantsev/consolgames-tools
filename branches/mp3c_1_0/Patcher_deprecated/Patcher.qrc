@@ -1,0 +1,9 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+	<qresource>
+		<file alias="progressbg.png">resources/progressbg32.png</file>
+		<file alias="background.png">resources/background.png</file>
+		<file alias="SamusHelmet.png">resources/SamusHelmet.png</file>
+		<file>Patcher.css</file>
+	</qresource>
+</RCC>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CompletedPage</class>
+ <widget class="QWidget" name="CompletedPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="title" stdset="0">
+   <string>Процесс успешно завершён</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Патч успешно применён!
+&lt;br/&gt;&lt;br/&gt;
+Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;http://consolgames.ru/forum/index.php?showtopic=204&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;http://consolgames.ru/translations/Metroid_Prime_3&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».
+&lt;br/&gt;&lt;br/&gt;
+Также Вы можете помочь улучшить качество перевода, сообщив на форуме об обнаруженных ошибках и недочётах.
+&lt;br/&gt;&lt;br/&gt;
+Желаем Вам приятной игры!</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openProjectPage">
+     <property name="text">
+      <string>Посетить страницу проекта</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openForumThread">
+     <property name="text">
+      <string>Открыть тему на форуме</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="openVKGroup">
+     <property name="text">
+      <string>Открыть страницу группы «В Контакте»</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,21 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+	<qresource>
+		<file>qt_ru.qm</file>
+		<file>SamusHelmet.png</file>
+		<file>watermark.png</file>
+		<file>eula.txt</file>
+		<file>loading.gif</file>
+		<file>vk16.gif</file>
+		<file>earth.png</file>
+		<file>Patcher.css</file>
+		<file>metroid.png</file>
+		<file>error.png</file>
+		<file>error16.png</file>
+		<file>cancel.png</file>
+		<file>cancel16.png</file>
+		<file>ok16.png</file>
+		<file>clock16.png</file>
+		<file>staff.txt</file>
+	</qresource>
+</RCC>
