@@ -20,9 +20,13 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Патч успешно применён или сгенерирован.
+      <string>Патч успешно применён!
 &lt;br/&gt;&lt;br/&gt;
-Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;http://consolgames.ru/translations/Metroid_Prime_3&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».</string>
+Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;http://consolgames.ru/forum/index.php?showtopic=204&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;http://consolgames.ru/translations/Metroid_Prime_3&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».
+&lt;br/&gt;&lt;br/&gt;
+Также Вы можете помочь улучшить качество перевода, сообщив на форуме об обнаруженных ошибках и недочётах.
+&lt;br/&gt;&lt;br/&gt;
+Желаем Вам приятной игры!</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>

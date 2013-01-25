@@ -32,7 +32,7 @@
      <property name="text">
       <string>Процесс применения или генерации патча отменён.&lt;br/&gt;
 &lt;br/&gt;
-Если у в процессе у Вас возникли какие-либо проблемы, можете обратиться на наш &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;форум&lt;/a&gt;.</string>
+Если у в процессе у Вас возникли какие-либо проблемы, Вы можете обратиться за помощью на наш &lt;a href=&quot;http://consolgames.ru/forum/index.php?showtopic=204&quot;&gt;форум&lt;/a&gt;.</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
