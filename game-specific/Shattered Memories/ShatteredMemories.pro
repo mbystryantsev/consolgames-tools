@@ -3,7 +3,10 @@ CONFIG += ordered
 TEMPLATE = subdirs
 
 SUBDIRS = \
+	Common \
 	Compression \
+	TextLib \
+	TextConv \
 	StreamParser \
 	externals/core \
 	externals/WiiStreams \

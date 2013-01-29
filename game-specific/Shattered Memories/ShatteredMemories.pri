@@ -11,7 +11,9 @@ DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 EXTERNALS = $$PWD/../../externals/
 
 INCLUDEPATH += \
+	$$PWD/Common \
 	$$PWD/Compression \
+	$$PWD/TextLib \
 	$$PWD/NamesFinder \
 	$$PWD/../../core \
 	$$PWD/../../platform-specific/wii/streams \
@@ -29,7 +31,9 @@ INCLUDEPATH += \
 	$$EXTERNALS/zlib \
 
 QMAKE_LIBDIR += \
+	$$PWD/Common/$$CONFIG_NAME \
 	$$PWD/Compression/$$CONFIG_NAME \
+	$$PWD/TextLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
