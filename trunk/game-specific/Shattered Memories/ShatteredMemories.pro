@@ -5,6 +5,7 @@ TEMPLATE = subdirs
 SUBDIRS = \
 	Common \
 	Compression \
+	ArcTool \
 	TextLib \
 	TextConv \
 	StreamParser \
