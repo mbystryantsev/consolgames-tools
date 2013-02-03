@@ -27,8 +27,10 @@ public:
 	virtual bool opened() const override;
 	virtual bool atEnd() const override;
 	OpenMode openMode() const;
-    static bool fileExists(const char *path);
+	static bool fileExists(const char *path);
 	static bool fileExists(const std::string& path);
+	static bool fileExists(const wchar_t* path);
+	static bool fileExists(const std::wstring& path);
 	std::wstring filename() const;
 
 protected:
