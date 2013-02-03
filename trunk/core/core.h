@@ -154,6 +154,7 @@ public:
 	DLog& operator ()(const char* s, ...){std::cout << s; return *this;}
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
 	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
+	DLog& operator <<(const std::wstring& s){std::cout << s.c_str(); return *this;}
 	DLog& operator <<(__int64 v){if(modifier == LogModifiers::modHex) std::cout << std::hex; std::cout << v; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
 # ifdef QT_CORE_LIB

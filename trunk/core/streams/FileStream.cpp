@@ -34,13 +34,13 @@ FileStream::FileStream(const std::wstring& filename, OpenMode mode)
 		desiredAccess |= GENERIC_WRITE;
 	}
 	m_handle = CreateFileW(filename.c_str(), desiredAccess, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
-    
+
 	if (m_handle == INVALID_HANDLE_VALUE)
 	{
 		DLOG << "FileStream: Unable to open file! WinApi error code: " << GetLastError();
 	}
 #else
-    m_descriptor = _open(filename.c_str(), static_cast<int>(mode) | _O_BINARY, _S_IREAD | _S_IWRITE);
+	m_descriptor = _open(filename.c_str(), static_cast<int>(mode) | _O_BINARY, _S_IREAD | _S_IWRITE);
 #endif
 }
 
@@ -51,12 +51,12 @@ FileStream::FileStream() : m_handle(INVALID_HANDLE_VALUE)
 FileStream::~FileStream()
 {
 #ifdef USE_WINDOWS_FILES
-    if(m_handle != INVALID_HANDLE_VALUE)
+	if(m_handle != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(m_handle);
 	}
 #else
-    if(m_descriptor != -1)
+	if(m_descriptor != -1)
 	{
 		_close(m_descriptor);
 	}
@@ -66,28 +66,28 @@ FileStream::~FileStream()
 offset_t FileStream::seek(offset_t offset, SeekOrigin origin)
 {
 #ifdef USE_WINDOWS_FILES
-    _LARGE_INTEGER new_offset;
-    SetFilePointerEx(m_handle, *reinterpret_cast<_LARGE_INTEGER*>(&offset), &new_offset, origin);
-    return new_offset.QuadPart;
+	_LARGE_INTEGER new_offset;
+	SetFilePointerEx(m_handle, *reinterpret_cast<_LARGE_INTEGER*>(&offset), &new_offset, origin);
+	return new_offset.QuadPart;
 #else
-    return _lseeki64(m_descriptor, offset, static_cast<int>(origin));
+	return _lseeki64(m_descriptor, offset, static_cast<int>(origin));
 #endif
 }
 
 largesize_t FileStream::read(void *buf, largesize_t size)
 {
 #ifdef USE_WINDOWS_FILES
-    unsigned long readed;
-    if(!ReadFile(m_handle, buf, static_cast<DWORD>(size), &readed, NULL))
-    {
-        return - 1;
-    }
-    else
-    {
-        return readed;
-    }
+	unsigned long readed;
+	if(!ReadFile(m_handle, buf, static_cast<DWORD>(size), &readed, NULL))
+	{
+		return - 1;
+	}
+	else
+	{
+		return readed;
+	}
 #else
-    return _read(m_descriptor, buf, size);
+	return _read(m_descriptor, buf, size);
 #endif
 }
 
@@ -95,22 +95,22 @@ offset_t FileStream::position() const
 {
 #ifdef USE_WINDOWS_FILES
 	_LARGE_INTEGER ret = {0, 0};
-    _LARGE_INTEGER zero = {0, 0};
+	_LARGE_INTEGER zero = {0, 0};
 	zero.QuadPart = 0;
 
-    VERIFY(SetFilePointerEx(m_handle, zero, &ret, FILE_CURRENT));
-    return ret.QuadPart;
+	VERIFY(SetFilePointerEx(m_handle, zero, &ret, FILE_CURRENT));
+	return ret.QuadPart;
 #else
-    return _telli64(m_descriptor);
+	return _telli64(m_descriptor);
 #endif
 }
 
 void FileStream::flush()
 {
 #ifdef USE_WINDOWS_FILES
-    FlushFileBuffers(m_handle);
+	FlushFileBuffers(m_handle);
 #else
-    //_flush(fd);
+	//_flush(fd);
 #endif
 }
 
@@ -122,14 +122,14 @@ largesize_t FileStream::write(const void* buf, largesize_t size)
 		return 0;
 	}
 
-    unsigned long writed = 0;
-    if(!WriteFile(m_handle, buf, static_cast<DWORD>(size), &writed, NULL))
-    {
-        return - 1;
-    }
+	unsigned long writed = 0;
+	if(!WriteFile(m_handle, buf, static_cast<DWORD>(size), &writed, NULL))
+	{
+		return - 1;
+	}
 	return writed;
 #else
-    return _write(m_descriptor, buf, size);
+	return _write(m_descriptor, buf, size);
 #endif
 }
 
@@ -143,7 +143,7 @@ offset_t FileStream::size() const
 	struct _stat32i64 stat;
 	int ret = _fstat32i64(m_descriptor, &stat);
 	ASSERT(ret == 0);
-    return stat.st_size;
+	return stat.st_size;
 #endif
 }
 
@@ -163,6 +163,16 @@ bool FileStream::fileExists(const char *path)
 }
 
 bool FileStream::fileExists(const std::string& path)
+{
+	return fileExists(path.c_str());
+}
+
+bool FileStream::fileExists(const wchar_t* path)
+{
+	return (_waccess(path, 0) == 0);
+}
+
+bool FileStream::fileExists(const std::wstring& path)
 {
 	return fileExists(path.c_str());
 }
