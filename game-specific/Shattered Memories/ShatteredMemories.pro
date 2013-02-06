@@ -8,6 +8,7 @@ SUBDIRS = \
 	ArcTool \
 	TextLib \
 	TextConv \
+	ScriptEditor \
 	StreamParser \
 	externals/core \
 	externals/WiiStreams \
