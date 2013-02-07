@@ -27,6 +27,7 @@ protected:
 	{
 		actOpenProject,
 		actSave,
+		actCopyHashes,
 		actExit
 	};
 
@@ -53,12 +54,14 @@ protected:
 	ScriptViewWidget* m_scriptViewer;
 	QDockWidget* m_scriptViewerDockWidget;
 	Q_SLOT void onMessageSelect(quint32 hash);
+	Q_SLOT void onMessageSelect(const QModelIndex& index);
 	Q_SLOT void onFilterChanged(const QString& pattern);
 
 protected:
 	// Actions
 	Q_SLOT void onExit();
 	Q_SLOT void onSave();
+	Q_SLOT void onCopyHashes();
 	Q_SLOT void buildViewMenu();
 	Q_SLOT void toggleEditorVisible(bool visible);
 

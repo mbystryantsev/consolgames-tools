@@ -4,6 +4,9 @@
 #include "MessageSetModel.h"
 #include "MessageSetFilterModel.h"
 #include <QItemSelectionModel>
+#include <QTextStream>
+#include <QClipboard>
+#include <QApplication>
 
 using namespace ShatteredMemories;
 
@@ -225,16 +228,13 @@ void MainController::onTextChanged(const QString& text, const QByteArray& langua
 
 void MainController::onFilterChanged(const QString& pattern)
 {
-	const QModelIndex currentIndex = m_messagesSelectionModel->currentIndex();
+	const QModelIndex currentIndex = m_messagesFilterModel->mapToSource(m_messagesSelectionModel->currentIndex());
 	m_messagesFilterModel->setPattern(pattern);
 
 	if (currentIndex.isValid())
 	{
-		//const QModelIndex index = m_messagesFilterModel->mapFromSource(m_currentMessageIndex);
-		//if (index.isValid())
-		{
-			m_messagesSelectionModel->select(currentIndex, QItemSelectionModel::SelectCurrent);
-		}
+		m_messagesSelectionModel->clearSelection();
+		m_messagesSelectionModel->select(m_messagesFilterModel->mapFromSource(currentIndex), QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 	}
 }
 
@@ -252,4 +252,17 @@ quint32 MainController::currentHash() const
 {
 	const QModelIndex index = m_messagesSelectionModel->currentIndex();
 	return index.isValid() ? m_messagesFilterModel->mapToSource(index).internalId() : 0;
+}
+
+void MainController::copyHashesToClipboard()
+{
+	QString text;
+	QTextStream stream(&text);
+	foreach (const QModelIndex& index, m_messagesSelectionModel->selectedRows())
+	{
+		stream << Strings::hashToStr(m_messagesFilterModel->mapToSource(index).internalId()) << '\n';
+	}
+	stream.flush();
+
+	QApplication::clipboard()->setText(text);
 }

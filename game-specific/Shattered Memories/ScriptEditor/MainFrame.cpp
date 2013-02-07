@@ -40,13 +40,10 @@ void MainFrame::initUI()
 	m_ui.setupUi(centralWidget);
 	setCentralWidget(centralWidget);
 
-
 	m_ui.categoryList->setModel(m_controller->categoriesModel());
 	m_ui.categoryList->setSelectionModel(m_controller->categoriesSelectionModel());
-	m_ui.categoryList->expandAll();
 
  	initMessageList();
- 
  	initActions();
  	initMenu();
  	initToolbar();
@@ -60,7 +57,10 @@ void MainFrame::initMessageList()
 {
 	m_ui.messageList->setModel(m_controller->messagesFilterModel());
 	m_ui.messageList->setSelectionModel(m_controller->messagesSelectionModel());
+	m_ui.messageList->setSelectionMode(QAbstractItemView::ContiguousSelection);
+	m_ui.messageList->setSelectionBehavior(QAbstractItemView::SelectRows);
 	VERIFY(connect(m_controller, SIGNAL(messageSelected(quint32)), SLOT(onMessageSelect(quint32))));
+	VERIFY(connect(m_controller->messagesSelectionModel(), SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), SLOT(onMessageSelect(const QModelIndex&))));
 	VERIFY(connect(m_ui.filterPattern, SIGNAL(textChanged(const QString&)), m_controller, SLOT(onFilterChanged(const QString&))));
 	VERIFY(connect(m_ui.filterPattern, SIGNAL(textChanged(const QString&)), this, SLOT(onFilterChanged(const QString&))));
 
@@ -79,6 +79,8 @@ void MainFrame::initActions()
 {
 	REG_ACT(Exit, QKeySequence::Quit, QIcon());
 	REG_ACT(Save, QKeySequence::Save, QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton));
+	REG_ACT(CopyHashes, QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_C), QIcon());
+	m_actions[actCopyHashes]->setText("Copy Hashes to Clipboard");
 }
 
 void MainFrame::initToolbar()
@@ -97,11 +99,15 @@ void MainFrame::initMenu()
 	ASSERT(!m_actions.isEmpty());
 	{
 		QMenu* menu = menuBar()->addMenu(tr("&File"));
-
 		menu->addAction(m_actions[actSave]);
 		menu->addSeparator();
 		menu->addAction(m_actions[actExit]);
-
+	}
+	{
+		QMenu* menu = menuBar()->addMenu(tr("&Edit"));
+		menu->addAction(m_actions[actCopyHashes]);
+	}
+	{
 		m_viewMenu = menuBar()->addMenu(tr("&View"));
 		VERIFY(connect(m_viewMenu, SIGNAL(aboutToShow()), SLOT(buildViewMenu())));
 	}
@@ -166,6 +172,11 @@ void MainFrame::onMessageSelect(quint32 hash)
 			editor->setText("", 0);
 		}
 	}
+}
+
+void MainFrame::onMessageSelect(const QModelIndex& index)
+{
+	m_ui.statusLabel->setText(QString("%1/%2").arg(index.row()).arg(m_controller->messagesModel()->rowCount()));
 }
 
 void MainFrame::onFilterChanged(const QString& pattern)
@@ -247,4 +258,9 @@ void MainFrame::toggleEditorVisible(bool visible)
 	{
 		closeEditor(languageId);
 	}
+}
+
+void MainFrame::onCopyHashes()
+{
+	m_controller->copyHashesToClipboard();
 }

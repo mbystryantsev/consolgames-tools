@@ -71,6 +71,7 @@ MessageSet ShatteredMemories::Strings::importMessages(const QString& filename)
 
 	const int version = stream.readInt();
 	ASSERT(version == 2);
+	Q_UNUSED(version);
 
 	const int stringCount = stream.readInt();
 
@@ -113,21 +114,21 @@ MessageSet ShatteredMemories::Strings::importMessages(const QString& filename)
 	return messages;
 }
 
-ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QString& filename)
+static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		DLOG << file.errorString();
-		return MessageSet();
+		return false;
 	}
 
 	QTextStream stream(&file);
 	stream.setCodec("UTF-8");
 
-	MessageSet messages;
 	QString bufferedLine;
 	QString text;
+	quint32 lastHash = 0;
 	while (true)
 	{
 		const QString line = stream.readLine();
@@ -140,8 +141,7 @@ ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QSt
 				bufferedLine.clear();
 			}
 
-			const quint32 hash = messages.hashes.last();
-			messages.messages[hash] = Message(hash, text);
+			messages.messages[lastHash] = Message(lastHash, text);
 			text.clear();
 		}
 		if (line.isNull())
@@ -151,8 +151,12 @@ ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QSt
 		if (isHeader)
 		{
 			const QString hashStr = line.mid(1, line.length() - 2);
-			const quint32 hash = strToHash(hashStr);
-			messages.hashes << hash;
+			const quint32 hash = Strings::strToHash(hashStr);
+			if (!messages.hashes.contains(hash))
+			{
+				messages.hashes << hash;
+			}
+			lastHash = hash;
 			continue;
 		}
 		if (!bufferedLine.isNull())
@@ -166,7 +170,25 @@ ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QSt
 		bufferedLine = line;
 	}
 
-	ASSERT(messages.hashes.size() == messages.messages.size());
+	return true;
+}
+
+ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QString& path)
+{
+	MessageSet messages;
+	if (QFileInfo(path).isDir())
+	{
+		const QDir dir(path);
+		const QStringList files = dir.entryList(QStringList() << "*.txt");
+		foreach (const QString& filename, files)
+		{
+			loadMessagesFromFile(dir.absoluteFilePath(filename), messages);
+		}
+	}
+	else
+	{
+		loadMessagesFromFile(path, messages);
+	}
 	return messages;
 }
 
@@ -287,6 +309,10 @@ quint32 Strings::strToHash(const QString& hashStr)
 {
 	bool ok = false;
 	const quint32 hash = hashStr.toUInt(&ok, 16);
+	if (hash == 0x3634053C)
+	{
+		ok = true;
+	}
 	return ok ? hash : 0;	
 }
 
@@ -310,16 +336,16 @@ bool Strings::collapseDuplicates(MessageSet& messageSet)
 	return true;
 }
 
+const QRegExp referenceExp("\\{REF:([0-9A-Fa-f]{8})\\}");
+
 bool Strings::expandReferences(MessageSet& messageSet)
 {
-	QRegExp rx("\\{REF:([\\w]+)\\}");
-
 	foreach (quint32 hash, messageSet.hashes)
 	{
 		Message& message = messageSet.messages[hash];
-		if (rx.exactMatch(message.text))
+		if (isReference(message.text))
 		{
-			const quint32 sourceHash = strToHash(rx.capturedTexts()[1]);
+			const quint32 sourceHash = extractReferenceHash(message.text);
 			if (sourceHash == 0 || !messageSet.messages.contains(hash))
 			{
 				DLOG << "References expand error (" << hashToStr(hash) << " -> " << hashToStr(sourceHash) << ")";
@@ -330,6 +356,21 @@ bool Strings::expandReferences(MessageSet& messageSet)
 	}
 
 	return true;
+}
+
+bool Strings::isReference(const QString& str)
+{
+	return referenceExp.exactMatch(str);
+}
+
+quint32 Strings::extractReferenceHash(const QString& str)
+{
+	QRegExp re(referenceExp);
+	if (re.indexIn(str) < 0)
+	{
+		return 0;
+	}
+	return Strings::strToHash(re.cap(1));
 }
 
 }

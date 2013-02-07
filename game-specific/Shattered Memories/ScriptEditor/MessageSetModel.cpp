@@ -21,23 +21,6 @@ int MessageSetModel::columnCount(const QModelIndex& parent) const
 	return colCount;
 }
 
-const QRegExp referenceExp("\\{REF:([0-9A-Fa-f]{8})\\}");
-
-bool MessageSetModel::isReference(const QString& str)
-{
-	return referenceExp.exactMatch(str);
-}
-
-quint32 MessageSetModel::extractReferenceHash(const QString& str)
-{
-	QRegExp re(referenceExp);
-	if (re.indexIn(str) < 0)
-	{
-		return 0;
-	}
-	return Strings::strToHash(re.cap(1));
-}
-
 QVariant MessageSetModel::data(const QModelIndex& index, int role) const 
 {
 	const quint32 hash = index.internalId();
@@ -47,9 +30,9 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 		{
 			return Strings::hashToStr(index.internalId());
 		}
-		if (isReference(m_messages.messages[hash].text))
+		if (Strings::isReference(m_messages.messages[hash].text))
 		{
-			const quint32 refHash = extractReferenceHash(m_messages.messages[hash].text);
+			const quint32 refHash = Strings::extractReferenceHash(m_messages.messages[hash].text);
 			if (m_messages.messages.contains(refHash))
 			{
 				return m_messages.messages[refHash].text;
@@ -59,7 +42,7 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 	}
 	if (role == Qt::BackgroundColorRole)
 	{
-		if (isReference(m_messages.messages[hash].text))
+		if (Strings::isReference(m_messages.messages[hash].text))
 		{
 			return QColor(220, 220, 220);
 		}
@@ -121,13 +104,13 @@ QModelIndex MessageSetModel::indexByHash(quint32 hash)
 bool MessageSetModel::isReference(quint32 hash) const
 {
 	ASSERT(m_messages.messages.contains(hash));
-	return isReference(m_messages.messages[hash].text);
+	return Strings::isReference(m_messages.messages[hash].text);
 }
 
 quint32 MessageSetModel::extractReferenceHash(quint32 hash) const
 {
 	ASSERT(m_messages.messages.contains(hash));
-	return extractReferenceHash(m_messages.messages[hash].text);
+	return Strings::extractReferenceHash(m_messages.messages[hash].text);
 }
 
 const MessageSet* MessageSetModel::sourceMessages() const
