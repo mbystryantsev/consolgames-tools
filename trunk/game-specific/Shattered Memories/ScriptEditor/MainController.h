@@ -35,6 +35,7 @@ public:
 	quint32 currentHash() const;
 	bool somethingIsChanged() const;
 	bool saveTranslationData();
+	void copyHashesToClipboard();
 
 private:
 	void initCategories();

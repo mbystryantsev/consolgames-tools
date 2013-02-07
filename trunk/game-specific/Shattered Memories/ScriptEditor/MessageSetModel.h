@@ -21,8 +21,6 @@ public:
 	void setSourceMessages(const ShatteredMemories::MessageSet& sourceMessages);
 	const ShatteredMemories::MessageSet* sourceMessages() const;
 	QModelIndex indexByHash(quint32 hash);
-	static bool isReference(const QString& str);
-	static quint32 extractReferenceHash(const QString& str);
 	bool isReference(quint32 hash) const;
 	quint32 extractReferenceHash(quint32 hash) const;
 

@@ -112,7 +112,8 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 	}
 
 	const QString& text = messageSet.messages.find(hash)->text;
-	if (stringSatisfyFilter(text))
+	const quint32 refHash = Strings::isReference(text) ? Strings::extractReferenceHash(text) : 0;
+	if (stringSatisfyFilter(refHash == 0 ? text : messageSet.messages.find(refHash)->text))
 	{
 		return true;
 	}

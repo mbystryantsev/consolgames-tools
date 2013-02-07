@@ -35,6 +35,9 @@ public:
 	static quint32 strToHash(const QString& hashStr);
 	static bool collapseDuplicates(MessageSet& messages);
 	static bool expandReferences(MessageSet& messages);
+
+	static bool isReference(const QString& str);
+	static quint32 extractReferenceHash(const QString& str);
 };
 
 }
