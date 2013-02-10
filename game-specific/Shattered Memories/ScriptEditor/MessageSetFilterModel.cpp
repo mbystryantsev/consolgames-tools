@@ -1,7 +1,6 @@
 #include "MessageSetFilterModel.h"
 #include "MessageSetModel.h"
 #include "Category.h"
-#include <QStringList>
 
 using namespace ShatteredMemories;
 
@@ -45,17 +44,22 @@ void MessageSetFilterModel::setPattern(const QString& pattern)
 	bool isIdPointer = false;
 	m_filterHash = 0;
 	m_filterIndex = -1;
+	m_tags.clear();
+	m_hashes.clear();
 	if (!m_patternAtBegin && !m_patternAtEnd && pattern.startsWith('[') && pattern.endsWith(']'))
 	{
 		QString newPattern = m_pattern.right(m_pattern.size() - 1);
 		newPattern.truncate(newPattern.size() - 1);
-		const QStringList idData = newPattern.split(':');
-		if (idData.size() == 1 || idData.size() == 2)
+		const QStringList tagData = newPattern.split(',');
+		foreach (const QString& tag, tagData)
 		{
-			m_filterHash = idData[0].toULongLong(&isIdPointer, 16);
-			if (isIdPointer && idData.size() == 2)
+			const QString trimmed = tag.trimmed();
+			m_tags << trimmed;
+
+			const quint32 hash = Strings::strToHash(trimmed);
+			if (hash != 0)
 			{
-				m_filterIndex = idData[1].toInt(&isIdPointer);
+				m_hashes.insert(hash);
 			}
 		}
 	}
@@ -87,9 +91,9 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 	const QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
 	const quint32 hash = index.internalId();
 
-	if (!m_hashes.isEmpty() && !m_hashes.contains(hash))
+	if ((!m_tags.isEmpty() || !m_hashes.isEmpty()) && (m_hashes.contains(hash) || containsAnyTag(hash)))
 	{
-		return false;
+		return true;
 	}
 	if (m_pattern.isEmpty())
 	{
@@ -144,4 +148,25 @@ bool MessageSetFilterModel::stringSatisfyFilter(const QString& text) const
 		return text.endsWith(m_pattern, m_caseSensitivity);
 	}
 	return text.contains(m_pattern, m_caseSensitivity);
+}
+
+bool MessageSetFilterModel::containsAnyTag(quint32 hash) const
+{
+	const MessageSetModel& model = dynamic_cast<const MessageSetModel&>(*sourceModel());
+	const QMap<quint32, QStringList>* tagsCollection = model.tags();
+	if (tagsCollection == NULL || !tagsCollection->contains(hash))
+	{
+		return false;
+	}
+	
+	const QStringList& tags = *(tagsCollection->find(hash));
+	foreach (const QString& tag, m_tags)
+	{
+		if (tags.contains(tag))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

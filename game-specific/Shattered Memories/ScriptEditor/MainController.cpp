@@ -21,10 +21,14 @@ MainController::MainController(MainFrame* parent)
 	, m_categoriesChanged(false)
 	, m_commentsChanged(false)
 	, m_authorsChanged(false)
+	, m_tagsChanged(false)
 {
 	VERIFY(connect(this, SIGNAL(loadingLanguage(const QByteArray&)), m_parent, SLOT(onLanguageLoading(const QByteArray&))));
 
 	loadLanguages();
+	loadComments();
+	loadAuthors();
+	loadTags();
 
 	initCategories();
 	initCategoriesModels();
@@ -50,8 +54,11 @@ void MainController::initCategoriesModels()
 
 void MainController::initMessagesModels()
 {
-	m_messagesModel = new MessageSetModel(mainLanguageData(), this);
+	m_messagesModel = new MessageSetModel(mainLanguageData(), m_authors, this);
 	m_messagesModel->setSourceMessages(mainSourceLanguageData());
+	m_messagesModel->setRootCategory(m_rootCategory);
+	m_messagesModel->setComments(m_comments);
+	m_messagesModel->setTags(m_tags);
 
 	m_messagesFilterModel = new MessageSetFilterModel(this);
 	m_messagesFilterModel->setSourceModel(m_messagesModel);
@@ -103,7 +110,85 @@ void MainController::loadComments()
 
 void MainController::loadAuthors()
 {
-	//QFile file();
+	QFile file("../content/common/authors.txt");
+	ASSERT(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	QTextStream stream(&file);
+
+	while (!stream.atEnd())
+	{
+		const QString line = stream.readLine().trimmed().simplified();
+		if (line.isEmpty())
+		{
+			continue;
+		}
+
+		const QStringList items = line.split(' ');
+		if (items.size() != 2)
+		{
+			DLOG << "Warning: invalid authors line = " << line;
+			continue;
+		}
+
+		const quint32 hash = Strings::strToHash(items.first());
+		if (hash == 0)
+		{
+			DLOG << "Warning: invalid hash = " << items.first();
+			continue;
+		}
+
+		if (m_authors.contains(hash))
+		{
+			DLOG << "Warning: duplicated record detected for hash " << items.first();
+			continue;
+		}
+
+		m_authors[hash] = items[1];
+	}
+}
+
+void MainController::loadTags()
+{
+	QFile file("../content/common/tags.txt");
+	ASSERT(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	QTextStream stream(&file);
+
+	while (!stream.atEnd())
+	{
+		const QString line = stream.readLine().trimmed().simplified();
+		if (line.isEmpty())
+		{
+			continue;
+		}
+
+		const int sepIndex = line.indexOf(' ');
+		if (sepIndex < 0)
+		{
+			return;
+		}
+		const QString tagsString = line.right(line.size() - sepIndex - 1);
+		const QString hashString = line.left(sepIndex);
+
+		const quint32 hash = Strings::strToHash(hashString);
+		if (hash == 0)
+		{
+			DLOG << "Warning: invalid hash = " << hashString;
+			continue;
+		}
+
+		if (m_tags.contains(hash))
+		{
+			DLOG << "Warning: duplicated record detected for hash " << hashString;
+			continue;
+		}
+
+		QStringList tags = tagsString.split(',');
+		for (int i = 0; i < tags.size(); i++)
+		{
+			tags[i] = tags[i].trimmed();
+		}
+
+		m_tags[hash] = tags;
+	}
 }
 
 void MainController::loadLanguages()
@@ -123,10 +208,8 @@ void MainController::loadMainLanguage(const QByteArray& languageId, const QStrin
 	emit loadingLanguage(languageId);
 	m_mainLanguageId = languageId;
 
-	m_scripts[languageId] = Strings::loadMessages(path);
-
 	m_filesInfo.clear();
-	m_filesInfo[QDir(path).absoluteFilePath("ShatteredMemories.txt")] = m_scripts[languageId].hashes;
+	m_scripts[languageId] = Strings::loadMessages(path, &m_filesInfo);
 }
 
 void MainController::loadSourceLanguage(const QByteArray& languageId, const QString& path)
@@ -143,16 +226,58 @@ void MainController::setMainSourceLanguage(const QByteArray& languageId)
 
 bool MainController::saveTranslationData()
 {
-	return saveMainLanguage() && saveCategories() && saveComments() && saveAuthors();	
+	return saveMainLanguage() && saveCategories() && saveComments() && saveAuthors() && saveTags();
 }
 
 bool MainController::saveMainLanguage()
 {
+	if (!m_languageChanged)
+	{
+		return true;
+	}
+
+	foreach (const QString& filename, m_filesInfo.keys())
+	{
+		DLOG << "Saving file: " << filename;
+		if (!Strings::saveMessages(filename, mainLanguageData().messages, m_filesInfo[filename]))
+		{
+			DLOG << "Error ocurred during file saving!";
+			return false;
+		}
+	}
+
+	m_languageChanged = false;
 	return true;
 }
 
 bool MainController::saveComments()
 {
+	if (!m_commentsChanged)
+	{
+		return true;
+	}
+
+	DLOG << "Saving comments...";
+
+	QList<quint32> toRemove;
+	foreach (quint32 hash, m_comments.keys())
+	{
+		if (m_comments[hash].isEmpty())
+		{
+			toRemove << hash;
+		}
+	}
+	foreach (quint32 hash, toRemove)
+	{
+		m_comments.remove(hash);
+	}
+
+
+	if (!Strings::saveMessages("../content/common/comments.txt", m_comments))
+	{
+		return false;
+	}
+	m_commentsChanged = false;
 	return true;
 }
 
@@ -163,6 +288,66 @@ bool MainController::saveCategories()
 
 bool MainController::saveAuthors()
 {
+	if (!m_authorsChanged)
+	{
+		return true;
+	}
+
+	DLOG << "Saving authors...";
+
+	QFile file("../content/common/authors.txt");
+	ASSERT(file.open(QIODevice::WriteOnly | QIODevice::Text));
+
+	QTextStream stream(&file);
+
+	foreach (quint32 hash, m_authors.keys())
+	{
+		stream << Strings::hashToStr(hash) << ' ' << m_authors[hash] << '\n';
+	}
+	
+	m_authorsChanged = false;
+	return true;
+}
+
+bool MainController::saveTags()
+{
+	if (!m_tagsChanged)
+	{
+		return true;
+	}
+
+	DLOG << "Saving tags...";
+
+	QFile file("../content/common/tags.txt");
+	ASSERT(file.open(QIODevice::WriteOnly | QIODevice::Text));
+
+	QTextStream stream(&file);
+
+	foreach (quint32 hash, m_tags.keys())
+	{
+		const QStringList& tags = m_tags[hash];
+		if (tags.isEmpty())
+		{
+			continue;
+		}
+		
+		stream << Strings::hashToStr(hash) << ' ';
+		
+		bool isFirst = true;
+		foreach (const QString& tag, tags)
+		{
+			if (!isFirst)
+			{
+				stream << ", ";
+			}
+			stream << tag;
+
+			isFirst = false;
+		}
+		stream << '\n';
+	}
+
+	m_tagsChanged = false;
 	return true;
 }
 
@@ -208,6 +393,10 @@ void MainController::onCategoryChanged(const QModelIndex& index)
 
 void MainController::onMessageChanged(const QModelIndex& index)
 {
+	if (!index.isValid())
+	{
+		return;
+	}
 	emit messageSelected(m_messagesFilterModel->mapToSource(index).internalId());
 }
 
@@ -222,7 +411,7 @@ void MainController::onTextChanged(const QString& text, const QByteArray& langua
 	{
 		m_scripts[m_mainLanguageId].messages[hash].text = text;
 		m_messagesModel->updateString(hash);
-		m_languageChanged = false;
+		m_languageChanged = true;
 	}
 }
 
@@ -234,8 +423,32 @@ void MainController::onFilterChanged(const QString& pattern)
 	if (currentIndex.isValid())
 	{
 		m_messagesSelectionModel->clearSelection();
-		m_messagesSelectionModel->select(m_messagesFilterModel->mapFromSource(currentIndex), QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
+		const int row = m_messagesFilterModel->mapFromSource(currentIndex).row();
+		const QItemSelection selection(m_messagesFilterModel->index(row, 0), m_messagesFilterModel->index(row, m_messagesFilterModel->columnCount() - 1));
+		m_messagesSelectionModel->select(selection, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 	}
+}
+
+void MainController::onCommentChanged(const QString& text, quint32 hash)
+{
+	if (!m_comments.contains(hash) && text.isEmpty())
+	{
+		return;
+	}
+
+	m_comments[hash] = text;
+	m_commentsChanged = true;
+}
+
+void MainController::onTagsChanged(const QStringList& tags, quint32 hash)
+{
+	if (!m_tags.contains(hash) && tags.isEmpty())
+	{
+		return;
+	}
+
+	m_tags[hash] = tags;
+	m_tagsChanged = true;
 }
 
 const QByteArray& MainController::mainLanguageId() const
@@ -245,7 +458,7 @@ const QByteArray& MainController::mainLanguageId() const
 
 bool MainController::somethingIsChanged() const
 {
-	return (m_languageChanged || m_commentsChanged || m_categoriesChanged || m_authorsChanged);
+	return (m_languageChanged || m_commentsChanged || m_categoriesChanged || m_authorsChanged || m_tagsChanged);
 }
 
 quint32 MainController::currentHash() const
@@ -265,4 +478,14 @@ void MainController::copyHashesToClipboard()
 	stream.flush();
 
 	QApplication::clipboard()->setText(text);
+}
+
+const QMap<quint32,QString>& MainController::comments() const
+{
+	return m_comments;
+}
+
+const QMap<quint32, QStringList>& MainController::tags() const
+{
+	return m_tags;
 }

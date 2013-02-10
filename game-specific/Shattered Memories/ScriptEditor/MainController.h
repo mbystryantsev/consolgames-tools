@@ -31,6 +31,8 @@ public:
 	const ShatteredMemories::MessageSet& languageData(const QByteArray& languageId) const;
 	const QList<QByteArray> languages() const;
 	const QByteArray& mainLanguageId() const;
+	const QMap<quint32,QString>& comments() const;
+	const QMap<quint32, QStringList>& tags() const;
 
 	quint32 currentHash() const;
 	bool somethingIsChanged() const;
@@ -43,6 +45,7 @@ private:
 	void initMessagesModels();
 	void loadComments();
 	void loadAuthors();
+	void loadTags();
 	void loadLanguages();
 	void loadMainLanguage(const QByteArray& languageId, const QString& path);
 	void loadSourceLanguage(const QByteArray& languageId, const QString& path);
@@ -52,6 +55,7 @@ private:
 	bool saveComments();
 	bool saveCategories();
 	bool saveAuthors();
+	bool saveTags();
 
 	Q_SIGNAL void loadingLanguage(const QByteArray& languageId);
 	Q_SIGNAL void messageSelected(quint32 hash);
@@ -60,6 +64,8 @@ private:
 	Q_SLOT void onMessageChanged(const QModelIndex& index);
 	Q_SLOT void onTextChanged(const QString& text, const QByteArray& languageId, quint32 hash);
 	Q_SLOT void onFilterChanged(const QString& pattern);
+	Q_SLOT void onCommentChanged(const QString& text, quint32 hash);
+	Q_SLOT void onTagsChanged(const QStringList& text, quint32 hash);
 
 private:
 	MainFrame* m_parent;
@@ -74,6 +80,7 @@ private:
 	bool m_authorsChanged;
 	bool m_commentsChanged;
 	bool m_categoriesChanged;
+	bool m_tagsChanged;
 	QByteArray m_mainLanguageId;
 	QByteArray m_mainSourceLanguageId;
 
@@ -82,5 +89,5 @@ private:
 	Category m_rootCategory;
 	QMap<quint32, QString> m_comments;
 	QMap<quint32, QString> m_authors;
-	QMap<quint32, QList<QString>> m_tags;
+	QMap<quint32, QStringList> m_tags;
 };

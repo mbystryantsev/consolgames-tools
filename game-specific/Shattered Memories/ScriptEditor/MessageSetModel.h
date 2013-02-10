@@ -8,7 +8,7 @@ struct Category;
 class MessageSetModel : public QAbstractItemModel
 {
 public:
-	MessageSetModel(const ShatteredMemories::MessageSet& messages, QObject* parent = NULL);
+	MessageSetModel(const ShatteredMemories::MessageSet& messages, QMap<quint32,QString>& authors, QObject* parent = NULL);
 
 	// QAbstractItemModel
 	virtual int columnCount(const QModelIndex& parent) const override;
@@ -23,11 +23,18 @@ public:
 	QModelIndex indexByHash(quint32 hash);
 	bool isReference(quint32 hash) const;
 	quint32 extractReferenceHash(quint32 hash) const;
+	QString formatFlags(quint32 hash) const;
 
 	Q_SLOT void setCategory(const Category& category);
+	Q_SLOT void setRootCategory(const Category& category);
+	Q_SLOT void setComments(const QMap<quint32, QString>& comments);
+	Q_SLOT void setTags(const QMap<quint32, QStringList>& tags);
 	Q_SLOT void setExceptionCategory(const Category& category);
 	Q_SLOT void resetCategory();
 	Q_SLOT void updateString(quint32 hash);
+
+	const QMap<quint32, QStringList>* tags() const;
+	const QMap<quint32, QString>* comments() const;
 
 private:
 	const QList<quint32>& hashSource() const;
@@ -36,6 +43,8 @@ private:
 	enum Column
 	{
 		colHash,
+		colFlags,
+		colAuthor,
 		colText,
 		colCount
 	};
@@ -43,6 +52,10 @@ private:
 private:
 	const ShatteredMemories::MessageSet& m_messages;
 	const ShatteredMemories::MessageSet* m_sourceMessages;
+	QMap<quint32, QString>& m_authors;
 	QList<quint32> m_categoryHashes;
+	QSet<quint32> m_categorizedHashes;
+	const QMap<quint32, QString>* m_comments;
+	const QMap<quint32, QStringList>* m_tags;
 	bool m_customCategory;
 };

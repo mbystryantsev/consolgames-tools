@@ -1,5 +1,7 @@
 <RCC>
   <qresource>
     <file>resources/splash.png</file>
+    <file>resources/commentTemplate.html</file>
+    <file>resources/tagsTemplate.html</file>
   </qresource>
 </RCC>

@@ -1,7 +1,8 @@
 #include "ScriptHighlighter.h"
 #include <QPlainTextEdit>
 
-const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("&[^;]*;");
+//const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("&[^;]*;");
+const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("<.(=\\d)?>");
 
 ScriptHighlighter::ScriptHighlighter(QPlainTextEdit* parent)
 	: QSyntaxHighlighter(parent->document())
