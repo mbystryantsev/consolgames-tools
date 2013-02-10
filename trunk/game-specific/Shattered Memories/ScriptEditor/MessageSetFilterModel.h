@@ -1,6 +1,7 @@
 #pragma once
 #include <QSortFilterProxyModel>
 #include <QSet>
+#include <QStringList>
 
 class MessageSetFilterModel : public QSortFilterProxyModel
 {
@@ -12,6 +13,7 @@ protected:
 	bool hasVisibleRows(int row) const;
 	virtual bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 	bool stringSatisfyFilter(const QString& text) const;
+	bool containsAnyTag(quint32 hash) const;
 
 protected:
 	QString m_pattern;
@@ -21,4 +23,5 @@ protected:
 	int m_filterIndex;
 	Qt::CaseSensitivity m_caseSensitivity;
 	QSet<quint32> m_hashes;
+	QStringList m_tags;
 };

@@ -7,11 +7,14 @@ using namespace ShatteredMemories;
 
 LOG_CATEGORY("ScriptEditor.MessageSetModel");
 
-MessageSetModel::MessageSetModel(const MessageSet& messages, QObject* parent)
+MessageSetModel::MessageSetModel(const MessageSet& messages, QMap<quint32,QString>& authors, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_messages(messages)
 	, m_sourceMessages(NULL)
+	, m_authors(authors)
 	, m_customCategory(false)
+	, m_comments(NULL)
+	, m_tags(NULL)
 {
 }
 
@@ -30,15 +33,26 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 		{
 			return Strings::hashToStr(index.internalId());
 		}
-		if (Strings::isReference(m_messages.messages[hash].text))
+		if (index.column() == colText)
 		{
-			const quint32 refHash = Strings::extractReferenceHash(m_messages.messages[hash].text);
-			if (m_messages.messages.contains(refHash))
+			if (Strings::isReference(m_messages.messages[hash].text))
 			{
-				return m_messages.messages[refHash].text;
+				const quint32 refHash = Strings::extractReferenceHash(m_messages.messages[hash].text);
+				if (m_messages.messages.contains(refHash))
+				{
+					return m_messages.messages[refHash].text;
+				}
 			}
+			return m_messages.messages[index.internalId()].text.simplified();
 		}
-		return m_messages.messages[index.internalId()].text.simplified();
+		if (index.column() == colFlags)
+		{
+			return formatFlags(index.internalId());
+		}
+		if (index.column() == colAuthor)
+		{
+			return m_authors.value(hash);
+		}
 	}
 	if (role == Qt::BackgroundColorRole)
 	{
@@ -153,6 +167,11 @@ void MessageSetModel::setCategory(const Category& category)
 	endResetModel();
 }
 
+void MessageSetModel::setRootCategory(const Category& category)
+{
+	m_categorizedHashes = categoryHashes(category).toSet();
+}
+
 void MessageSetModel::setExceptionCategory(const Category& category)
 {
 	beginResetModel();
@@ -184,4 +203,40 @@ void MessageSetModel::updateString(quint32 hash)
 const QList<quint32>& MessageSetModel::hashSource() const
 {
 	return m_customCategory ? m_categoryHashes : m_messages.hashes;
+}
+
+QString MessageSetModel::formatFlags(quint32 hash) const
+{
+	enum
+	{
+		indexCategorized,
+		indexHasComment,
+		flagCount
+	};
+
+	QString flags(flagCount, ' ');
+	flags[indexCategorized] = m_categorizedHashes.contains(hash) ? 'T' : ' ';
+	flags[indexHasComment] = (m_comments != NULL && m_comments->contains(hash)) ? 'C' : ' ';
+
+	return flags;
+}
+
+void MessageSetModel::setComments(const QMap<quint32, QString>& comments)
+{
+	m_comments = &comments;
+}
+
+void MessageSetModel::setTags(const QMap<quint32, QStringList>& tags)
+{
+	m_tags = &tags;
+}
+
+const QMap<quint32, QStringList>* MessageSetModel::tags() const
+{
+	return m_tags;
+}
+
+const QMap<quint32, QString>* MessageSetModel::comments() const
+{
+	return m_comments;
 }

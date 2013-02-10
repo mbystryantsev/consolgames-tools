@@ -14,6 +14,7 @@ class QAction;
 class QItemSelectionModel;
 class QMenu;
 class QSplashScreen;
+class QDockWidget;
 
 class MainFrame : public QMainWindow
 {
@@ -56,6 +57,7 @@ protected:
 	Q_SLOT void onMessageSelect(quint32 hash);
 	Q_SLOT void onMessageSelect(const QModelIndex& index);
 	Q_SLOT void onFilterChanged(const QString& pattern);
+	Q_SLOT void onTagSelected(const QString& tag);
 
 protected:
 	// Actions
@@ -64,12 +66,14 @@ protected:
 	Q_SLOT void onCopyHashes();
 	Q_SLOT void buildViewMenu();
 	Q_SLOT void toggleEditorVisible(bool visible);
+	Q_SLOT void toggleCommentEditorVisible(bool visible);
 
 protected:
 
 	MainController* m_controller;
 
 	QSplashScreen* m_splash;
+	QDockWidget* m_commentWidget;
 	QMap<QByteArray,EditorDockWidget*> m_editors;
 	QMap<QByteArray,ScriptEditor*> m_openedEditors;
 	QMap<Actions,QAction*> m_actions;

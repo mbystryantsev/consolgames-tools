@@ -140,5 +140,6 @@ QModelIndex CategoriesModel::parent(const QModelIndex& index) const
 
 int CategoriesModel::columnCount(const QModelIndex &parent) const 
 {
+	Q_UNUSED(parent);
 	return 1;
 }

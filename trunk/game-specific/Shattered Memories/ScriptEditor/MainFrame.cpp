@@ -2,6 +2,7 @@
 #include "MainController.h"
 #include "EditorDockWidget.h"
 #include "ScriptEditor.h"
+#include "CommentWidget.h"
 #include <QHBoxLayout>
 #include <QDir>
 #include <QListWidget>
@@ -24,6 +25,7 @@ MainFrame::MainFrame(QWidget* parent, QSplashScreen* splash)
 	, m_viewMenu(NULL)
 	, m_splash(splash)
 	, m_controller(NULL)
+	, m_commentWidget(NULL)
 {
 	if (splash)
 	{
@@ -47,6 +49,13 @@ void MainFrame::initUI()
  	initActions();
  	initMenu();
  	initToolbar();
+
+	m_commentWidget = new QDockWidget("Comments", this);
+	m_commentWidget->setWidget(new CommentWidget(m_commentWidget));
+	addDockWidget(Qt::RightDockWidgetArea, m_commentWidget, Qt::Vertical);
+	VERIFY(connect(m_commentWidget->widget(), SIGNAL(commentChanged(const QString&, quint32)), m_controller, SLOT(onCommentChanged(const QString&, quint32))));
+	VERIFY(connect(m_ui.tagsWidget, SIGNAL(tagsChanged(const QStringList&, quint32)), m_controller, SLOT(onTagsChanged(const QStringList&, quint32))));
+	VERIFY(connect(m_ui.tagsWidget, SIGNAL(tagSelected(const QString&)), SLOT(onTagSelected(const QString&))));
 
 	openEditor("Russian");
 	openEditor("English");
@@ -159,6 +168,21 @@ void MainFrame::closeEditor(const QByteArray& languageId)
 
 void MainFrame::onMessageSelect(quint32 hash)
 {
+	if (m_commentWidget != NULL)
+	{
+		CommentWidget* commentWidget = dynamic_cast<CommentWidget*>(m_commentWidget->widget());
+		if (m_controller->comments().contains(hash))
+		{
+			commentWidget->setText(m_controller->comments()[hash], hash);
+		}
+		else
+		{
+			commentWidget->setText("", hash);
+		}
+	}
+
+	m_ui.tagsWidget->setTags(m_controller->tags()[hash], hash);
+
 	foreach (ScriptEditor* editor, m_openedEditors)
 	{
 		const MessageSet& messageSet = m_controller->languageData(editor->languageId());
@@ -238,6 +262,12 @@ void MainFrame::buildViewMenu()
 		toggleEditorVisibleAct->setChecked(m_openedEditors.contains(languageId));
 		VERIFY(connect(toggleEditorVisibleAct, SIGNAL(toggled(bool)), SLOT(toggleEditorVisible(bool))));
 	}
+
+	m_viewMenu->addSeparator();
+	QAction* toggleCommentEditorVisibleAct = m_viewMenu->addAction("Comments");
+	toggleCommentEditorVisibleAct->setCheckable(true);
+	toggleCommentEditorVisibleAct->setChecked(m_commentWidget->isVisible());
+	VERIFY(connect(toggleCommentEditorVisibleAct, SIGNAL(toggled(bool)), SLOT(toggleCommentEditorVisible(bool))));
 }
 
 void MainFrame::toggleEditorVisible(bool visible)
@@ -260,7 +290,17 @@ void MainFrame::toggleEditorVisible(bool visible)
 	}
 }
 
+void MainFrame::toggleCommentEditorVisible(bool visible)
+{
+	m_commentWidget->setVisible(visible);
+}
+
 void MainFrame::onCopyHashes()
 {
 	m_controller->copyHashesToClipboard();
+}
+
+void MainFrame::onTagSelected(const QString& tag)
+{
+	m_ui.filterPattern->setText(QString("[%1]").arg(tag));
 }
