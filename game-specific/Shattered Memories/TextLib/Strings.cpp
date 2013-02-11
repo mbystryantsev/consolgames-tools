@@ -114,7 +114,7 @@ MessageSet ShatteredMemories::Strings::importMessages(const QString& filename)
 	return messages;
 }
 
-static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
+static bool loadMessagesFromFile(const QString& filename, MessageSet& messages, QMap<QString, QList<quint32>>* filesMap = NULL)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -122,6 +122,10 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
 		DLOG << file.errorString();
 		return false;
 	}
+
+	const QString absolutePath = QFileInfo(filename).absoluteFilePath();
+	QList<quint32> dummyHashList;
+	QList<quint32>& fileHashList = (filesMap == NULL ? dummyHashList : (*filesMap)[absolutePath]);
 
 	QTextStream stream(&file);
 	stream.setCodec("UTF-8");
@@ -141,6 +145,18 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
 				bufferedLine.clear();
 			}
 
+			if (stream.atEnd())
+			{
+				if (!bufferedLine.isNull())
+				{
+					if (!text.isEmpty())
+					{
+						text.append("\n");
+					}
+					text.append(bufferedLine);
+				}
+			}
+
 			messages.messages[lastHash] = Message(lastHash, text);
 			text.clear();
 		}
@@ -156,6 +172,7 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
 			{
 				messages.hashes << hash;
 			}
+			fileHashList << hash;
 			lastHash = hash;
 			continue;
 		}
@@ -173,7 +190,7 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages)
 	return true;
 }
 
-ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QString& path)
+ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QString& path, QMap<QString, QList<quint32>>* filesMap)
 {
 	MessageSet messages;
 	if (QFileInfo(path).isDir())
@@ -182,17 +199,22 @@ ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QSt
 		const QStringList files = dir.entryList(QStringList() << "*.txt");
 		foreach (const QString& filename, files)
 		{
-			loadMessagesFromFile(dir.absoluteFilePath(filename), messages);
+			loadMessagesFromFile(dir.absoluteFilePath(filename), messages, filesMap);
 		}
 	}
 	else
 	{
-		loadMessagesFromFile(path, messages);
+		loadMessagesFromFile(path, messages, filesMap);
 	}
 	return messages;
 }
 
-bool ShatteredMemories::Strings::saveMessages(const MessageSet& messages, const QString& filename)
+bool ShatteredMemories::Strings::saveMessages(const QString& filename, const MessageSet& messages)
+{
+	return saveMessages(filename, messages.messages, messages.hashes);
+}
+
+bool Strings::saveMessages(const QString& filename, const QMap<quint32,Message>& messages, const QList<quint32>& hashList)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -202,15 +224,31 @@ bool ShatteredMemories::Strings::saveMessages(const MessageSet& messages, const 
 
 	QTextStream stream(&file);
 	stream.setCodec("UTF-8");
-	foreach (quint32 hash, messages.hashes)
+	foreach (quint32 hash, hashList)
 	{
-		const QString& text = messages.messages[hash].text;
+		const QString& text = messages[hash].text;
 		stream << "[" << hashToStr(hash) << "]\n";
 		stream << text;
 		stream << "\n\n";
 	}
 
 	return true;
+}
+
+bool Strings::saveMessages(const QString& filename, const QMap<quint32,QString>& messages, const QList<quint32>& hashList)
+{
+	QMap<quint32,Message> nativeMessages;
+	foreach (quint32 hash, messages.keys())
+	{
+		nativeMessages[hash] = Message(hash, messages[hash]);
+	}
+
+	return saveMessages(filename, nativeMessages, hashList);
+}
+
+bool Strings::saveMessages(const QString& filename, const QMap<quint32,QString>& messages)
+{
+	return saveMessages(filename, messages, messages.keys());
 }
 
 static QString encodeTags(const QString& text, QRegExp rx, int tagCode)

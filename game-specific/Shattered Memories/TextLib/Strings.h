@@ -28,8 +28,11 @@ class Strings
 {
 public:
 	static MessageSet importMessages(const QString& filename);
-	static MessageSet loadMessages(const QString& filename);
-	static bool saveMessages(const MessageSet& messages, const QString& filename);
+	static MessageSet loadMessages(const QString& filename, QMap<QString, QList<quint32>>* filesMap = NULL);
+	static bool saveMessages(const QString& filename, const MessageSet& messages);
+	static bool saveMessages(const QString& filename, const QMap<quint32,Message>& messages, const QList<quint32>& hashList);
+	static bool saveMessages(const QString& filename, const QMap<quint32,QString>& messages, const QList<quint32>& hashList);
+	static bool saveMessages(const QString& filename, const QMap<quint32,QString>& messages);
 	static bool exportMessages(const MessageSet& messages, const QString& filename);
 	static QString hashToStr(quint32 hash);
 	static quint32 strToHash(const QString& hashStr);
