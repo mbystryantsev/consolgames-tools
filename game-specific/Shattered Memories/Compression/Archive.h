@@ -1,4 +1,5 @@
 #pragma once
+#include "IFileSource.h"
 #include <Stream.h>
 #include <memory>
 #include <string>
@@ -26,6 +27,8 @@ public:
 
 	bool extractFiles(const std::string& outDir, const std::set<u32>& fileList = std::set<u32>());
 	bool extractFiles(const std::wstring& outDir, const std::set<u32>& fileList = std::set<u32>());
+	bool rebuild(const std::wstring& outFile, IFileSource& fileSource);
+	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList);
 
 	void setNames(const std::list<std::string>& names);
 
@@ -52,6 +55,7 @@ private:
 private:
 	bool extractFile(const FileRecord& record, Consolgames::Stream* stream);
 	bool extractFile(const FileRecord& record, const std::wstring& path);
+	u32 alignSize(u32 size) const;
 
 private:
 	Consolgames::Stream* m_stream;
@@ -61,6 +65,7 @@ private:
 	Header m_header;
 	bool m_opened;
 	std::map<u32, std::string> m_names;
+	u32 m_alignment;
 };
 
 }

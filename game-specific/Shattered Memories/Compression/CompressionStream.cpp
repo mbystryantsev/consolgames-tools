@@ -60,7 +60,7 @@ largesize_t CompressionStream::write(const void* buf, largesize_t size)
 
 offset_t CompressionStream::size() const 
 {
-	return -1;
+	return (m_opened || m_finished) ? m_zStream.total_out : -1;
 }
 
 bool CompressionStream::opened() const 
