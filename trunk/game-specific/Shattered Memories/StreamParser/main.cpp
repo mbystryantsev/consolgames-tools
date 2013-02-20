@@ -1,6 +1,10 @@
 #include "DataStreamParserWii.h"
 #include "TextureDictionaryParserWii.h"
 #include <FileStream.h>
+#include <QtFileStream.h>
+#include <iomanip>
+#include <QDir>
+#include <QTextStream>
 
 using namespace Consolgames;
 using namespace ShatteredMemories;
@@ -110,48 +114,117 @@ int replaceTextures(const char *texdir, const char *infofile, const char *datafi
 }
 */
 
-int main(int argc, char* argv[])
+QString hashToStr(quint32 hash)
 {
+	return QString::number(hash, 16).toUpper().rightJustified(8, '0');
+}
 
-//     replaceTextures("F:\\temp\\shsm\\data\\",
-//                     "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.info",
-//                     "D:\\_job\\Programming\\Shattered Memories\\TextureDatabase\\test.data"
-//                    );
+bool parseDictionary(Stream& stream, quint32 fileHash, QTextStream& csv)
+{
+	ASSERT(stream.opened());
+	TextureDictionaryParserWii dictParser;
+	dictParser.open(&stream);
 
+	bool atLeastOneParsed = false;
+	if (dictParser.initSegment())
+	{
+		atLeastOneParsed = true;
+		while (dictParser.fetch())
+		{
+			const TextureDictionaryParser::TextureMetaInfo& info = dictParser.metaInfo();
+			//std::cout << info.name << ';' << std::dec << info.width << ';' << info.height << ';' << info.mipmapCount << ';' << std::hex << info.rasterPosition << ';' << info.rasterSize << std::endl;
+			csv << hashToStr(fileHash) << ';' << QString::fromStdString(info.name) << ';' << info.width << ';' << info.height << ';' << info.mipmapCount << ';' << QString::number(info.rasterPosition, 16) << ';' << QString::number(info.rasterSize, 16) << '\n';
+		}
+	}
+
+	return atLeastOneParsed;
+}
+
+bool parseStream(Stream& stream, quint32 fileHash, QTextStream& csv)
+{
 	DataStreamParserWii parser;
-	FileStream stream(L"e:\\_job\\SHSM\\wii\\test\\00000F7C.BIN", Stream::modeRead);
+
 	ASSERT(stream.opened());
 	parser.open(&stream);
-	
+
+	bool atLeastOneParsed = false;
 	while (parser.initSegment())
 	{
-		while (parser.fetch())
+		if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
 		{
-			if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
+			while (parser.fetch())
 			{
-				FileStream dictStream(stream.filename(), Stream::modeRead);
-				ASSERT(dictStream.opened());
-				dictStream.seek(stream.tell(), Stream::seekSet);
+				atLeastOneParsed = true;
+				parseDictionary(stream, fileHash, csv);
+			}
 
-				TextureDictionaryParserWii dictParser;
-				dictParser.open(&stream);
-				while (dictParser.initSegment())
-				{
-					while (dictParser.fetch())
-					{
-						std::cout << dictParser.metaInfo().name << std::endl;
-					}
-				}
+			if (atLeastOneParsed && !parser.atSegmentEnd())
+			{
+				std::cout << "WARNING: Segment end is not reached! " << std::hex << stream.position() << " != " << parser.nextSegmentPosition() << std::endl;
 			}
 		}
 	}
 
-	if (!parser.atEnd())
+	if (atLeastOneParsed && !parser.atEnd())
 	{
-		std::cout << "WARNING: End is not reached!" << std::endl;
+		std::cout << "WARNING: End is not reached! " << std::hex << stream.position() << " != " << stream.size() << std::endl;
 	}
 
+	return atLeastOneParsed;
+}
+
+int main(int argc, char* argv[])
+{
+	QFile csv("test.csv");
+	VERIFY(csv.open(QIODevice::WriteOnly | QIODevice::Text));
+	QTextStream csvStream(&csv);
+	csvStream << "fileHash;textureName;width;height;mipmapCount;rasterPosition;rasterSize\n";
+
+	QDir dir("E:/_job/SHSM/wii/test");
+	const QStringList files = dir.entryList(QDir::Files);
+	foreach (const QString& file, files)
+	{
+		if (file == "B1A96880.BIN")
+		{
+			continue;
+		}
+		if (file.right(4).toLower() != ".bin")
+		{
+			continue;
+		}
+
+		bool ok = false;
+		const quint32 hash = file.left(8).toUInt(&ok, 16);
+		if (!ok)
+		{
+			continue;
+		}
+
+		//std::cout << "Trying to parse file: " << file.toLatin1().constData() << std::endl;
+
+		QtFileStream stream(dir.absoluteFilePath(file), QIODevice::ReadOnly);
+		//QtFileStream stream(dir.absoluteFilePath("CB3596FE.BIN"), QIODevice::ReadOnly);
+		ASSERT(stream.opened());
+
+		if (stream.read32() == 0xE0FFD8FF)
+		{
+			stream.file().close();
+			dir.rename(file, file.left(file.length() - 4) + ".jpg");
+			DLOG << "Renamed " << file;
+			continue;
+		}
+		stream.seek(0, Stream::seekSet);
+
+		bool parsed = parseDictionary(stream, hash, csvStream);
+		if (!parsed)
+		{
+			stream.seek(0, Stream::seekSet);
+			parsed = parseStream(stream, hash, csvStream);
+		}
+		if (!parsed)
+		{
+			DLOG << "FILE NOT PARSED: " << file;
+		}
+	}
     return 0;
-
-
 }
