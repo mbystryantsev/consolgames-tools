@@ -20,7 +20,7 @@ void printUsage()
 
 static bool isCommand(const char* command, const char* shortStr, const char* fullStr)
 {
-	return (strcmp(command, shortStr) == 0 || strcmp(command, fullStr) == 0);
+	return (command != NULL && (strcmp(command, shortStr) == 0 || strcmp(command, fullStr) == 0));
 }
 
 list<string> fileList(int argc, const char* argv[])
@@ -70,7 +70,7 @@ set<u32> hashList(int argc, const char* argv[])
 
 int main(int argc, const char* argv[])
 {
-	const char* cmd = argv[1];
+	const char* cmd = argc > 1 ? argv[1] : NULL;
 
 	if (isCommand(cmd, "-e", "--extract"))
 	{
