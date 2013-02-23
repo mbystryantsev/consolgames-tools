@@ -2,6 +2,7 @@
 #include "DecompressionStream.h"
 #include "CompressionStream.h"
 #include "DirectoriesFileSource.h"
+#include <PartStream.h>
 #include <FileStream.h>
 #include <memory>
 
@@ -13,6 +14,16 @@ LOG_CATEGORY("ShatteredMemories.Archive");
 
 namespace ShatteredMemories
 {
+
+u32 Archive::FileRecord::originalSize() const
+{
+	return (decompressedSize == 0 ? storedSize : decompressedSize);
+}
+
+bool Archive::FileRecord::isPacked() const
+{
+	return (decompressedSize != 0);
+}
 
 static std::wstring strToWStr(const std::string& str)
 {
@@ -62,7 +73,7 @@ bool Archive::open()
 	{
 		fileRecord->hash = m_stream->readUInt();
 		fileRecord->offset = m_stream->readUInt();
-		fileRecord->compressedSize = m_stream->readUInt();
+		fileRecord->storedSize = m_stream->readUInt();
 		fileRecord->decompressedSize = m_stream->readUInt();
 		m_fileRecordsMap[fileRecord->hash] = &(*fileRecord);
 
@@ -182,7 +193,7 @@ u32 Archive::alignSize(u32 size) const
 	return size - (size % m_alignment);
 }
 
-bool Archive::rebuild(const std::wstring& outFile, IFileSource& fileSource)
+bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource)
 {
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
@@ -203,18 +214,18 @@ bool Archive::rebuild(const std::wstring& outFile, IFileSource& fileSource)
 		newRecord.offset = position;
 
 		file.seek(position, Stream::seekSet);
-		shared_ptr<Stream> stream = fileSource.file(record->hash);
+		shared_ptr<Stream> stream = fileSource.file(record->hash, FileAccessor(m_stream, record->offset, record->originalSize(), record->isPacked()));
 		if (stream.get() == NULL)
 		{
 			m_stream->seek(record->offset, Stream::seekSet);
-			file.writeStream(m_stream, record->decompressedSize);
+			file.writeStream(m_stream, record->storedSize);
 		}
 		else
 		{
-			newRecord.decompressedSize = static_cast<u32>(stream->size());
-			if (record->compressedSize == record->decompressedSize)
+			if (record->decompressedSize == 0)
 			{
-				newRecord.compressedSize = newRecord.decompressedSize;
+				newRecord.storedSize = static_cast<u32>(stream->size());
+				newRecord.decompressedSize = 0;
 				m_stream->seek(record->offset, Stream::seekSet);
 				VERIFY(file.writeStream(stream.get(), record->decompressedSize) == record->decompressedSize);
 			}
@@ -224,15 +235,16 @@ bool Archive::rebuild(const std::wstring& outFile, IFileSource& fileSource)
 				ASSERT(zlibStream.opened());
 				VERIFY(zlibStream.writeStream(stream.get(), stream->size()) == stream->size());
 				zlibStream.finish();
-				newRecord.compressedSize = static_cast<u32>(zlibStream.size());
+				newRecord.storedSize = static_cast<u32>(zlibStream.size());
+				newRecord.decompressedSize = static_cast<u32>(stream->size());
 			}
 		}
 
-		position = alignSize(position + newRecord.compressedSize);
+		position = alignSize(position + newRecord.storedSize);
 		entryList.push_back(newRecord);
 	}
 
-	if (file.size() != file.size() % 0x800)
+	if (file.size() != file.size() % m_alignment)
 	{
 		file.seek(alignSize(static_cast<u32>(file.size())) - 1, Stream::seekSet);
 		file.write8(0);
@@ -248,7 +260,7 @@ bool Archive::rebuild(const std::wstring& outFile, IFileSource& fileSource)
 	{
 		file.write32(record->hash);
 		file.write32(record->offset);
-		file.write32(record->compressedSize);
+		file.write32(record->storedSize);
 		file.write32(record->decompressedSize);
 	}
 
@@ -262,6 +274,57 @@ bool Archive::rebuild(const std::wstring& outFile, IFileSource& fileSource)
 bool Archive::rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList)
 {
 	return rebuild(outFile, DirectoriesFileSource(dirList));
+}
+
+shared_ptr<Stream> Archive::openFile(const std::string& filename)
+{
+	return openFile(calcHash(filename.c_str()));
+}
+
+shared_ptr<Stream> Archive::openFile(u32 fileHash)
+{
+	if (m_fileRecordsMap.find(fileHash) == m_fileRecordsMap.end())
+	{
+		return shared_ptr<Stream>();
+	}
+
+	const FileRecord& record = *m_fileRecordsMap[fileHash];
+	return FileAccessor(m_stream, record.offset, record.originalSize(), record.isPacked()).open();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+Archive::FileAccessor::FileAccessor(Stream* stream, u32 position, u32 size, bool packed)
+	: m_stream(stream)
+	, m_position(position)
+	, m_size(size)
+	, m_packed(packed)
+{
+}
+
+shared_ptr<Stream> Archive::FileAccessor::open()
+{
+	if (m_fileStream.get() != NULL)
+	{
+		return m_fileStream;
+	}
+
+	auto_ptr<PartStream> pakStream(new PartStream(m_stream, m_position));
+	ASSERT(pakStream->opened());
+
+	VERIFY(pakStream->seek(0, Stream::seekSet) == 0);
+
+	if (m_packed)
+	{
+		m_fileStream.reset(new DecompressionStream(pakStream.get(), m_size));
+		pakStream.release();
+		dynamic_cast<DecompressionStream*>(m_fileStream.get())->holdStream();
+		return m_fileStream;
+	}
+
+	pakStream->setSize(m_size);
+	m_fileStream.reset(pakStream.release());
+	return m_fileStream;
 }
 
 }

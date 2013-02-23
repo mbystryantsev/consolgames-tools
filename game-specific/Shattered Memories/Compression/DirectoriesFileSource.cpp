@@ -14,7 +14,7 @@ DirectoriesFileSource::DirectoriesFileSource(const std::vector<std::wstring>& di
 {
 }
 
-shared_ptr<Stream> DirectoriesFileSource::file(u32 hash)
+shared_ptr<Stream> DirectoriesFileSource::file(u32 hash, FileAccessor&)
 {
 	for (vector<wstring>::const_iterator dir = m_directories.begin(); dir != m_directories.end(); dir++)
 	{

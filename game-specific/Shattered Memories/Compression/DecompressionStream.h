@@ -1,5 +1,6 @@
 #pragma once
 #include <ZlibStream.h>
+#include <memory>
 
 namespace ShatteredMemories
 {
@@ -15,8 +16,11 @@ public:
 	virtual bool opened() const override;
 	virtual bool atEnd() const override;
 
+	void holdStream();
+
 private:
 	largesize_t m_size;
+	std::auto_ptr<Consolgames::Stream> m_streamHolder;
 };
 
 }
