@@ -8,6 +8,8 @@ SUBDIRS = \
 	ArcTool \
 	TextLib \
 	TextConv \
+	PatcherLib \
+	WorkPatcher \
 	ScriptEditor \
 	StreamParser \
 	externals/core \

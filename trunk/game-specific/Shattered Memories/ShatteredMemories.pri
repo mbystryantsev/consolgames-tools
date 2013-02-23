@@ -14,10 +14,11 @@ INCLUDEPATH += \
 	$$PWD/Common \
 	$$PWD/Compression \
 	$$PWD/TextLib \
-	$$PWD/NamesFinder \
+	$$PWD/PatcherLib \
 	$$PWD/../../core \
-	$$PWD/../../platform-specific/wii/streams \
 	$$PWD/../../core/streams \
+	$$PWD/../../core/classes \
+	$$PWD/../../platform-specific/wii/streams \
 	$$PWD/../../platform-specific/wii/streams/include \
 	$$PWD/../../platform-specific/wii/streams/include/openssl \
 	$$EXTERNALS/nvidia-texture-tools/project/vc9 \
@@ -34,6 +35,7 @@ QMAKE_LIBDIR += \
 	$$PWD/Common/$$CONFIG_NAME \
 	$$PWD/Compression/$$CONFIG_NAME \
 	$$PWD/TextLib/$$CONFIG_NAME \
+	$$PWD/PatcherLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \

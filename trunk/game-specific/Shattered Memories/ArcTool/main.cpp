@@ -33,6 +33,21 @@ list<string> fileList(int argc, const char* argv[])
 	return names;
 }
 
+
+vector<wstring> dirList(int argc, const char* argv[])
+{
+	vector<wstring> dirs;
+	dirs.reserve(argc - 4);
+
+	for (int i = 4; i < argc; i++)
+	{
+		const string dir = argv[i];
+		const wstring dirw(dir.begin(), dir.end());
+		dirs.push_back(dirw);
+	}
+	return dirs;
+}
+
 set<u32> hashList(int argc, const char* argv[])
 {
 	set<u32> hashes;
@@ -75,6 +90,29 @@ int main(int argc, const char* argv[])
 		{
 			cout << "Unable to extract files!" << endl;
 			return -1;
+		}
+
+		cout << "Done!" << endl;
+	}
+	else if (isCommand(cmd, "-r", "--rebuild"))
+	{
+		const string filename = argv[2];
+		Archive arc(filename);
+		if (!arc.open())
+		{
+			cout << "Unable to open arc file!" << endl;
+			return -1;
+		}
+
+		const string outFileA = argv[3];
+		const wstring outFile(outFileA.begin(), outFileA.end());
+
+		const vector<wstring> dirs = dirList(argc, argv);
+
+		if (!arc.rebuild(outFile, dirs))
+		{
+			cout << "Unable to rebuild archive!";
+			return false;
 		}
 
 		cout << "Done!" << endl;

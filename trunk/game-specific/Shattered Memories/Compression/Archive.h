@@ -1,5 +1,5 @@
 #pragma once
-#include "IFileSource.h"
+#include "FileSource.h"
 #include <Stream.h>
 #include <memory>
 #include <string>
@@ -20,6 +20,24 @@ namespace ShatteredMemories
 class Archive
 {
 public:
+	class FileAccessor: public FileSource::FileAccessor
+	{
+	friend class Archive;
+	public:
+		virtual std::tr1::shared_ptr<Consolgames::Stream> open() override;
+
+	private:
+		FileAccessor(Consolgames::Stream* stream, u32 position, u32 size, bool packed);
+
+	private:
+		Consolgames::Stream* m_stream;
+		std::tr1::shared_ptr<Consolgames::Stream> m_fileStream;
+		u32 m_position;
+		u32 m_size;
+		bool m_packed;
+	};
+
+public:
 	Archive(const std::string& filename);
 	Archive(const std::wstring& filename);
 	Archive(Consolgames::Stream* stream);
@@ -27,8 +45,10 @@ public:
 
 	bool extractFiles(const std::string& outDir, const std::set<u32>& fileList = std::set<u32>());
 	bool extractFiles(const std::wstring& outDir, const std::set<u32>& fileList = std::set<u32>());
-	bool rebuild(const std::wstring& outFile, IFileSource& fileSource);
+	bool rebuild(const std::wstring& outFile, FileSource& fileSource);
 	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList);
+	std::tr1::shared_ptr<Consolgames::Stream> openFile(const std::string& filename);
+	std::tr1::shared_ptr<Consolgames::Stream> openFile(u32 fileHash);
 
 	void setNames(const std::list<std::string>& names);
 
@@ -48,8 +68,11 @@ private:
 	{
 		u32 hash;
 		u32 offset;
-		u32 compressedSize;
+		u32 storedSize;
 		u32 decompressedSize;
+
+		u32 originalSize() const;
+		bool isPacked() const;
 	};
 
 private:
