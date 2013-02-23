@@ -4,6 +4,10 @@
 namespace ShatteredMemories
 {
 
+TextureDatabase::TextureDatabase()
+{
+}
+
 ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filename)
 {
 	TextureDatabase db;
@@ -64,6 +68,11 @@ bool TextureDatabase::contains(quint32 hash) const
 QList<TextureDatabase::TextureInfo> TextureDatabase::textures(quint32 hash) const
 {
 	return m_info[hash].values();
+}
+
+bool TextureDatabase::isNull() const
+{
+	return m_info.isEmpty();
 }
 
 }

@@ -27,7 +27,7 @@ shared_ptr<Stream> PatcherArcFileSource::file(u32 hash, FileAccessor& accessor)
 		}
 		ASSERT(stream.get() != NULL);
 
-		return shared_ptr<Stream>(new OnFlyPatchStream(stream, TextureDataSource(m_texturesPath, m_textureDB.textures(hash))));
+		return shared_ptr<Stream>(new OnFlyPatchStream(stream, shared_ptr<OnFlyPatchStream::DataSource>(new TextureDataSource(m_texturesPath, m_textureDB.textures(hash)))));
 	}
 
 	return m_primarySource->file(hash, accessor);
@@ -73,6 +73,9 @@ shared_ptr<Stream> PatcherArcFileSource::TextureDataSource::getAt(int index)
 	shared_ptr<Stream> stream(new FileStream(filename.toStdWString(), Stream::modeRead));
 
 	ASSERT(stream->opened());
+
+	// TODO: Rewrite converter and remove next line
+	stream->setByteOrder(Stream::orderBigEndian);
 	
 	const int type = stream->read32();
 	const int width = stream->read16();

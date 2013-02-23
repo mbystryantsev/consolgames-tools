@@ -12,7 +12,7 @@ class PatcherArcFileSource : public FileSource
 public:
 	PatcherArcFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase);
 
-	virtual std::tr1::shared_ptr<Consolgames::Stream> file(u32 hash, FileAccessor& accessor) = 0;
+	virtual std::tr1::shared_ptr<Consolgames::Stream> file(u32 hash, FileAccessor& accessor) override;
 
 private:
 	class TextureDataSource : public OnFlyPatchStream::DataSource
@@ -20,9 +20,9 @@ private:
 	public:
 		TextureDataSource(const QString& path, const QList<TextureDatabase::TextureInfo>& textures);
 
-		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index);
-		virtual int partCount() const;
-		virtual OnFlyPatchStream::PartInfo partInfoAt(int index) const;
+		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index) override;
+		virtual int partCount() const override;
+		virtual OnFlyPatchStream::PartInfo partInfoAt(int index) const override;
 
 	private:
 		const QString m_path;

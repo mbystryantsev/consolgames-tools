@@ -7,9 +7,10 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
-OnFlyPatchStream::OnFlyPatchStream(shared_ptr<Stream> stream, const DataSource& dataSource)
+OnFlyPatchStream::OnFlyPatchStream(shared_ptr<Stream> stream, shared_ptr<DataSource> dataSource)
 	: m_stream(stream)
 	, m_patchDataSource(dataSource)
+	, m_currentPartIndex(0)
 {
 }
 
@@ -20,25 +21,31 @@ largesize_t OnFlyPatchStream::read(void* buf, largesize_t size)
 	while (size > 0 && !m_stream->atEnd())
 	{
 		largesize_t readed = 0;
-		if (m_currentPartStream.get() == NULL)
+		if (m_currentPartIndex < m_patchDataSource->partCount() && m_currentPartInfo.isNull())
+		{
+			m_currentPartInfo = m_patchDataSource->partInfoAt(m_currentPartIndex);
+		}
+		if (m_currentPartInfo.isNull() || position() < m_currentPartInfo.offset)
+		{
+			const int availableSize = m_currentPartInfo.isNull() ? size : min(size, m_currentPartInfo.offset - position());
+			readed = m_stream->read(data, availableSize);
+		}
+		else if (m_currentPartIndex < m_patchDataSource->partCount())
 		{
 			if (m_currentPartInfo.offset == position())
 			{
-				m_currentPartStream = m_patchDataSource.getAt(m_currentPartIndex);
-				continue;
+				m_currentPartStream = m_patchDataSource->getAt(m_currentPartIndex);
 			}
-			const int availableSize = min(size, m_currentPartInfo.offset - position());
-			readed = m_stream->read(data, availableSize);
-		}
-		else
-		{
-			const int availableSize = min(size, m_currentPartInfo.offset + m_currentPartInfo.size - position());
-			readed = m_currentPartStream->read(data, size);
-
+			if (position() >= m_currentPartInfo.offset && position() < m_currentPartInfo.offset + m_currentPartInfo.size)
+			{
+				const int availableSize = min(size, m_currentPartInfo.offset + m_currentPartInfo.size - position());		
+				readed = m_currentPartStream->read(data, availableSize);
+				m_stream->skip(availableSize);
+			}
 			if (position() == m_currentPartInfo.offset + m_currentPartInfo.size)
 			{
 				m_currentPartIndex++;
-				m_currentPartInfo = (m_currentPartIndex >= m_patchDataSource.partCount() ? PartInfo() : m_patchDataSource.partInfoAt(m_currentPartIndex));
+				m_currentPartInfo = (m_currentPartIndex >= m_patchDataSource->partCount() ? PartInfo() : m_patchDataSource->partInfoAt(m_currentPartIndex));
 			}
 		}
 		data += readed;
