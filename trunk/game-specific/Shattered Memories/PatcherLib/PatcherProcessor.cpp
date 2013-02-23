@@ -1,7 +1,10 @@
 #include "PatcherProcessor.h"
+#include "PatcherArcFileSource.h"
 #include <Archive.h>
+#include <DirectoriesFileSource.h>
 #include <PartStream.h>
 #include <WiiFileStream.h>
+#include <QStringList>
 #include <QDir>
 
 using namespace Consolgames;
@@ -33,8 +36,19 @@ bool PatcherProcessor::openImage(const QString& path)
 	return true;
 }
 
-bool PatcherProcessor::rebuildArchives(const QString& outPath, const BootArcInfo& bootArcInfo)
+bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList& resourcesPaths, const BootArcInfo& bootArcInfo)
 {
+	TextureDatabase textureDB = TextureDatabase::fromCSV(QDir(resourcesPaths.first()).absoluteFilePath("textures.csv"));
+	if (textureDB.isNull())
+	{
+		m_errorCode = RebuildArchives_UnableToLoadTextureDatabase;
+		m_errorData = "";
+		return false;
+	}
+
+	DirectoriesFileSource arcDirectoriesFileSource(vector<wstring>(1, outPath.toStdWString()));
+	PatcherArcFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB);
+
 	DLOG << "Rebuilding UI.arc...";
 	{
 		auto_ptr<Stream> pakStream(m_image.openFile("igc.arc", Stream::modeRead));
@@ -70,7 +84,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const BootArcInfo
 		}
 
 		const QString filename = QDir(outPath).absoluteFilePath("ui.arc");
-		if (!uiArc.rebuild(filename.toStdWString(), std::vector<std::wstring>()))
+		if (!uiArc.rebuild(filename.toStdWString(), arcTexturesFileSource))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
 			m_errorData = "ui.arc";
@@ -119,7 +133,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const BootArcInfo
 		}
 
 		const QString filename = QDir(outPath).absoluteFilePath("boot.arc");
-		if (!bootArc.rebuild(filename.toStdWString(), std::vector<std::wstring>()))
+		if (!bootArc.rebuild(filename.toStdWString(), arcTexturesFileSource))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
 			m_errorData = "ui.arc";
@@ -128,46 +142,6 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const BootArcInfo
 	}
 
 	return true;
-}
-
-bool PatcherProcessor::rebuildArchive(Consolgames::Stream* pak, const QString& outPath, const QString& arcName)
-{
-// 	if (m_actionProgressHandler->stopRequested())
-// 	{
-// 		break;
-// 	}
-// 
-// 	m_actionProgressHandler->progress(paksRebuilded++, arcName.toLatin1().constData());
-
-	std::auto_ptr<WiiFileStream> file(m_image.openFile(arcName.toStdString(), Stream::modeRead));
-	if(file.get() == NULL)
-	{
-		DLOG << "Unable to open file in image: " << arcName;
-		m_errorCode = RebuildArchives_UnableToOpenFileInImage;
-		m_errorData = arcName;
-		return false;
-	}
-
-	Archive arc(file.get());
-	//arc.addProgressListeners(m_progressListeners);
-	if (!arc.open())
-	{
-		DLOG << "Unable to open archive: " << arcName;
-		m_errorCode = RebuildArchives_UnableToOpenArchive;
-		m_errorData = arcName;
-		return false;
-	}
-
-	//const std::wstring filename = QDir::toNativeSeparators(QDir(outDir).absoluteFilePath(arcName)).toStdWString();
-
-	DLOG << "Rebuilding archive: " << arcName;
-	//if (!arc.rebuild(filename, inputDirs, std::set<ResType>(), m_mergeMap))
-	{
-		DLOG << "Unable to rebuild archive: " << arcName;
-		m_errorCode = RebuildArchives_UnableToRebuildArchive;
-		m_errorData = arcName;
-		return false;
-	}
 }
 
 int PatcherProcessor::errorCode() const

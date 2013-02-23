@@ -42,6 +42,10 @@ largesize_t CompressionStream::write(const void* buf, largesize_t size)
 		const uInt lastAvailOut = m_zStream.avail_out;
 		const int ret = deflate(&m_zStream, Z_NO_FLUSH);
 		ASSERT(ret == Z_OK);
+		if (ret != Z_OK)
+		{
+			return 0;
+		}
 
 		if (firstPass)
 		{

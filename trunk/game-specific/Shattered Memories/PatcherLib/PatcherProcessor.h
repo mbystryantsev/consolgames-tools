@@ -1,6 +1,8 @@
 #pragma once
 #include <WiiImage.h>
 
+class QStringList;
+
 namespace ShatteredMemories
 {
 
@@ -18,6 +20,7 @@ public:
 		RebuildArchives_UnableToOpenFileInArchive = 0x23,
 		RebuildArchives_UnableToSeekInExecutable = 0x24,
 		RebuildArchives_InvalidBootArcSize = 0x25,
+		RebuildArchives_UnableToLoadTextureDatabase = 0x26,
 		ReplaceArchives_UnableToOpenPakForReplace = 0x30,
 		ReplaceArchives_UnableToOpenInputPak = 0x31,
 		ReplaceArchives_InputPakFileTooBig = 0x32,
@@ -60,12 +63,9 @@ public:
 public:
 	PatcherProcessor();
 	bool openImage(const QString& path);
-	bool rebuildArchives(const QString& outPath, const BootArcInfo& info);
+	bool rebuildArchives(const QString& outPath, const QStringList& resourcesPath, const BootArcInfo& info);
 	int errorCode() const;
 	QString errorData() const;
-
-private:
-	bool rebuildArchive(Consolgames::Stream* pak, const QString& outPath, const QString& arcName);
 
 private:
 	Consolgames::WiiImage m_image;

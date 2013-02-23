@@ -28,7 +28,7 @@ void PatcherWorker::initialize()
 
 void PatcherWorker::rebuildArchives()
 {
-	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_bootArcInfo));
+	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_resourcesPaths, m_bootArcInfo));
 	emit stepCompleted();
 }
 

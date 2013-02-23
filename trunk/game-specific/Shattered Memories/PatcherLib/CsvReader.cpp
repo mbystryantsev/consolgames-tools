@@ -24,6 +24,7 @@ bool CsvReader::opened()
 QMap<QString, QString> CsvReader::readLine()
 {
 	QMap<QString, QString> result;
+	m_stream.skipWhiteSpace();
 	if (m_stream.atEnd())
 	{
 		return result;

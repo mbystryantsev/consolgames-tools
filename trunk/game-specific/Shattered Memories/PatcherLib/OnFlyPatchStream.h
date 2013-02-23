@@ -9,6 +9,16 @@ class OnFlyPatchStream : public Consolgames::Stream
 public:
 	struct PartInfo
 	{
+		PartInfo()
+			: offset(0)
+			, size(0)
+		{
+		}
+		bool isNull() const
+		{
+			return (offset == 0 && size == 0);
+		}
+
 		u32 offset;
 		u32 size;
 	};
@@ -16,13 +26,13 @@ public:
 	class DataSource
 	{
 	public:
-		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index);
-		virtual int partCount() const;
-		virtual PartInfo partInfoAt(int index) const;
+		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index) = 0;
+		virtual int partCount() const = 0;
+		virtual PartInfo partInfoAt(int index) const = 0;
 	};
 
 public:
-	OnFlyPatchStream(std::tr1::shared_ptr<Consolgames::Stream> stream, const DataSource& dataSource);
+	OnFlyPatchStream(std::tr1::shared_ptr<Consolgames::Stream> stream, std::tr1::shared_ptr<DataSource> dataSource);
 
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
@@ -33,10 +43,10 @@ public:
 
 private:
 	std::tr1::shared_ptr<Consolgames::Stream> m_stream;
+	std::tr1::shared_ptr<DataSource> m_patchDataSource;
 	std::tr1::shared_ptr<Consolgames::Stream> m_currentPartStream;
 	PartInfo m_currentPartInfo;
 	int m_currentPartIndex;
-	DataSource m_patchDataSource;
 };
 
 }

@@ -24,6 +24,7 @@ public:
 	static TextureDatabase fromCSV(const QString& filename);
 
 	bool contains(quint32 hash) const;
+	bool isNull() const;
 	QList<TextureInfo> textures(quint32 hash) const;
 
 private:
