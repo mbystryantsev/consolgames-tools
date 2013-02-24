@@ -89,6 +89,7 @@ private:
 	bool m_opened;
 	std::map<u32, std::string> m_names;
 	u32 m_alignment;
+	static const u32 s_defaultAlignment;
 };
 
 }

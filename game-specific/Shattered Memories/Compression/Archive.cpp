@@ -15,6 +15,8 @@ LOG_CATEGORY("ShatteredMemories.Archive");
 namespace ShatteredMemories
 {
 
+const u32 Archive::s_defaultAlignment = 0x800;
+
 u32 Archive::FileRecord::originalSize() const
 {
 	return (decompressedSize == 0 ? storedSize : decompressedSize);
@@ -32,7 +34,7 @@ static std::wstring strToWStr(const std::string& str)
 
 Archive::Archive(const std::string& filename)
 	: m_opened(false)
-	, m_alignment(0x800)
+	, m_alignment(s_defaultAlignment)
 {
 	m_fileStreamHolder.reset(new FileStream(strToWStr(filename), Stream::modeRead));
 	m_stream = m_fileStreamHolder.get();
@@ -40,6 +42,7 @@ Archive::Archive(const std::string& filename)
 
 Archive::Archive(const wstring& filename)
 	: m_opened(false)
+	, m_alignment(s_defaultAlignment)
 {
 	m_fileStreamHolder.reset(new FileStream(filename, Stream::modeRead));
 	m_stream = m_fileStreamHolder.get();
@@ -48,6 +51,7 @@ Archive::Archive(const wstring& filename)
 Archive::Archive(Stream* stream)
 	: m_stream(stream)
 	, m_opened(false)
+	, m_alignment(s_defaultAlignment)
 {
 }
 
