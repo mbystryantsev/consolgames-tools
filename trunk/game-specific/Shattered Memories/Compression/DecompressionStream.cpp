@@ -76,7 +76,10 @@ bool DecompressionStream::atEnd() const
 void DecompressionStream::holdStream()
 {
 	ASSERT(m_streamHolder.get() == NULL);
-	m_streamHolder.reset(m_zlibStream);
+	if (m_streamHolder.get() == NULL)
+	{
+		m_streamHolder.reset(m_zlibStream);
+	}
 }
 
 }

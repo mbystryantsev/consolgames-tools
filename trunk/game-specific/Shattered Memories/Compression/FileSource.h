@@ -12,10 +12,16 @@ public:
 	{
 	public:
 		virtual std::tr1::shared_ptr<Consolgames::Stream> open() = 0;
+		virtual ~FileAccessor()
+		{
+		}
 	};
 
 public:
 	virtual std::tr1::shared_ptr<Consolgames::Stream> file(u32 hash, FileAccessor& accessor) = 0;
+	virtual ~FileSource()
+	{
+	}
 };
 
 }
