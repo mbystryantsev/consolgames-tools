@@ -37,6 +37,8 @@ public:
 		bool m_packed;
 	};
 
+	typedef std::map<u32, u32> MergeMap;
+
 public:
 	Archive(const std::string& filename);
 	Archive(const std::wstring& filename);
@@ -45,8 +47,8 @@ public:
 
 	bool extractFiles(const std::string& outDir, const std::set<u32>& fileList = std::set<u32>());
 	bool extractFiles(const std::wstring& outDir, const std::set<u32>& fileList = std::set<u32>());
-	bool rebuild(const std::wstring& outFile, FileSource& fileSource);
-	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList);
+	bool rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap = MergeMap());
+	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList, const MergeMap& mergeMap = MergeMap());
 	std::tr1::shared_ptr<Consolgames::Stream> openFile(const std::string& filename);
 	std::tr1::shared_ptr<Consolgames::Stream> openFile(u32 fileHash);
 

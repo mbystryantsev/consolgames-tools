@@ -197,7 +197,7 @@ u32 Archive::alignSize(u32 size) const
 	return size - (size % m_alignment);
 }
 
-bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource)
+bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap)
 {
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
@@ -212,10 +212,35 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource)
 	const int headerSize = 16;
 	const int magicMarkerSize = 16;
 	u32 position = alignSize(m_fileRecords.size() * recordSize + headerSize + magicMarkerSize);
+
+	int processed = 0;
+	std::map<u32, FileRecord*> recordsMap;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
+		DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << hashToStr(record->hash);
+
+
 		FileRecord newRecord = *record;
 		newRecord.offset = position;
+
+		if (!mergeMap.empty() && mergeMap.find(record->hash) != mergeMap.end())
+		{
+			const u32 targetHash = mergeMap.find(record->hash)->second;
+			if (m_fileRecordsMap.find(targetHash) == m_fileRecordsMap.end())
+			{
+				DLOG << "Archive does not contain target file for mapping: " << hashToStr(targetHash);
+				return false;
+			}
+			if (mergeMap.find(targetHash) != mergeMap.end())
+			{
+				DLOG << "Found recursive mapping!";
+				return false;
+			}
+
+			entryList.push_back(newRecord);
+			recordsMap[record->hash] = &entryList.back();
+			continue;
+		}
 
 		file.seek(position, Stream::seekSet);
 		shared_ptr<Stream> stream = fileSource.file(record->hash, FileAccessor(m_stream, record->offset, record->originalSize(), record->isPacked()));
@@ -246,12 +271,30 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource)
 
 		position = alignSize(position + newRecord.storedSize);
 		entryList.push_back(newRecord);
+		recordsMap[record->hash] = &entryList.back();
+
+		processed++;
 	}
 
 	if (file.size() != file.size() % m_alignment)
 	{
 		file.seek(alignSize(static_cast<u32>(file.size())) - 1, Stream::seekSet);
 		file.write8(0);
+	}
+
+	// Resolve mapping
+	for (MergeMap::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
+	{
+		const u32 sourceHash = it->first;
+		if (m_fileRecordsMap.find(sourceHash) != m_fileRecordsMap.end())
+		{
+			const u32 targetHash = it->second;
+			FileRecord* sourceRecord = recordsMap[sourceHash];
+			const FileRecord* targetRecord = recordsMap[targetHash];
+			sourceRecord->offset = targetRecord->offset;
+			sourceRecord->decompressedSize = targetRecord->decompressedSize;
+			sourceRecord->storedSize = targetRecord->storedSize;
+		}
 	}
 
 	file.seek(0, Stream::seekSet);
@@ -275,9 +318,9 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource)
 	return true;
 }
 
-bool Archive::rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList)
+bool Archive::rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList, const MergeMap& mergeMap)
 {
-	return rebuild(outFile, DirectoriesFileSource(dirList));
+	return rebuild(outFile, DirectoriesFileSource(dirList), mergeMap);
 }
 
 shared_ptr<Stream> Archive::openFile(const std::string& filename)
