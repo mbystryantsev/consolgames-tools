@@ -40,4 +40,7 @@ QMAKE_LIBDIR += \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
-	$$PWD/../../libs \
+	$$PWD/externals/nvtt/$$CONFIG_NAME \
+	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \
+
+	

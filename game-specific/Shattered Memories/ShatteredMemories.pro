@@ -12,7 +12,9 @@ SUBDIRS = \
 	WorkPatcher \
 	ScriptEditor \
 	StreamParser \
+	TextureConv \
 	externals/core \
 	externals/WiiStreams \
 	externals/pnglite \
 	externals/zlib \
+	externals/nvtt \
