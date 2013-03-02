@@ -116,4 +116,9 @@ CompressionStream::~CompressionStream()
 	finish();
 }
 
+largesize_t CompressionStream::processedSize() const
+{
+	return m_zStream.total_in;
+}
+
 }

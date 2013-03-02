@@ -7,7 +7,7 @@ namespace ShatteredMemories
 class PartStream : public Consolgames::Stream
 {
 public:
-	PartStream(Consolgames::Stream* stream, offset_t position, largesize_t size = -1);
+	PartStream(Consolgames::Stream* stream, offset_t position, largesize_t size);
 
 	void setSize(largesize_t size);
 
@@ -17,6 +17,7 @@ public:
 	virtual largesize_t write(const void* buf, largesize_t size) override;
 	virtual offset_t position() const;
 	virtual void flush();
+	virtual bool atEnd() const override;
 
 private:
 	Consolgames::Stream* m_stream;

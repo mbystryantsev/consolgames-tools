@@ -25,7 +25,7 @@ largesize_t DecompressionStream::read(void* buf, largesize_t size)
 
 	m_zStream.avail_out = static_cast<uInt>(size);
 	m_zStream.next_out = static_cast<Bytef*>(buf);
-	while (m_zStream.avail_out > 0 && !m_zlibStream->atEnd())
+	while (m_zStream.avail_out > 0)
 	{
 		if (m_zStream.avail_in == 0)
 		{
@@ -34,6 +34,10 @@ largesize_t DecompressionStream::read(void* buf, largesize_t size)
 			{
 				// Fix header
 				*reinterpret_cast<u16*>(&m_buf[0]) = s_modifiedHeader;
+			}
+			if (m_zStream.avail_in == 0)
+			{
+				break;
 			}
 			m_zStream.next_in = m_buf;
 		}
@@ -70,7 +74,7 @@ bool DecompressionStream::opened() const
 
 bool DecompressionStream::atEnd() const 
 {
-	return m_zlibStream->atEnd();
+	return m_finished;
 }
 
 void DecompressionStream::holdStream()
