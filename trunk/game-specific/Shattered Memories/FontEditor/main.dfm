@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Top = 285
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Silent Hill 0rigins Font Editor'
+  Caption = 'Silent Hill: Shattered Memories Font Editor'
   ClientHeight = 312
   ClientWidth = 567
   Color = clBtnFace
@@ -169,7 +169,7 @@ object MainForm: TMainForm
         Width = 50
       end
       item
-        Width = 140
+        Width = 300
       end
       item
         Width = 50
@@ -423,6 +423,9 @@ object MainForm: TMainForm
       object InsertToRom1: TMenuItem
         Action = EditFontProportiesAction
       end
+      object Kerning1: TMenuItem
+        Action = EditKerningAction
+      end
     end
     object PaletteMenu: TMenuItem
       Caption = 'Palette'
@@ -644,6 +647,11 @@ object MainForm: TMainForm
       Category = 'Edit'
       Caption = 'Char Properties...'
       OnExecute = EditCharPropertiesActionExecute
+    end
+    object EditKerningAction: TAction
+      Category = 'Edit'
+      Caption = 'Kerning...'
+      OnExecute = EditKerningActionExecute
     end
   end
   object ImageList: TImageList
