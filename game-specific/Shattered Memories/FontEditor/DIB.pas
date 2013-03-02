@@ -2101,6 +2101,7 @@ var
     cR := 0;
     cG := 0;
     cB := 0;
+    cA := 0;
 
     for y:=0 to Height-1 do
     begin
