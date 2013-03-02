@@ -5,7 +5,8 @@ uses
   Windows,
   main in 'main.pas' {MainForm},
   FontProporties in 'FontProporties.pas' {PropForm},
-  CharProperties in 'CharProperties.pas' {CharPropForm};
+  CharProperties in 'CharProperties.pas' {CharPropForm},
+  Kerning in 'Kerning.pas' {KerningForm};
 
 {$R *.res}
 
@@ -15,10 +16,11 @@ uses
 begin
   //GetWindowThreadProcessId(wnd, dwProcessID);
   Application.Initialize;
-  Application.Title := 'Silent Hill 0rigins Font Editor';
+  Application.Title := 'Silent Hill: Shattered Memories Font Editor';
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TPropForm, PropForm);
   Application.CreateForm(TCharPropForm, CharPropForm);
+  Application.CreateForm(TKerningForm, KerningForm);
   //Application.CreateForm(TSEFORM, SEFORM);
   Application.Run;
 end.

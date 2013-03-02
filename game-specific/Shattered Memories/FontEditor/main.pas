@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, XPMan, Menus, ExtCtrls, ActnList, ToolWin, ImgList, DIB,
-  ExtDlgs, ClipBrd, StdCtrls, StrUtils, FontProporties;
+  ExtDlgs, ClipBrd, StdCtrls, StrUtils, FontProporties, Kerning;
 
 type
   TMainForm = class(TForm)
@@ -117,6 +117,8 @@ type
     AddChar1: TMenuItem;
     EditAddCharAction: TAction;
     EditCharPropertiesAction: TAction;
+    EditKerningAction: TAction;
+    Kerning1: TMenuItem;
     procedure PaletteSaveActionExecute(Sender: TObject);
     procedure FileOpenActionExecute(Sender: TObject);
     procedure FileSaveActionExecute(Sender: TObject);
@@ -165,6 +167,7 @@ type
     procedure EditAddCharActionExecute(Sender: TObject);
     procedure EditCharPropertiesActionExecute(Sender: TObject);
     procedure CharsImageDblClick(Sender: TObject);
+    procedure EditKerningActionExecute(Sender: TObject);
   private
     FFileName: String;
     FSaved: Boolean;
@@ -272,8 +275,7 @@ Type
 
 
  TKerningRecord = Packed Record
-   CodeA:   Word;
-   CodeB:   Word;
+   a, b: WideChar;
    Kerning: SmallInt;
  end;
 
@@ -291,6 +293,7 @@ Type
 var
  FontData:                 TFontData;
  MainForm:                 TMainForm;
+ KerningForm:              TKerningForm;
  Palette:                  TPalette;
  BufChar:                  TCharacter;
  BufCharData:              TCharHeader;
@@ -730,6 +733,23 @@ begin
 end;
 }
 
+procedure SortKerningData(var KerningData: Array of TKerningRecord);
+var i, j: Integer; Tmp: TKerningRecord;
+begin   
+  For i := 0 To High(KerningData) do
+  begin
+    For j := i + 1 To High(KerningData) do
+    begin
+      If (KerningData[j].a < KerningData[i].a) and (KerningData[j].b < KerningData[i].b) Then
+      begin
+        Tmp := KerningData[j];
+        KerningData[j] := KerningData[i];
+        KerningData[i] := Tmp;
+      end;
+    end;
+  end;
+end;
+
 Procedure TMainForm.Save(const FileName: String);
 var Stream: TFileStream; n, i: Integer; Buf: Pointer; P, LP: PByte;
 Size: LongWord;
@@ -776,6 +796,7 @@ begin
   Stream.Write(FontData.Palette[0], Size);
 
   // Kerning
+  SortKerningData(FontData.KerningData);
   Size := Length(FontData.KerningData) * SizeOf(TKerningRecord);
   WriteSectionInfo(Stream, CreateSectionInfo(3, 1, Size, Length(FontData.KerningData), $12));
   Stream.Write(FontData.KerningData[0], Size);
@@ -1132,7 +1153,6 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
 
-
  //ShowMessage(IntToStr(SizeOf(ShortInt)));
  FSaved := True;
  CharWidth := cCharWidth;
@@ -1200,7 +1220,7 @@ end;
 
 procedure TMainForm.DrawChars;
 Var I, YY, XX, Y, ZX, ZY: Integer; B, BB: ^Byte; PM: TPenMode; S: String;
-C: String;
+CStr: String;  C: TCharHeader;
 begin
  If CurChar > High(Chars) Then CurChar := High(Chars);
  If (CurChar < CurChars) or (CurChar - CurChars > 256) Then
@@ -1267,9 +1287,10 @@ begin
  StatusBar.Panels[0].Text := Char(CurChar);
  StatusBar.Panels[1].Text := '$' + IntToHex(CurChar, 2);
  StatusBar.Panels[2].Text := '#' + IntToStr(CurChar);
- C := FontData.CharData[CurChar].Code;
+ CStr := FontData.CharData[CurChar].Code;
+ C := FontData.CharData[CurChar];
  With Chars[CurChar] do StatusBar.Panels[3].Text :=
-  Format('W: %d; %s; C: ''%s'' (%4.4x)',[FontData.CharData[CurChar].W,S,C, Word(FontData.CharData[CurChar].Code)]);
+  Format('W: %d; %s; C: ''%s'' (%4.4x), WW: %d, HH: %d, Unk: (%d, %d)',[C.W, S, CStr, Word(C.Code), C.WW, C.HH, C.Unk, C.Unk2]);
 end;
 
 procedure TMainForm.DrawChar;
@@ -1814,6 +1835,11 @@ procedure TMainForm.CharsImageDblClick(Sender: TObject);
 begin
   If CurChar >= 0 Then
     EditCharPropertiesActionExecute(nil);
+end;
+
+procedure TMainForm.EditKerningActionExecute(Sender: TObject);
+begin
+  KerningForm.Show();
 end;
 
 end.
