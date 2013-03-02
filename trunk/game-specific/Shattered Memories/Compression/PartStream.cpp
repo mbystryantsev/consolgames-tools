@@ -41,13 +41,13 @@ void PartStream::setSize(largesize_t size)
 
 largesize_t PartStream::read(void* buf, largesize_t size)
 {
-	size = min(this->size(), size);
+	size = min(m_size - position(), size);
 	return m_stream->read(buf, size);
 }
 
 largesize_t PartStream::write(const void* buf, largesize_t size)
 {
-	size = min(this->size(), size);
+	size = min(m_size - position(), size);
 	return m_stream->write(buf, size);
 }
 
@@ -59,6 +59,11 @@ offset_t PartStream::position() const
 void PartStream::flush() 
 {
 	m_stream->flush();
+}
+
+bool PartStream::atEnd() const 
+{
+	return (m_stream->position() == m_position + m_size);
 }
 
 }

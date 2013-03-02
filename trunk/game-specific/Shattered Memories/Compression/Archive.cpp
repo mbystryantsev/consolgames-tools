@@ -2,6 +2,7 @@
 #include "DecompressionStream.h"
 #include "CompressionStream.h"
 #include "DirectoriesFileSource.h"
+#include "Hash.h"
 #include <PartStream.h>
 #include <FileStream.h>
 #include <memory>
@@ -91,28 +92,6 @@ bool Archive::open()
 	return true;
 }
 
-u32 Archive::calcHash(const char* str, u32 hash)
-{
-	const char* c = str;
-	while (*c != '\0')
-	{
-		const u32 v = tolower(*c++);
-		hash = ((hash << 5) + hash) ^ v;
-	}
-	return hash;
-}
-
-std::string Archive::hashToStr(u32 hash)
-{
-	char buf[32];
-	_ultoa(hash, buf, 16);
-
-	std::string result = buf;
-	std::transform(result.begin(), result.end(), result.begin(), toupper);
-	result.insert(0, 8 - result.length(), '0');
-	return result;
-}
-
 bool Archive::extractFiles(const std::string& outDir, const std::set<u32>& fileList)
 {
 	return extractFiles(strToWStr(outDir), fileList);	
@@ -139,7 +118,7 @@ bool Archive::extractFiles(const std::wstring& outDir, const std::set<u32>& file
 			continue;
 		}
 
-		const std::string filename = (m_names.find(record->hash) == m_names.end() ? hashToStr(record->hash) : m_names[record->hash]);
+		const std::string filename = (m_names.find(record->hash) == m_names.end() ? Hash::toString(record->hash) : m_names[record->hash]);
 		const std::wstring outFile = outDir + PATH_SEPARATOR_L + strToWStr(filename);
 		if (!extractFile(*record, outFile))
 		{
@@ -187,7 +166,7 @@ void Archive::setNames(const std::list<std::string>& names)
 	m_names.clear();
 	for (std::list<std::string>::const_iterator name = names.begin(); name != names.end(); name++)
 	{
-		m_names[calcHash(name->c_str())] = *name;
+		m_names[Hash::calc(name->c_str())] = *name;
 	}
 }
 
@@ -217,7 +196,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	std::map<u32, FileRecord*> recordsMap;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
-		DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << hashToStr(record->hash);
+		DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
 
 
 		FileRecord newRecord = *record;
@@ -228,7 +207,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 			const u32 targetHash = mergeMap.find(record->hash)->second;
 			if (m_fileRecordsMap.find(targetHash) == m_fileRecordsMap.end())
 			{
-				DLOG << "Archive does not contain target file for mapping: " << hashToStr(targetHash);
+				DLOG << "Archive does not contain target file for mapping: " << Hash::toString(targetHash);
 				return false;
 			}
 			if (mergeMap.find(targetHash) != mergeMap.end())
@@ -239,11 +218,12 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 			entryList.push_back(newRecord);
 			recordsMap[record->hash] = &entryList.back();
+			processed++;
 			continue;
 		}
 
 		file.seek(position, Stream::seekSet);
-		shared_ptr<Stream> stream = fileSource.file(record->hash, FileAccessor(m_stream, record->offset, record->originalSize(), record->isPacked()));
+		shared_ptr<Stream> stream = fileSource.file(record->hash, FileAccessor(m_stream, *record));
 		if (stream.get() == NULL)
 		{
 			m_stream->seek(record->offset, Stream::seekSet);
@@ -253,19 +233,25 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		{
 			if (record->decompressedSize == 0)
 			{
-				newRecord.storedSize = static_cast<u32>(stream->size());
+				newRecord.storedSize = 0;
 				newRecord.decompressedSize = 0;
 				m_stream->seek(record->offset, Stream::seekSet);
-				VERIFY(file.writeStream(stream.get(), record->decompressedSize) == record->decompressedSize);
+				while (!stream->atEnd())
+				{
+					newRecord.storedSize += static_cast<u32>(file.writeStream(stream.get(), 0x80000));
+				}				
 			}
 			else
 			{
 				CompressionStream zlibStream(&file);
-				ASSERT(zlibStream.opened());
-				VERIFY(zlibStream.writeStream(stream.get(), stream->size()) == stream->size());
+				ASSERT(zlibStream.opened());				
+				while (!stream->atEnd())
+				{
+					zlibStream.writeStream(stream.get(), 0x80000);
+				}
 				zlibStream.finish();
 				newRecord.storedSize = static_cast<u32>(zlibStream.size());
-				newRecord.decompressedSize = static_cast<u32>(stream->size());
+				newRecord.decompressedSize = static_cast<u32>(zlibStream.processedSize());
 			}
 		}
 
@@ -325,7 +311,7 @@ bool Archive::rebuild(const std::wstring& outFile, const std::vector<std::wstrin
 
 shared_ptr<Stream> Archive::openFile(const std::string& filename)
 {
-	return openFile(calcHash(filename.c_str()));
+	return openFile(Hash::calc(filename.c_str()));
 }
 
 shared_ptr<Stream> Archive::openFile(u32 fileHash)
@@ -336,16 +322,14 @@ shared_ptr<Stream> Archive::openFile(u32 fileHash)
 	}
 
 	const FileRecord& record = *m_fileRecordsMap[fileHash];
-	return FileAccessor(m_stream, record.offset, record.originalSize(), record.isPacked()).open();
+	return FileAccessor(m_stream, record).open();
 }
 
 //////////////////////////////////////////////////////////////////////////
 
-Archive::FileAccessor::FileAccessor(Stream* stream, u32 position, u32 size, bool packed)
+Archive::FileAccessor::FileAccessor(Stream* stream, const Archive::FileRecord& record)
 	: m_stream(stream)
-	, m_position(position)
-	, m_size(size)
-	, m_packed(packed)
+	, m_record(record)
 {
 }
 
@@ -356,20 +340,19 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 		return m_fileStream;
 	}
 
-	auto_ptr<PartStream> pakStream(new PartStream(m_stream, m_position));
+	auto_ptr<PartStream> pakStream(new PartStream(m_stream, m_record.offset, m_record.storedSize));
 	ASSERT(pakStream->opened());
 
 	VERIFY(pakStream->seek(0, Stream::seekSet) == 0);
 
-	if (m_packed)
+	if (m_record.isPacked())
 	{
-		m_fileStream.reset(new DecompressionStream(pakStream.get(), m_size));
+		m_fileStream.reset(new DecompressionStream(pakStream.get(), m_record.originalSize()));
 		pakStream.release();
 		dynamic_cast<DecompressionStream*>(m_fileStream.get())->holdStream();
 		return m_fileStream;
 	}
 
-	pakStream->setSize(m_size);
 	m_fileStream.reset(pakStream.release());
 	return m_fileStream;
 }

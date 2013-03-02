@@ -16,9 +16,22 @@ class Stream;
 namespace ShatteredMemories
 {
 
-
 class Archive
 {
+	friend class FileAccessor;
+
+private:
+	struct FileRecord
+	{
+		u32 hash;
+		u32 offset;
+		u32 storedSize;
+		u32 decompressedSize;
+
+		u32 originalSize() const;
+		bool isPacked() const;
+	};
+
 public:
 	class FileAccessor: public FileSource::FileAccessor
 	{
@@ -27,14 +40,12 @@ public:
 		virtual std::tr1::shared_ptr<Consolgames::Stream> open() override;
 
 	private:
-		FileAccessor(Consolgames::Stream* stream, u32 position, u32 size, bool packed);
+		FileAccessor(Consolgames::Stream* stream, const Archive::FileRecord& record);
 
 	private:
 		Consolgames::Stream* m_stream;
 		std::tr1::shared_ptr<Consolgames::Stream> m_fileStream;
-		u32 m_position;
-		u32 m_size;
-		bool m_packed;
+		const Archive::FileRecord m_record;
 	};
 
 	typedef std::map<u32, u32> MergeMap;
@@ -54,9 +65,6 @@ public:
 
 	void setNames(const std::list<std::string>& names);
 
-	static u32 calcHash(const char* str, u32 hash = 0);
-	static std::string hashToStr(u32 hash);
-
 private:
 	struct Header
 	{
@@ -66,16 +74,6 @@ private:
 		int reserved;
 	};
 
-	struct FileRecord
-	{
-		u32 hash;
-		u32 offset;
-		u32 storedSize;
-		u32 decompressedSize;
-
-		u32 originalSize() const;
-		bool isPacked() const;
-	};
 
 private:
 	bool extractFile(const FileRecord& record, Consolgames::Stream* stream);
