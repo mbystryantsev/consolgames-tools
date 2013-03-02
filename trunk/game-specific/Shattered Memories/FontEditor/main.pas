@@ -225,7 +225,7 @@ TCharHeader = Packed Record
    YY:   Byte;
    WW:   Byte;
    HH:   Byte;
-   Pos:  Integer;
+   Pos:  LongWord;
    Size: Word;
    Unk2: Word;
  end;
@@ -234,7 +234,7 @@ TCharHeader = Packed Record
  THeader  = Packed Record
   Unk0: Word;
   Unk1: Word;
-  Size: Integer;
+  Size: LongWord;
   Count: Word;
   Width: Word;
   Height: Word;
@@ -346,7 +346,7 @@ begin
 end;
 
 Function GetChar(var Char: TCharacter; P: Pointer; RowStride: Integer; Put: Boolean = False): Integer;
-var X,Y: Integer; B: ^Byte;
+//var X,Y: Integer; B: ^Byte;
 //const PW = 2;
 begin
 {
@@ -369,6 +369,7 @@ begin
     Inc(B, RowStride - (cFontWidth div 2));
   end;
 }
+  Result := 0;
 end;
 
 Procedure CharsToDIB(var Chars: TChars; var Pic: TDIB; From: Boolean = False);
@@ -414,39 +415,60 @@ end;
 
 
 Function GetLeft(Tile: TTile): Integer;   // Парам-пам-пам
-var n: Integer;
+var n, r: Integer;
 begin
-  For Result := 0 To 15 do
-    For n := 0 To 15 do if Tile[n, Result] <> 0 Then Exit;
+  Result := 0;
+  For r := 0 To 15 do
+    For n := 0 To 15 do
+      If Tile[n, r] <> 0 Then
+      begin
+        Result := r;
+        Exit;
+      end;
 end;
 
 Function GetRBound(C: TTile): Integer;
-var m: Integer;
+var m, r: Integer;
 begin
-  Result := 0;
-  For Result := CharWidth - 1 downto 0 do
-    For m := 0 To CharHeight - 1 do If C[m,Result]>0 Then Exit;
+  Result := CharWidth;
+  For r := CharWidth - 1 downto 0 do
+    For m := 0 To CharHeight - 1 do
+      If C[m, r] > 0 Then
+      begin
+        Result := r;
+        Exit;
+      end;
 end;
 
 Function GetUBound(C: TTile): Integer;
-var m: Integer;
+var m, r: Integer;
 begin
   Result := 0;
-  For Result := 0 to CharHeight - 1 do
-    For m := 0 To CharWidth - 1 do If C[Result, m] > 0 Then Exit;
+  For r := 0 to CharHeight - 1 do
+    For m := 0 To CharWidth - 1 do
+      If C[r, m] > 0 Then
+      begin
+        Result := r;
+        Exit;
+      end;
 end;
 
 Function GetDBound(C: TTile): Integer;
-var m: Integer;
+var m, r: Integer;
 begin
   Result := 0;
-  For Result := CharHeight - 1 downto 0 do
-    For m := 0 To CharWidth - 1 do If C[Result, m] > 0 Then Exit;
+  For r := CharHeight - 1 downto 0 do
+    For m := 0 To CharWidth - 1 do
+      If C[r, m] > 0 Then
+      begin
+        Result := r;
+        Exit;
+      end;
 end;
 
 
-procedure DecodeChar(var C: TTile; W, H, _Y: Integer; Ptr: Pointer; Size: Integer);
-var P: PByte; V: Byte; X, Y: Integer;  _Size: Integer;
+procedure DecodeChar(var C: TTile; W, H, _Y: Integer; Ptr: Pointer; Size: LongWord);
+var P: PByte; X, Y: Integer;
  procedure Write;
  var Block: Boolean; Count: Byte;
  begin
@@ -488,9 +510,7 @@ begin
   Y := _Y;
   FillChar(C, SizeOf(C), 0);
   P := Ptr;
-  _Size := Size;
-  //While (Size {+ 2} >= 0)  and (Y < H + _Y) do
-  While (LongWord(P) < LongWord(Ptr) + Size)  and (Y < H + _Y) do
+  While (LongWord(P) < LongWord(Ptr) + Size) and (Y < H + _Y) do
     Write;
 end;
 
@@ -503,6 +523,8 @@ const
   MODE_RLE = 2;
 label READ_BEGIN;
 begin
+  Mode := MODE_NONE;
+  Count := 0;
   Flag := False;
   W := GetRBound(C) + 1;
   If W mod 2 > 0 Then Inc(W);
@@ -578,7 +600,6 @@ begin
             Inc(Count);
         end;
       end;
-      BB := B^;
     end;
   end;
 end;
@@ -664,7 +685,7 @@ begin
       FontData.CharData[n].Size := DWord(P) - DWord(LP);
     end;
   end;
-  FontData.Header.Size := DWord(P) - DWord(Buf) + Length(FontData.CharData) * SizeOf(TCharHeader);
+  FontData.Header.Size := DWord(P) - DWord(Buf) + LongWord(Length(FontData.CharData)) * SizeOf(TCharHeader);
 
 
   AssignFile(F, FileName);
@@ -1017,7 +1038,6 @@ begin
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
-var n: Integer;
 begin
 
 
@@ -1161,7 +1181,7 @@ begin
 end;
 
 procedure TMainForm.DrawChar;
-Var Y, H, W, WW: Integer; B: ^Byte; PM: TPenMode;
+Var Y, H, W: Integer; B: ^Byte; PM: TPenMode;
 begin        
  If CurChar > High(Chars) Then Exit;
  With DIB2 do
@@ -1261,7 +1281,6 @@ end;
 
 procedure TMainForm.CharsImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var SelChar: Integer;
 begin
  If Button = mbLeft then
  begin
@@ -1273,13 +1292,6 @@ begin
  end else
  If Button = mbRight Then
  begin
-  X := X div 16;
-  Y := Y div 16;
-  {
-  SelChar := Y * 16 + X + CurChars;
-  If SelChar <= High(Chars) Then
-    Chars[SelChar].N := not Chars[SelChar].N;
-  }
   DrawChars;
   DrawChar;
  end;
@@ -1287,11 +1299,9 @@ end;
 
 procedure TMainForm.CharImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var WW: Integer;
 begin
  If ssCtrl in Shift then With Chars[CurChar] do
  begin
-  WW := FontData.CharData[CurChar].W;
   If X > 256 - 8 then
    FontData.CharData[CurChar].W := CharWidth Else
    FontData.CharData[CurChar].W := X div (256 div CharWidth);
@@ -1353,14 +1363,8 @@ end;
 
 procedure TMainForm.Open(const FileName: String);
 Var
- n, Size: Integer;
- Buf: Pointer;
- CharData: Array of Byte;
- Ptrs:     Array of DWord;
- Pos:      DWord;
- WidthPos, ImagePos, Count: Integer;
+ n: Integer;
  Stream:  TMemoryStream;
- Widths: Array of Byte;
 begin
 
   try
@@ -1380,7 +1384,7 @@ begin
      DecodeChar(Chars[n].Ch, WW, HH, {HH - ($100 - YY),} YY - ($100 - Header.Height),
       Pointer(DWord(Stream.Memory) (*+  $4BD8{4D22}*)
       + 32 // Shattered Memories
-      + SizeOf(THeader) + Header.Count * SizeOf(TCharHeader) + Pos),
+      + SizeOf(THeader) + LongWord(Header.Count) * SizeOf(TCharHeader) + Pos),
       Size);
    end;
    Stream.Free;
@@ -1531,6 +1535,7 @@ end;
 procedure TMainForm.FontInit;
 var WH: Integer;
 begin
+  WH := 32;
    Case FontData.Header.Height  of
     01..08: WH:=8;
     09..16: WH:=16;
@@ -1552,7 +1557,7 @@ begin
 end;
 
 procedure TMainForm.FileNewActionExecute(Sender: TObject);
-var H,B: Byte; C: Word;
+//var H,B: Byte; C: Word;
 begin
 {
   If not CheckSaved Then Exit;

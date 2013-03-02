@@ -43,7 +43,7 @@ begin
 end;
 
 procedure TCharPropForm.bSelectClick(Sender: TObject);
-var Key: Word; W: WideChar; Code: Integer; WS: WideString; S: String;
+var W: WideChar; Code: Integer; WS: WideString; S: String;
 begin
   Val('$' + eCode.Text, Word(W), Code);
   S := InputBox('Input char...', '', W);

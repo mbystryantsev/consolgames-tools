@@ -20,7 +20,6 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure bCancelClick(Sender: TObject);
   private
-    FLastBitCount: Integer;
     FResult: Boolean;
   public
     Function Show(Height{, BitCount}: PByte; CharCount: PWord): Boolean;
