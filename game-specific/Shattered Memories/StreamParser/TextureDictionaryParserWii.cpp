@@ -69,6 +69,8 @@ bool TextureDictionaryParserWii::fetch()
 	const u32 rasterSize = m_stream->read32();
 	m_currentMetaInfo.rasterPosition = m_stream->position();
 	m_currentMetaInfo.rasterSize = unk7 - 0x84;//rasterSize;
+
+#if 0
 	if (m_currentMetaInfo.name == "PR_ME_UI_BoxSides_paintings")
 	{
 		m_currentMetaInfo.rasterSize *= 2;
@@ -94,6 +96,7 @@ bool TextureDictionaryParserWii::fetch()
 	{
 		m_currentMetaInfo.rasterSize = 0x3A8D0;
 	}
+#endif
 
 
 	m_stream->seek(m_currentMetaInfo.rasterSize, Stream::seekCur);
