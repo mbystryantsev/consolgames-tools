@@ -34,9 +34,13 @@ offset_t ZlibStream::seek(offset_t offset, SeekOrigin origin)
 	}
 
 	ASSERT(offset >= position());
-	if (offset <= position())
+	if (offset < position())
 	{
 		return -1;
+	}
+	if (offset == position())
+	{
+		return offset;
 	}
 
 	return skip(offset - position()) + position();
