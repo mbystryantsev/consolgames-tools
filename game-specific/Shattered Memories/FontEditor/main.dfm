@@ -1454,13 +1454,6 @@ object MainForm: TMainForm
     Left = 88
     Top = 216
   end
-  object OpenRomDialog: TOpenDialog
-    DefaultExt = '.gba'
-    Filter = 'GBA (*.gba)|*.gba'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 56
-    Top = 88
-  end
   object SaveTableDialog: TSaveDialog
     DefaultExt = '.tbl'
     Filter = 'Table (*.tbl)|*.tbl'
@@ -1469,8 +1462,8 @@ object MainForm: TMainForm
     Top = 88
   end
   object OpenDialog: TOpenDialog
-    FileName = 'FontEUR.shf'
-    Filter = 'Fonts|*.shf|All files (*.*)|*'
+    FileName = 'FontEUR.kft'
+    Filter = 'Fonts|*.kft|All files (*.*)|*'
     Left = 56
     Top = 120
   end
@@ -1509,7 +1502,7 @@ object MainForm: TMainForm
   end
   object SaveWidthsDialog: TSaveDialog
     Filter = 'Text Files (*.txt)|*.txt'
-    Left = 128
-    Top = 56
+    Left = 56
+    Top = 88
   end
 end

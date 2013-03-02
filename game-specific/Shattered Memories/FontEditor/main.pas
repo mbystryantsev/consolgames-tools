@@ -85,7 +85,6 @@ type
     ToolButton7: TToolButton;
     ToolButton18: TToolButton;
     ToolButton19: TToolButton;
-    OpenRomDialog: TOpenDialog;
     SaveTableDialog: TSaveDialog;
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
@@ -183,6 +182,7 @@ type
     procedure Open(const FileName: String);
     Procedure Save(const FileName: String);
     Procedure FontInit;
+    procedure ReadInitialStream(Stream: TStream);
   end;
 
   EFontError = Class(Exception);
@@ -190,8 +190,6 @@ type
 const
   cCharWidth  = 32;
   cCharHeight = 32;
-  //cFontHeight = 12;
-  //cFontWidth  = 12;
 
 Type
  TPalette = Array[0..15] of TColor;
@@ -218,7 +216,7 @@ Type
   R: ShortInt;
  end;
 
-TCharHeader = Packed Record
+ TCharHeader = Packed Record
    Code: WideChar;
    W:    SmallInt;
    Unk:  Byte;
@@ -229,7 +227,15 @@ TCharHeader = Packed Record
    Size: Word;
    Unk2: Word;
  end;
- 
+
+ TStreamHeader = Packed Record
+  Signature: LongWord;
+  Unk1:      Word;
+  Unk2:      Word;
+  Unk3:      LongWord;
+  Family:    Array[0..31] of Char;
+  UnkBlob:   Array[0..31] of Byte;
+ end;
 
  THeader  = Packed Record
   Unk0: Word;
@@ -243,18 +249,44 @@ TCharHeader = Packed Record
 
  PCharHedaer = ^TCharHeader;
 
+ TRect = Packed Record
+  Left:   Single;
+  Top:    Single;
+  Right:  Single;
+  Bottom: Single;
+ end;
+
+ TSmallRect = Packed Record
+  Left:   ShortInt;
+  Right:  ShortInt;
+  Top:    ShortInt;
+  Bottom: ShortInt;
+ end;
+
+ TRectRecord = Packed Record
+  CodeA: Word;
+  CodeB: Word;
+  SmallRect: TSmallRect;
+  Rect:  TRect;
+ end;
+
+
+ TKerningRecord = Packed Record
+   CodeA:   Word;
+   CodeB:   Word;
+   Kerning: SmallInt;
+ end;
+
  TCLUT = Array[0..15] of Word;
  TFontData = Packed Record
-  Header: THeader;
-  UnkData: Array[0..15] of Word;
-  CharData: Array of TCharHeader;
+  StreamHeader: TStreamHeader;
+  RectRecords:  Array of TRectRecord;
+  Palette:      Array of LongWord;
+  KerningData:  Array of TKerningRecord;
+  Header:       THeader;
+  UnkData:      Array[0..15] of SmallInt;
+  CharData:     Array of TCharHeader;
  end;
- {
- TCharInfo = Packed Record
-    W: Byte;
-    P: Byte;
- end;
- }
 
 var
  FontData:                 TFontData;
@@ -275,6 +307,47 @@ implementation
 Uses CharProperties;
 
 {$R *.dfm}
+               
+function ReadUInt(Stream: TStream): LongWord;
+begin
+  Stream.Read(Result, SizeOf(Result));
+end;
+
+function ReadUInt16(Stream: TStream): Word;
+begin
+  Stream.Read(Result, SizeOf(Result));
+end;
+
+Type TSectionInfo = Packed Record
+  Index:      Word;
+  HeaderType: Word;
+  Size:       LongWord;
+  Count:      Word;
+  Unk:        Word;
+end;
+
+function ReadSectionInfo(Stream: TStream): TSectionInfo;
+begin
+  Result.Index      := ReadUInt16(Stream);
+  Result.HeaderType := ReadUInt16(Stream);
+  Result.Size       := ReadUInt(Stream);
+  Result.Count      := ReadUInt16(Stream);
+  Result.Unk        := ReadUInt16(Stream);
+end;
+
+function CreateSectionInfo(Index, HeaderType, Size, Count, Unk: LongWord): TSectionInfo;
+begin
+  Result.Index := Index;
+  Result.HeaderType := HeaderType;
+  Result.Size := Size;
+  Result.Count := Count;
+  Result.Unk := Unk;
+end;
+
+procedure WriteSectionInfo(Stream: TStream; const Info: TSectionInfo);
+begin
+  Stream.Write(Info, SizeOf(Info));
+end;
 
 Function GetR(V: Word): Byte;
 begin
@@ -658,7 +731,8 @@ end;
 }
 
 Procedure TMainForm.Save(const FileName: String);
-var F: File; n, i: Integer; Buf: Pointer; P, LP: PByte;
+var Stream: TFileStream; n, i: Integer; Buf: Pointer; P, LP: PByte;
+Size: LongWord;
 begin
 
   GetMem(Buf, 1024 * 64);
@@ -687,15 +761,33 @@ begin
   end;
   FontData.Header.Size := DWord(P) - DWord(Buf) + LongWord(Length(FontData.CharData)) * SizeOf(TCharHeader);
 
+  Stream := TFileStream.Create(FileName, fmCreate);
 
-  AssignFile(F, FileName);
-  Rewrite(F, 1);
-  BlockWrite(F, FontData.Header, 16);
-  BlockWrite(F, FontData.UnkData, 32);
-  BlockWrite(F, FontData.CharData[0], Length(FontData.CharData) * SizeOf(TCharHeader));
-  BlockWrite(F, Buf^, DWord(P) - DWord(Buf));
+  Stream.Write(FontData.StreamHeader, SizeOf(TStreamHeader));
+
+  // Rect records
+  Size := Length(FontData.RectRecords) * SizeOf(TRectRecord);
+  WriteSectionInfo(Stream, CreateSectionInfo(1, 1, Size, Length(FontData.RectRecords), 0));
+  Stream.Write(FontData.RectRecords[0], Size);
+
+  // Palette
+  Size := Length(FontData.Palette) * SizeOf(LongWord);
+  WriteSectionInfo(Stream, CreateSectionInfo(2, 1, Size, Length(FontData.Palette), $12));
+  Stream.Write(FontData.Palette[0], Size);
+
+  // Kerning
+  Size := Length(FontData.KerningData) * SizeOf(TKerningRecord);
+  WriteSectionInfo(Stream, CreateSectionInfo(3, 1, Size, Length(FontData.KerningData), $12));
+  Stream.Write(FontData.KerningData[0], Size);
+
+  // Main data
+  Stream.Write(FontData.Header, 16);
+  Stream.Write(FontData.UnkData, 32);
+  Stream.Write(FontData.CharData[0], Length(FontData.CharData) * SizeOf(TCharHeader));
+  Stream.Write(Buf^, DWord(P) - DWord(Buf));
+  Stream.Destroy();
+
   FreeMem(Buf);
-  CloseFile(F);
 
   Saved := True;
 {
@@ -1360,32 +1452,66 @@ begin
  end;
 end;
 
+procedure TMainForm.ReadInitialStream(Stream: TStream);
+var Info: TSectionInfo;
+begin
+  Stream.Read(FontData.StreamHeader, SizeOf(TStreamHeader));
+
+  // Unknown rect records
+  Info := ReadSectionInfo(Stream);
+
+  if Info.Size <> Info.Count * SizeOf(TRectRecord) then
+    raise Exception.Create('Invalid rect records size!');
+
+  SetLength(FontData.RectRecords, Info.Count);
+  Stream.Read(FontData.RectRecords[0], Info.Size);
+
+  // Palette
+  Info := ReadSectionInfo(Stream);
+                              
+  if Info.Size <> Info.Count * SizeOf(LongWord) then
+    raise Exception.Create('Invalid palette size!');
+
+  SetLength(FontData.Palette, Info.Count);
+  Stream.Read(FontData.Palette[0], Info.Size);
+
+  // Kerning
+  Info := ReadSectionInfo(Stream);
+                          
+  if Info.Size <> Info.Count * SizeOf(TKerningRecord) then
+    raise Exception.Create('Invalid kerning size!');
+              
+  SetLength(FontData.KerningData, Info.Count);
+  Stream.Read(FontData.KerningData[0], Info.Size);
+
+end;
 
 procedure TMainForm.Open(const FileName: String);
 Var
  n: Integer;
  Stream:  TMemoryStream;
+ CharDataPtr: PByte;
 begin
 
   try
    Stream := TMemoryStream.Create;
    Stream.LoadFromFile(FileName);
    //Stream.Seek($4BD8{4D22}, 0);
-   Stream.Read(FontData, SizeOf(THeader));
+
+   ReadInitialStream(Stream);
+
+   Stream.Read(FontData.Header, SizeOf(THeader));
    //Stream.Seek(32, soCurrent);
    Stream.Read(FontData.UnkData, 32); // Shattered Memories
    SetLength(Chars, FontData.Header.Count);
    SetLength(FontData.CharData, FontData.Header.Count);
    Stream.Read(FontData.CharData[0], FontData.Header.Count * SizeOf(TCharHeader));
 
+   CharDataPtr := PByte(LongWord(Stream.Memory) + Stream.Position);
+
    For n := 0 To FontData.Header.Count - 1 do With FontData, CharData[n] do
    begin
-
-     DecodeChar(Chars[n].Ch, WW, HH, {HH - ($100 - YY),} YY - ($100 - Header.Height),
-      Pointer(DWord(Stream.Memory) (*+  $4BD8{4D22}*)
-      + 32 // Shattered Memories
-      + SizeOf(THeader) + LongWord(Header.Count) * SizeOf(TCharHeader) + Pos),
-      Size);
+     DecodeChar(Chars[n].Ch, WW, HH, {HH - ($100 - YY),} YY - ($100 - Header.Height), PByte(LongWord(CharDataPtr) + Pos), Size);
    end;
    Stream.Free;
    FontInit;
@@ -1533,8 +1659,11 @@ begin
 end;
 
 procedure TMainForm.FontInit;
-var WH: Integer;
+var WH, i: Integer;
 begin
+  For i := 0 to Length(FontData.Palette) - 1 do
+    Palette[i] := FontData.Palette[i];
+
   WH := 32;
    Case FontData.Header.Height  of
     01..08: WH:=8;
