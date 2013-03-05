@@ -1,4 +1,4 @@
-#include "DataStreamParserWii.h"
+#include <DataStreamParser.h>
 #include "TextureDictionaryParserWii.h"
 #include <FileStream.h>
 #include <QtFileStream.h>
@@ -142,7 +142,7 @@ bool parseDictionary(Stream& stream, quint32 fileHash, QTextStream& csv)
 
 bool parseStream(Stream& stream, quint32 fileHash, QTextStream& csv)
 {
-	DataStreamParserWii parser;
+	DataStreamParser parser(Stream::orderBigEndian);
 
 	ASSERT(stream.opened());
 	parser.open(&stream);
@@ -150,12 +150,19 @@ bool parseStream(Stream& stream, quint32 fileHash, QTextStream& csv)
 	bool atLeastOneParsed = false;
 	while (parser.initSegment())
 	{
-		if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
+		if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY" || parser.metaInfo().typeId == "rwID_KFONT")
 		{
 			while (parser.fetch())
 			{
 				atLeastOneParsed = true;
-				parseDictionary(stream, fileHash, csv);
+				if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
+				{
+					parseDictionary(stream, fileHash, csv);
+				}
+				else
+				{
+					stream.skip(parser.itemSize());
+				}
 			}
 
 			if (atLeastOneParsed && !parser.atSegmentEnd())
@@ -181,14 +188,18 @@ int main(int argc, char* argv[])
 	csvStream << "fileHash;textureName;width;height;mipmapCount;rasterPosition;rasterSize\n";
 
 	QDir dir("E:/_job/SHSM/wii/test");
+	//QDir dir("D:/rev/memories/font");
 	const QStringList files = dir.entryList(QDir::Files);
 	foreach (const QString& file, files)
 	{
+#if 0
 		if (file == "B1A96880.BIN")
 		{
 			continue;
 		}
-		if (file.right(4).toLower() != ".bin")
+#endif
+
+		if (file.right(4).toLower() != ".bin" && file.size() != 8)
 		{
 			continue;
 		}
