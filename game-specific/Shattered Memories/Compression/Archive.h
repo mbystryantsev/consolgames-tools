@@ -48,6 +48,15 @@ public:
 		const Archive::FileRecord m_record;
 	};
 
+	class IProgressListener
+	{
+	public:
+		virtual void startProgress(int maxValue) = 0;
+		virtual void progress(int value, const std::string& name) = 0;
+		virtual void finishProgress() = 0;
+		virtual bool stopRequested() = 0;
+	};
+
 	typedef std::map<u32, u32> MergeMap;
 
 public:
@@ -65,6 +74,8 @@ public:
 
 	void setNames(const std::list<std::string>& names);
 
+	void addProgressListener(IProgressListener* listener);
+
 private:
 	struct Header
 	{
@@ -74,11 +85,26 @@ private:
 		int reserved;
 	};
 
+	class ProgressGuard
+	{
+	public:
+		ProgressGuard(Archive& archive);
+		~ProgressGuard();
+
+	private:
+		Archive& m_archive;
+	};
+
 
 private:
 	bool extractFile(const FileRecord& record, Consolgames::Stream* stream);
 	bool extractFile(const FileRecord& record, const std::wstring& path);
 	u32 alignSize(u32 size) const;
+
+	void notifyProgressStart();
+	void notifyProgress(int progress, const std::string& name);
+	void notifyProgressEnd();
+	bool stopRequested();
 
 private:
 	Consolgames::Stream* m_stream;
@@ -89,6 +115,8 @@ private:
 	bool m_opened;
 	std::map<u32, std::string> m_names;
 	u32 m_alignment;
+	std::list<IProgressListener*> m_progressListeners;
+
 	static const u32 s_defaultAlignment;
 };
 

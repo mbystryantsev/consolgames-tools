@@ -82,4 +82,9 @@ offset_t OnFlyPatchStream::size() const
 	return m_stream->size();
 }
 
+bool OnFlyPatchStream::atEnd() const 
+{
+	return m_stream->atEnd();
+}
+
 }

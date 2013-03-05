@@ -1,4 +1,6 @@
-#include "PatcherArcFileSource.h"
+#include "PatcherTexturesFileSource.h"
+#include "FontStreamRebuilder.h"
+#include <Hash.h>
 #include <FileStream.h>
 #include <QDir>
 
@@ -9,17 +11,34 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
-PatcherArcFileSource::PatcherArcFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase)
+const std::string PatcherTexturesFileSource::s_fontFilename = "FontEUR";
+const std::string PatcherTexturesFileSource::s_fontFileExt = ".kft";
+const quint32 PatcherTexturesFileSource::s_fontFilenameHash = Hash::calc(s_fontFilename.c_str());
+
+PatcherTexturesFileSource::PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase)
 	: m_primarySource(primarySource)
 	, m_textureDB(texturesDatabase)
 	, m_texturesPath(texturesPath)
 {
 }
 
-shared_ptr<Stream> PatcherArcFileSource::file(u32 hash, FileAccessor& accessor)
+shared_ptr<Stream> PatcherTexturesFileSource::file(u32 hash, FileAccessor& accessor)
 {
+	if (hash == s_fontFilenameHash)
+	{
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
+		if (fontStream.get() == NULL)
+		{
+			return fontStream;
+		}
+
+		DLOG << "Replacing font...";
+		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian));
+	}
+
 	if (m_textureDB.contains(hash))
 	{
+		DLOG << "Found textures for file " << Hash::toString(hash);
 		shared_ptr<Stream> stream = m_primarySource->file(hash, accessor);
 		if (stream.get() == NULL)
 		{
@@ -51,7 +70,7 @@ struct PartInfoComparator
 	}
 };
 
-PatcherArcFileSource::TextureDataSource::TextureDataSource(const QString& path, const QList<TextureDatabase::TextureInfo>& textures)
+PatcherTexturesFileSource::TextureDataSource::TextureDataSource(const QString& path, const QList<TextureDatabase::TextureInfo>& textures)
 	: m_path(path)
 	, m_texturesInfo(textures)
 {
@@ -67,7 +86,7 @@ PatcherArcFileSource::TextureDataSource::TextureDataSource(const QString& path, 
 	qSort(m_texturesInfo.begin(), m_texturesInfo.end(), TextureInfoComparator());
 }
 
-shared_ptr<Stream> PatcherArcFileSource::TextureDataSource::getAt(int index)
+shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index)
 {
 	const QString filename = QDir(m_path).absoluteFilePath(m_texturesInfo[index].textureName + ".TXTR");
 	shared_ptr<Stream> stream(new FileStream(filename.toStdWString(), Stream::modeRead));
@@ -88,15 +107,20 @@ shared_ptr<Stream> PatcherArcFileSource::TextureDataSource::getAt(int index)
 	ASSERT(mipmapCount >= m_texturesInfo[index].mipmapCount);
 	ASSERT(stream->size() - stream->position() >= m_texturesInfo[index].rasterSize);
 
+	Q_UNUSED(type);
+	Q_UNUSED(width);
+	Q_UNUSED(height);
+	Q_UNUSED(mipmapCount);
+
 	return stream;
 }
 
-int PatcherArcFileSource::TextureDataSource::partCount() const
+int PatcherTexturesFileSource::TextureDataSource::partCount() const
 {
 	return m_partInfo.size();
 }
 
-OnFlyPatchStream::PartInfo PatcherArcFileSource::TextureDataSource::partInfoAt(int index) const
+OnFlyPatchStream::PartInfo PatcherTexturesFileSource::TextureDataSource::partInfoAt(int index) const
 {
 	return m_partInfo[index];
 }

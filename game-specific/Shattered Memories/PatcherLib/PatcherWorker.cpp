@@ -13,11 +13,19 @@ namespace ShatteredMemories
 PatcherWorker::PatcherWorker(QObject* parent)
 	: QObject(parent)
 {
+	VERIFY(connect(m_patcher.progressNotifier(), SIGNAL(progressInit(int)), SIGNAL(progressInit(int)), Qt::DirectConnection));
+	VERIFY(connect(m_patcher.progressNotifier(), SIGNAL(progressChanged(int, const QString&)), SIGNAL(progressChanged(int, const QString&)), Qt::DirectConnection));
+	VERIFY(connect(m_patcher.progressNotifier(), SIGNAL(progressFinish()), SIGNAL(progressFinish()), Qt::DirectConnection));
 }
 
 void PatcherWorker::reset()
 {
 	m_resourcesPaths.clear();
+}
+
+void PatcherWorker::requestStop()
+{
+	VERIFY(QMetaObject::invokeMethod(m_patcher.progressNotifier(), "requestStop"));
 }
 
 void PatcherWorker::initialize()
@@ -28,18 +36,36 @@ void PatcherWorker::initialize()
 
 void PatcherWorker::rebuildArchives()
 {
-	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_resourcesPaths, m_bootArcInfo));
+	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_resourcesPaths, m_executableInfo));
 	emit stepCompleted();
 }
 
 void PatcherWorker::replaceArchives()
 {
+	CHECK_CALL(m_patcher.replaceArchives(m_tempPath, m_executableInfo));
+	emit stepCompleted();
+}
+
+void PatcherWorker::checkArchives()
+{
+	CHECK_CALL(m_patcher.checkArchives(m_tempPath, m_executableInfo));
+	emit stepCompleted();
+}
+
+void PatcherWorker::checkImage()
+{
+	CHECK_CALL(m_patcher.checkImage());
 	emit stepCompleted();
 }
 
 void PatcherWorker::finalize()
 {
+	finalizeInternal();
 	emit stepCompleted();
+}
+
+void PatcherWorker::finalizeInternal()
+{
 }
 
 void PatcherWorker::processError()
@@ -62,12 +88,11 @@ void PatcherWorker::addResourcesPath(const QString& path)
 	m_resourcesPaths.append(path);
 }
 
-void PatcherWorker::setBootArcInfo(const QString& executableName, quint32 offset, quint32 maxSize, quint32 actualSizeValueOffset)
+void PatcherWorker::setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset)
 {
-	m_bootArcInfo.executableName = executableName;
-	m_bootArcInfo.offset = offset;
-	m_bootArcInfo.size = maxSize;
-	m_bootArcInfo.sizeOffset = actualSizeValueOffset;
+	m_executableInfo.executablePath = executableName;
+	m_executableInfo.bootArcOffset = bootArcOffset;
+	m_executableInfo.headersOffset = headersOffset;
 }
 
 }

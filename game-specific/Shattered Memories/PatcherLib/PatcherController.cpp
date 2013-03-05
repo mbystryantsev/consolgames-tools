@@ -1,5 +1,6 @@
 #include "PatcherController.h"
 #include <QDir>
+#include <QMetaEnum>
 
 LOG_CATEGORY("PatcherController");
 
@@ -9,8 +10,7 @@ namespace ShatteredMemories
 PatcherController::PatcherController(QObject* parent)
 	: QObject(parent)
 	, m_started(false)
-	, m_workerPtr(new PatcherWorker())
-	, m_worker(m_workerPtr.get())
+	, m_worker(NULL)
 	, m_errorCode(0)
 	, m_stopRequested(false)
 	, m_checkArchivesData(false)
@@ -18,7 +18,7 @@ PatcherController::PatcherController(QObject* parent)
 	, m_checkImage(false)
 {
 //	addResourcesPath(":/patchdata/");
-
+	reset();
 	//m_progressHandler.subscribe(m_worker);
 }
 
@@ -28,6 +28,10 @@ void PatcherController::buildActionList()
 	addStep("initialize");
 	addStep("rebuildArchives");
 	addStep("replaceArchives");
+	if (m_checkArchivesInImage)
+	{
+		addStep("checkArchives");
+	}
 	if (m_checkImage)
 	{
 		addStep("checkImage");
@@ -35,8 +39,12 @@ void PatcherController::buildActionList()
 	addStep("finalize");
 }
 
-QList<QByteArray> PatcherController::actionList() const
+QList<QByteArray> PatcherController::actionList()
 {
+	if (!m_started)
+	{
+		buildActionList();
+	}
 	return m_steps;
 }
 
@@ -55,6 +63,8 @@ void PatcherController::addStep(const QByteArray& step)
 
 void PatcherController::reset()
 {
+	m_workerPtr.reset(new PatcherWorker());
+	m_worker = m_workerPtr.get();
 	ASSERT(!m_workerThread.isRunning());
 	VERIFY(QMetaObject::invokeMethod(m_worker, "reset"));
 }
@@ -78,10 +88,20 @@ void PatcherController::setTempPath(const QString& path)
 	VERIFY(QMetaObject::invokeMethod(m_worker, "setTempPath", Q_ARG(const QString&, path)));
 }
 
-void PatcherController::setBootArcInfo(const QString& executableName, quint32 offset, quint32 maxSize, quint32 actualSizeValueOffset)
+void PatcherController::setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset)
 {
 	ASSERT(!m_workerThread.isRunning());
-	VERIFY(QMetaObject::invokeMethod(m_worker, "setBootArcInfo", Q_ARG(const QString&, executableName), Q_ARG(quint32, offset), Q_ARG(quint32, maxSize), Q_ARG(quint32, actualSizeValueOffset)));
+	VERIFY(QMetaObject::invokeMethod(m_worker, "setExecutableInfo", Q_ARG(const QString&, executableName), Q_ARG(quint32, bootArcOffset), Q_ARG(quint32, headersOffset)));
+}
+
+void PatcherController::setCheckArchives(bool check)
+{
+	m_checkArchivesInImage = check;
+}
+
+void PatcherController::setCheckImage(bool check)
+{
+	m_checkImage = check;
 }
 
 bool PatcherController::processStep()
@@ -173,6 +193,11 @@ void PatcherController::waitForWorker()
 
 void PatcherController::start()
 {
+	if (m_workerThread.isRunning())
+	{
+		m_workerThread.wait(2000);
+	}
+
 	ASSERT(!m_workerThread.isRunning());
 	ASSERT(!m_started);
 
@@ -185,6 +210,11 @@ void PatcherController::start()
 
 	VERIFY(connect(m_worker, SIGNAL(stepCompleted()), SLOT(onStepCompleted()), Qt::QueuedConnection));
 	VERIFY(connect(m_worker, SIGNAL(stepFailed(int, const QString&)), SLOT(onStepFailed(int, const QString&)), Qt::QueuedConnection));
+	VERIFY(connect(m_worker, SIGNAL(progressInit(int)), SIGNAL(progressInit(int)), Qt::QueuedConnection));
+	VERIFY(connect(m_worker, SIGNAL(progressChanged(int, const QString&)), SIGNAL(progressChanged(int, const QString&)), Qt::QueuedConnection));
+	VERIFY(connect(m_worker, SIGNAL(progressFinish()), SIGNAL(progressFinish()), Qt::QueuedConnection));
+
+	m_stopRequested = false;
 
 	m_workerThread.start();
 	processStep();
@@ -213,6 +243,19 @@ bool PatcherController::isStarted() const
 bool PatcherController::isStopRequested() const
 {
 	return m_stopRequested;
+}
+
+QString PatcherController::errorName(int code)
+{
+	const int index = PatcherProcessor::staticMetaObject.indexOfEnumerator("ErrorCode");
+	ASSERT(index >= 0);
+	if (index < 0)
+	{
+		return QString();
+	}
+
+	const QMetaEnum metaEnum = PatcherProcessor::staticMetaObject.enumerator(index);
+	return metaEnum.valueToKey(code);
 }
 
 }

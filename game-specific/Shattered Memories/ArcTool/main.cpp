@@ -58,7 +58,7 @@ set<u32> hashList(int argc, const char* argv[])
 		const u32 hash = strtoul(str, &end, 16);
 		if (*end != 0)
 		{
-			hashes.insert(Archive::calcHash(str));
+			hashes.insert(Hash::calc(str));
 		}
 		else
 		{

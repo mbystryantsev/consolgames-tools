@@ -7,10 +7,10 @@
 namespace ShatteredMemories
 {
 
-class PatcherArcFileSource : public FileSource
+class PatcherTexturesFileSource : public FileSource
 {
 public:
-	PatcherArcFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase);
+	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase);
 
 	virtual std::tr1::shared_ptr<Consolgames::Stream> file(u32 hash, FileAccessor& accessor) override;
 
@@ -34,6 +34,9 @@ private:
 	FileSource* m_primarySource;
 	TextureDatabase m_textureDB;
 	QString m_texturesPath;
+	static const std::string s_fontFilename;
+	static const std::string s_fontFileExt;
+	static const quint32 s_fontFilenameHash;
 };
 
 }

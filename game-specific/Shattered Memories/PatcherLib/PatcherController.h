@@ -9,11 +9,12 @@ namespace ShatteredMemories
 class PatcherController: public QObject
 {
 	Q_OBJECT
+	Q_ENUMS(PatcherProcessor::ErrorCode);
 
 public:
 	PatcherController(QObject* parent = NULL);
 
-	QList<QByteArray> actionList() const;
+	QList<QByteArray> actionList();
 	bool isStarted() const;
 	bool isStopRequested() const;
 
@@ -22,15 +23,22 @@ public:
 	Q_SLOT void setImagePath(const QString& path);
 	Q_SLOT void addResourcesPath(const QString& path);
 	Q_SLOT void setTempPath(const QString& path);
-	Q_SLOT void setBootArcInfo(const QString& executableName, quint32 offset, quint32 maxSize, quint32 actualSizeValueOffset);
+	Q_SLOT void setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset);
 	Q_SLOT void requestStop();
 	Q_SLOT void start();
+
+	Q_SLOT void setCheckArchives(bool check);
+	Q_SLOT void setCheckImage(bool check);
 
 	Q_SIGNAL void completed();
 	Q_SIGNAL void stepStarted(const QByteArray&);
 	Q_SIGNAL void stepCompleted(const QByteArray&);
 	Q_SIGNAL void failed(const QByteArray& step, int errorCode, const QString& errorData);
 	Q_SIGNAL void canceled(const QByteArray& step);
+
+	Q_SIGNAL void progressInit(int max);
+	Q_SIGNAL void progressChanged(int value, const QString& message);
+	Q_SIGNAL void progressFinish();
 
 	QObject* progressHandler();
 
@@ -70,6 +78,9 @@ private:
 	QString m_errorData;
 	QString m_errorMessage;
 	QString m_errorDescription;
+
+public:
+	static QString errorName(int code);
 };
 
 }
