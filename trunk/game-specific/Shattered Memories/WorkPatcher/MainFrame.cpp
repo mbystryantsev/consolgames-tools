@@ -5,27 +5,29 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QSettings>
+#include <QMessageBox>
+
+using namespace ShatteredMemories;
 
 MainFrame::MainFrame()
 	: QFrame()
 	, m_settingsIsActive(false)
-	, m_isPatching(false)
 {
 	m_ui.setupUi(this);
+	m_ui.actionList->addItem("Waiting for action...");
 
 	VERIFY(connect(m_ui.startButton, SIGNAL(clicked()), SLOT(onStartPressed())));
 	VERIFY(connect(m_ui.selectImageButton, SIGNAL(clicked()), SLOT(onImageSelectPressed())));
 	VERIFY(connect(m_ui.selectDataPathButton, SIGNAL(clicked()), SLOT(onDataPathSelectPressed())));
 	VERIFY(connect(m_ui.selectTempPathButton, SIGNAL(clicked()), SLOT(onTempPathSelectPressed())));
 
-	
-	// 	//VERIFY(connect(&m_paster, SIGNAL(actionCompleted(bool)), SLOT(processStep(bool))));
-// 
-// 	VERIFY(connect(&m_paster, SIGNAL(initProgress(int)), SLOT(setProgressSize(int))));
-// 	VERIFY(connect(&m_paster, SIGNAL(changeProgress(int, const QString&)), SLOT(setProgressValue(int, const QString&))));
-// 	VERIFY(connect(&m_paster, SIGNAL(actionStarted(int)), SLOT(onActionStarted(int))));
-// 	VERIFY(connect(&m_paster, SIGNAL(actionCompleted(bool)), SLOT(onActionCompleted(bool))));
-// 	VERIFY(connect(&m_paster, SIGNAL(changeActionProgress(int, const QString&)), SLOT(onActionProgress(int, const QString&))));
+	VERIFY(connect(&m_patcher, SIGNAL(stepStarted(const QByteArray&)), SLOT(onActionStarted(const QByteArray&))));
+	VERIFY(connect(&m_patcher, SIGNAL(stepCompleted(const QByteArray&)), SLOT(onActionCompleted(const QByteArray&))));
+	VERIFY(connect(&m_patcher, SIGNAL(failed(const QByteArray&, int, const QString&)), SLOT(onFailed(const QByteArray&, int, const QString&))));
+	VERIFY(connect(&m_patcher, SIGNAL(canceled(const QByteArray&)), SLOT(onCanceled(const QByteArray&))));
+	VERIFY(connect(&m_patcher, SIGNAL(progressInit(int)), SLOT(onProgressInit(int))));
+	VERIFY(connect(&m_patcher, SIGNAL(progressChanged(int, const QString&)), SLOT(onProgressChanged(int, const QString&))));
+	VERIFY(connect(&m_patcher, SIGNAL(progressFinish()), SLOT(onProgressFinish())));
 
 	VERIFY(connect(m_ui.imagePath, SIGNAL(textChanged(const QString&)), SLOT(storeSettings())));
 	VERIFY(connect(m_ui.dataPath, SIGNAL(textChanged(const QString&)), SLOT(storeSettings())));
@@ -47,15 +49,24 @@ void MainFrame::onStartPressed()
 		return;
 	}
 
-	m_isPatching = true;	
 	m_ui.startButton->setText("Cancel");
 	
 	m_patcher.reset();
 	m_patcher.setImagePath(m_ui.imagePath->text());
 	m_patcher.setTempPath(m_ui.tempPath->text());
 	m_patcher.addResourcesPath(m_ui.dataPath->text());
-	m_patcher.setBootArcInfo("main.dol", 0x3FACB8, 0x1FFC8, 0x3FAC94);
+	m_patcher.setExecutableInfo("main.dol", 0x3FAC80, 0x41AC80);
 
+	m_patcher.setCheckArchives(m_ui.checkArchives->isChecked());
+	m_patcher.setCheckImage(m_ui.checkImage->isChecked());
+
+	m_actions = m_patcher.actionList();
+	m_ui.actionList->clear();
+	foreach (const QByteArray& action, m_actions)
+	{
+		m_ui.actionList->addItem("[ ] " + QString::fromUtf8(action.constData()));
+		m_ui.actionList->item(m_ui.actionList->model()->rowCount() - 1)->setData(Qt::FontRole, QFont("Lucida Console"));
+	}
 
 	m_patcher.start();
 }
@@ -89,13 +100,13 @@ void MainFrame::onTempPathSelectPressed()
 
 void MainFrame::setProgressSize(int size)
 {
-	m_ui.itemProgressBar->setMaximum(size);
-	m_ui.itemProgressBar->setValue(0);
+	m_ui.progressBar->setMaximum(size);
+	m_ui.progressBar->setValue(0);
 }
 
 void MainFrame::setProgressValue(int index, const QString&)
 {
-	m_ui.itemProgressBar->setValue(index + 1);
+	m_ui.progressBar->setValue(index + 1);
 }
 
 void MainFrame::setMessage(const QString& message)
@@ -103,88 +114,49 @@ void MainFrame::setMessage(const QString& message)
 	m_ui.messageLabel->setText(message);
 }
 
-void MainFrame::onActionStarted(int action)
+void MainFrame::onActionStarted(const QByteArray& action)
 {
-// 	m_currentAction = action;
-// 	switch (action)
-// 	{
-// 		case PasterThread::Init:
-// 			m_ui.totalProgressBar->setValue(0);
-// 			m_ui.statusLabel->setText("Initialazing...");
-// 			break;
-// 		case PasterThread::RebuildPaks:
-// 			m_ui.statusLabel->setText("Rebuilding paks...");
-// 			break;
-// 		case PasterThread::CheckData:
-// 			m_ui.statusLabel->setText("Checking data...");
-// 			break;
-// 		case PasterThread::ReplacePaks:
-// 			m_ui.statusLabel->setText("Replacing paks in image...");
-// 			break;
-// 		case PasterThread::CheckPaks:
-// 			m_ui.statusLabel->setText("Checking paks in image...");
-// 			break;
-// 		case PasterThread::CheckImage:
-// 			m_ui.statusLabel->setText("Checking image...");
-// 			break;
-// 		case PasterThread::Done:
-// 			m_ui.statusLabel->setText("All actions completed!");
-// 			break;
-// 	}
-// 	m_ui.itemProgressBar->reset();
+	const int index = m_actions.indexOf(action);
+	ASSERT(index >= 0);
+	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[%1] %2").arg(QChar(0x2026)).arg(QString::fromUtf8(action.constData())));
 }
 
-void MainFrame::onActionCompleted(bool success)
+void MainFrame::onActionCompleted(const QByteArray& action)
 {
-// 	setMessage(QString());
-// 
-// 	if (m_stopRequested)
-// 	{
-// 		m_ui.statusLabel->setText("Aborted by user!");
-// 		QApplication::beep();
-// 		reset();
-// 		return;
-// 	}
-// 
-// 	if (success)
-// 	{
-// 		if (m_currentAction == PasterThread::Done)
-// 		{
-// 			QApplication::beep();
-// 			reset();
-// 		}
-// 		else
-// 		{
-// 			m_ui.totalProgressBar->setValue(m_ui.totalProgressBar->value() + 1);
-// 		}
-// 		return;
-// 	}
-// 
-// 	switch (m_currentAction)
-// 	{
-// 	case PasterThread::Init:
-// 		m_ui.statusLabel->setText("Initialazing failed!");
-// 		break;
-// 	case PasterThread::RebuildPaks:
-// 		m_ui.statusLabel->setText("Rebuilding paks failed!");
-// 		break;
-// 	case PasterThread::CheckData:
-// 		m_ui.statusLabel->setText("Checking data failed!");
-// 		break;
-// 	case PasterThread::ReplacePaks:
-// 		m_ui.statusLabel->setText("Replacing paks in image failed!");
-// 		break;
-// 	case PasterThread::CheckPaks:
-// 		m_ui.statusLabel->setText("Checking paks in image failed!");
-// 		break;
-// 	case PasterThread::CheckImage:
-// 		m_ui.statusLabel->setText("Checking image failed!");
-// 		break;
-// 	case PasterThread::Done:
-// 		m_ui.statusLabel->setText("Finalizing failed!");
-// 		break;
-// 	}
+	const int index = m_actions.indexOf(action);
+	ASSERT(index >= 0);
+	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[V] ") + QString::fromUtf8(action.constData()));
 
+	if (index == m_actions.size() - 1)
+	{
+		QApplication::beep();
+		reset();
+	}
+}
+
+void MainFrame::onFailed(const QByteArray& action, int errorCode, const QString& errorData)
+{
+	const int index = m_actions.indexOf(action);
+	ASSERT(index >= 0);
+	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[F] ") + QString::fromUtf8(action.constData()));
+	const QString errorName = PatcherController::errorName(errorCode);
+
+	DLOG << "Error: " << errorName << " (" << errorCode << "), " << errorData;
+
+	QMessageBox::critical(this, "Error!", QString("An error occured during patching.\nCode: %1 (%2)\nData: %3").arg(errorName).arg(errorCode).arg(errorData));
+
+	reset();
+}
+
+void MainFrame::onCanceled(const QByteArray& action)
+{
+	const int index = m_actions.indexOf(action);
+	ASSERT(index >= 0);
+	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[C] ") + QString::fromUtf8(action.constData()));
+
+	QMessageBox::information(this, "Cancelled", "Process cancelled by user.");
+
+	reset();
 }
 
 void MainFrame::storeSettings() const
@@ -229,14 +201,29 @@ void MainFrame::closeEvent(QCloseEvent*)
 
 void MainFrame::reset()
 {
-	m_ui.itemProgressBar->reset();
-	m_ui.totalProgressBar->reset();
+	m_ui.progressBar->reset();
 	m_ui.messageLabel->setText("");
 	m_ui.startButton->setText("Start");
-	m_isPatching = false;
 }
 
 void MainFrame::onActionProgress(int, const QString& message)
 {
 	setMessage(message);
+}
+
+void MainFrame::onProgressInit(int max)
+{
+	m_ui.progressBar->reset();
+	m_ui.progressBar->setMaximum(max);
+}
+
+void MainFrame::onProgressChanged(int value, const QString& message)
+{
+	m_ui.progressBar->setValue(value);
+	m_ui.messageLabel->setText(message);
+}
+
+void MainFrame::onProgressFinish()
+{
+	m_ui.progressBar->reset();
 }
