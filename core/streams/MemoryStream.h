@@ -24,6 +24,7 @@ public:
     virtual offset_t position() const override;
     virtual void flush() override;
 	virtual offset_t size() const override;
+	virtual bool atEnd() const override;
 
 private:
 	largesize_t m_size;

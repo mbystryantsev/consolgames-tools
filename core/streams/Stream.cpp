@@ -144,11 +144,6 @@ bool Stream::opened() const
 	return true;
 }
 
-bool Stream::atEnd() const
-{
-	return false;
-}
-
 int Stream::readInt()
 {
 	return read<int>();

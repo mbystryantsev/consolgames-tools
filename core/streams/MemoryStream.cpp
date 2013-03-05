@@ -112,4 +112,9 @@ offset_t MemoryStream::size() const
 	return m_size;
 }
 
+bool MemoryStream::atEnd() const 
+{
+	return (m_position == m_size);
+}
+
 }

@@ -15,15 +15,16 @@ namespace Consolgames
 class FileStream: public Stream
 {
 public:
+	FileStream(const std::string& filename, OpenMode mode);
 	FileStream(const std::wstring& filename, OpenMode mode);
-    virtual ~FileStream();
+	virtual ~FileStream();
 
-    virtual offset_t position() const override;
-    virtual void flush() override;
-    virtual largesize_t read(void* buf, largesize_t size) override;
-    virtual largesize_t write(const void* buf, largesize_t size) override;
+	virtual offset_t position() const override;
+	virtual void flush() override;
+	virtual largesize_t read(void* buf, largesize_t size) override;
+	virtual largesize_t write(const void* buf, largesize_t size) override;
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) override;
-    virtual offset_t size() const override;
+	virtual offset_t size() const override;
 	virtual bool opened() const override;
 	virtual bool atEnd() const override;
 	OpenMode openMode() const;
@@ -35,6 +36,7 @@ public:
 
 protected:
 	FileStream();
+	void init(const std::wstring& filename, OpenMode mode);
 
 #ifdef USE_WINDOWS_FILES
 	HANDLE m_handle;
@@ -42,7 +44,7 @@ protected:
 	int m_descriptor;
 #endif
 	OpenMode m_openMode;
-	const std::wstring m_path;
+	std::wstring m_path;
 };
 
 

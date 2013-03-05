@@ -10,10 +10,23 @@
 namespace Consolgames
 {
 
-FileStream::FileStream(const std::wstring& filename, OpenMode mode)
-	: Stream(),
-	m_path(filename)
+FileStream::FileStream(const std::wstring& filename, OpenMode mode) : Stream()
 {
+	init(filename, mode);
+}
+
+FileStream::FileStream(const std::string& filename, OpenMode mode)
+{
+	init(std::wstring(filename.begin(), filename.end()), mode);
+}
+
+FileStream::FileStream() : m_handle(INVALID_HANDLE_VALUE)
+{
+}
+
+void FileStream::init(const std::wstring& filename, OpenMode mode)
+{
+	m_path = filename;
 	m_openMode = mode;
 	m_handle = INVALID_HANDLE_VALUE;
 
@@ -42,10 +55,6 @@ FileStream::FileStream(const std::wstring& filename, OpenMode mode)
 #else
 	m_descriptor = _open(filename.c_str(), static_cast<int>(mode) | _O_BINARY, _S_IREAD | _S_IWRITE);
 #endif
-}
-
-FileStream::FileStream() : m_handle(INVALID_HANDLE_VALUE)
-{
 }
 
 FileStream::~FileStream()
