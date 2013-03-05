@@ -150,19 +150,12 @@ bool parseStream(Stream& stream, quint32 fileHash, QTextStream& csv)
 	bool atLeastOneParsed = false;
 	while (parser.initSegment())
 	{
-		if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY" || parser.metaInfo().typeId == "rwID_KFONT")
+		if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
 		{
 			while (parser.fetch())
 			{
 				atLeastOneParsed = true;
-				if (parser.metaInfo().typeId == "rwID_TEXDICTIONARY")
-				{
-					parseDictionary(stream, fileHash, csv);
-				}
-				else
-				{
-					stream.skip(parser.itemSize());
-				}
+				parseDictionary(stream, fileHash, csv);
 			}
 
 			if (atLeastOneParsed && !parser.atSegmentEnd())
@@ -188,7 +181,6 @@ int main(int argc, char* argv[])
 	csvStream << "fileHash;textureName;width;height;mipmapCount;rasterPosition;rasterSize\n";
 
 	QDir dir("E:/_job/SHSM/wii/test");
-	//QDir dir("D:/rev/memories/font");
 	const QStringList files = dir.entryList(QDir::Files);
 	foreach (const QString& file, files)
 	{
