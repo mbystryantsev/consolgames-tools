@@ -29,6 +29,9 @@ public:
 		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index) = 0;
 		virtual int partCount() const = 0;
 		virtual PartInfo partInfoAt(int index) const = 0;
+		virtual ~DataSource()
+		{
+		}
 	};
 
 public:
@@ -40,6 +43,7 @@ public:
 	virtual offset_t position() const override;
 	virtual void flush() override;
 	virtual offset_t size() const override;
+	virtual bool atEnd() const override;
 
 private:
 	std::tr1::shared_ptr<Consolgames::Stream> m_stream;

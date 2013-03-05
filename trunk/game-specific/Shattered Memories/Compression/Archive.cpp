@@ -132,6 +132,13 @@ bool Archive::extractFile(const FileRecord& record, Consolgames::Stream* stream)
 {
 	VERIFY(m_stream->seek(record.offset, Stream::seekSet) == record.offset);
 
+	if (!record.isPacked())
+	{
+		m_stream->seek(record.offset, Stream::seekSet);
+		stream->writeStream(m_stream, record.storedSize);
+		return true;
+	}
+
 	DecompressionStream zlibStream(m_stream, record.decompressedSize);
 	if (!zlibStream.opened())
 	{
@@ -178,6 +185,8 @@ u32 Archive::alignSize(u32 size) const
 
 bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap)
 {
+	ProgressGuard guard(*this);
+
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
 	{
@@ -198,6 +207,12 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	{
 		DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
 
+		notifyProgress(processed, Hash::toString(record->hash));
+
+		if (stopRequested())
+		{
+			return false;
+		}
 
 		FileRecord newRecord = *record;
 		newRecord.offset = position;
@@ -239,6 +254,10 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 				while (!stream->atEnd())
 				{
 					newRecord.storedSize += static_cast<u32>(file.writeStream(stream.get(), 0x80000));
+					if (stopRequested())
+					{
+						return false;
+					}
 				}				
 			}
 			else
@@ -248,6 +267,10 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 				while (!stream->atEnd())
 				{
 					zlibStream.writeStream(stream.get(), 0x80000);
+					if (stopRequested())
+					{
+						return false;
+					}
 				}
 				zlibStream.finish();
 				newRecord.storedSize = static_cast<u32>(zlibStream.size());
@@ -325,6 +348,41 @@ shared_ptr<Stream> Archive::openFile(u32 fileHash)
 	return FileAccessor(m_stream, record).open();
 }
 
+void Archive::notifyProgressStart()
+{
+	std::for_each(m_progressListeners.begin(), m_progressListeners.end(), std::bind2nd(std::mem_fun(&IProgressListener::startProgress), m_fileRecords.size()));
+}
+
+void Archive::notifyProgress(int progressValue, const std::string& name)
+{
+	for (std::list<IProgressListener*>::iterator listener = m_progressListeners.begin(); listener != m_progressListeners.end(); listener++)
+	{
+		(*listener)->progress(progressValue, name);
+	}
+}
+
+void Archive::notifyProgressEnd()
+{
+	std::for_each(m_progressListeners.begin(), m_progressListeners.end(), std::mem_fun(&IProgressListener::finishProgress));
+}
+
+void Archive::addProgressListener(IProgressListener* listener)
+{
+	m_progressListeners.push_back(listener);
+}
+
+bool Archive::stopRequested()
+{
+	for (std::list<IProgressListener*>::iterator listener = m_progressListeners.begin(); listener != m_progressListeners.end(); listener++)
+	{
+		if ((*listener)->stopRequested())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 Archive::FileAccessor::FileAccessor(Stream* stream, const Archive::FileRecord& record)
@@ -355,6 +413,18 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 
 	m_fileStream.reset(pakStream.release());
 	return m_fileStream;
+}
+
+
+Archive::ProgressGuard::ProgressGuard(Archive& archive)
+	: m_archive(archive)
+{
+	m_archive.notifyProgressStart();
+}
+
+Archive::ProgressGuard::~ProgressGuard()
+{
+	m_archive.notifyProgressEnd();
 }
 
 }

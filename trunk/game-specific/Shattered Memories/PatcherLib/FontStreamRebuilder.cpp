@@ -227,7 +227,7 @@ offset_t FontStreamRebuilder::size() const
 
 bool FontStreamRebuilder::atEnd() const 
 {
-	return m_stream->atEnd();
+	return (m_finalized && m_bufferedData.isEmpty());
 }
 
 }
