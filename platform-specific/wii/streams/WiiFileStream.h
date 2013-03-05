@@ -20,6 +20,7 @@ public:
 	virtual void flush() override;
 	virtual offset_t size() const override;
 	virtual largesize_t writeStream(Stream *stream, largesize_t size) override;
+	virtual bool atEnd() const override;
 
 	offset_t offset() const;
 
