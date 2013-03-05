@@ -15,6 +15,7 @@ INCLUDEPATH += \
 	$$PWD/Compression \
 	$$PWD/TextLib \
 	$$PWD/PatcherLib \
+	$$PWD/StreamParserLib \
 	$$PWD/../../core \
 	$$PWD/../../core/streams \
 	$$PWD/../../core/classes \
@@ -36,6 +37,7 @@ QMAKE_LIBDIR += \
 	$$PWD/Compression/$$CONFIG_NAME \
 	$$PWD/TextLib/$$CONFIG_NAME \
 	$$PWD/PatcherLib/$$CONFIG_NAME \
+	$$PWD/StreamParserLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
