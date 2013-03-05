@@ -102,6 +102,9 @@ class AssertHandler
 public:
 	AssertHandler(const char* file, int line, const char* function, const char* expression)
 	{
+#ifdef CG_LOG_ENABLED
+		std::cout << "ASSERT triggered at " << file << "@" << line << " (" << function << "): " << expression;
+#endif
 # ifdef _MSC_VER
 		try
 		{
@@ -144,18 +147,24 @@ public:
 	{
 		enum Type
 		{
+			modNone,
 			modHex
 		};
 		LogModifiers(Type t) : type(t){}
 		Type type;
 	};
+
 #ifdef CG_LOG_ENABLED
+	DLog()
+		: modifier(LogModifiers::modNone)
+	{
+	}
 	~DLog(){std::cout << std::endl;}
 	DLog& operator ()(const char* s, ...){std::cout << s; return *this;}
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
 	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
 	DLog& operator <<(const std::wstring& s){std::cout << s.c_str(); return *this;}
-	DLog& operator <<(__int64 v){if(modifier == LogModifiers::modHex) std::cout << std::hex; std::cout << v; return *this;}
+	DLog& operator <<(__int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
 # ifdef QT_CORE_LIB
 	DLog& operator <<(const QString& s){std::cout << s.toStdString(); return *this;}

@@ -1,5 +1,4 @@
-#ifndef __NULLABLE_H
-#define __NULLABLE_H
+#pragma once
 
 namespace Consolgames
 {
@@ -65,5 +64,3 @@ private:
 
 
 }
-
-#endif // __NULLABLE_H

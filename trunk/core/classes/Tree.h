@@ -12,6 +12,7 @@ public:
 			, m_child(0)
 			, m_next(0)
 			, m_prev(0)
+			, m_children(0)
 		{
 		}
 

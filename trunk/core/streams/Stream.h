@@ -54,7 +54,7 @@ public:
 	virtual void flush() = 0;
 	virtual offset_t size() const = 0;
 	virtual bool opened() const;
-	virtual bool atEnd() const;
+	virtual bool atEnd() const = 0;
 
 	virtual largesize_t readStream(Stream *stream, largesize_t size);
 	virtual largesize_t writeStream(Stream *stream, largesize_t size);
