@@ -22,11 +22,17 @@ protected:
 	Q_SLOT void setProgressSize(int size);
 	Q_SLOT void setProgressValue(int index, const QString&);
 	Q_SLOT void setMessage(const QString&);
-	Q_SLOT void onActionStarted(int action);
-	Q_SLOT void onActionCompleted(bool success);
+	Q_SLOT void onActionStarted(const QByteArray& action);
+	Q_SLOT void onActionCompleted(const QByteArray& action);
+	Q_SLOT void onFailed(const QByteArray& action, int errorCode, const QString& errorData);
+	Q_SLOT void onCanceled(const QByteArray& action);
 	Q_SLOT void onActionProgress(int value, const QString& message);
 
 	Q_SLOT void storeSettings() const;
+
+	Q_SLOT void onProgressInit(int max);
+	Q_SLOT void onProgressChanged(int value, const QString& message);
+	Q_SLOT void onProgressFinish();
 
 	virtual void closeEvent(QCloseEvent* event) override;
 
@@ -39,5 +45,5 @@ protected:
 	ShatteredMemories::PatcherController m_patcher;
 	QByteArray m_currentAction;
 	bool m_settingsIsActive;
-	bool m_isPatching;
+	QList<QByteArray> m_actions;
 };

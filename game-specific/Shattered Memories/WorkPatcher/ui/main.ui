@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>573</height>
+    <width>321</width>
+    <height>422</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Silent Hill: Shattered Memories Work Patcher</string>
+   <string>Shattered Memories Work Patcher</string>
   </property>
   <property name="frameShape">
    <enum>QFrame::StyledPanel</enum>
@@ -119,25 +119,9 @@
     </layout>
    </item>
    <item>
-    <widget class="QProgressBar" name="itemProgressBar">
+    <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>24</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QProgressBar" name="totalProgressBar">
-     <property name="maximum">
-      <number>6</number>
-     </property>
-     <property name="value">
-      <number>1</number>
-     </property>
-     <property name="textVisible">
-      <bool>true</bool>
-     </property>
-     <property name="format">
-      <string>%v/6</string>
      </property>
     </widget>
    </item>
@@ -156,9 +140,6 @@
    </item>
    <item>
     <widget class="QCheckBox" name="checkArchives">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
      <property name="text">
       <string>Check archives in image after replacing</string>
      </property>
@@ -173,7 +154,7 @@
       <string>Validate image after patching</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
