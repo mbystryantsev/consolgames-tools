@@ -71,6 +71,11 @@ bool WiiImage::open(const std::wstring& filename, Stream::OpenMode mode)
 	return parseImage();
 }
 
+bool WiiImage::opened() const
+{
+	return m_stream->opened();
+}
+
 bool WiiImage::readHeader()
 {
 	char buffer[0x440];
@@ -2036,7 +2041,7 @@ bool WiiImage::checkPartition(int partition)
 				{
 					DLOG << "h0 does not match! Cluster: " << clusterIndex << " (partition offset: " << clusterOffset
 						<< ", physical offset: " << clusterPhOffset << ")";
-					m_lastErrorData = formatErrorData(partition, "h0", i);
+					m_lastErrorData = formatErrorData(partition, "h0", group, i);
 					return false;
 				}
 			}

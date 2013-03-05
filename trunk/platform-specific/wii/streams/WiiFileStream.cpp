@@ -12,7 +12,6 @@ WiiFileStream::WiiFileStream(WiiImage& image, int partition, offset_t offset, la
 	, m_size(size)
 	, m_position(0)
 {
-
 }
 
 largesize_t WiiFileStream::read(void* buf, largesize_t size)
@@ -77,6 +76,11 @@ largesize_t WiiFileStream::writeStream(Stream *stream, largesize_t size)
 offset_t WiiFileStream::offset() const
 {
 	return m_offset;
+}
+
+bool WiiFileStream::atEnd() const 
+{
+	return (position() == size());
 }
 
 }

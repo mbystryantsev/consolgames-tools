@@ -121,7 +121,7 @@ struct PartitionHeader
 	}
 	bool isWii() const
 	{
-		return (console == 'R') || (console == '_') || (console == 'H') || (console == '0') || (console == '4');
+		return (console == 'R') || (console == '_') || (console == 'H') || (console == '0') || (console == '4') || (console == 'S');
 	}
 	bool isGamecube() const
 	{
