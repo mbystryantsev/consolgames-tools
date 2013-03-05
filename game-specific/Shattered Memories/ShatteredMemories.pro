@@ -11,6 +11,7 @@ SUBDIRS = \
 	PatcherLib \
 	WorkPatcher \
 	ScriptEditor \
+	StreamParserLib \
 	StreamParser \
 	TextureConv \
 	externals/core \
