@@ -4,6 +4,10 @@ CONFIG -= flat
 TEMPLATE = lib
 DEFINES += _SCL_SECURE_NO_WARNINGS
 
+!contains(DEFINES, PRODUCTION) {
+	DEFINES += CG_LOG_ENABLED
+}
+
 COREDIR = ../../../../core
 
 HEADERS = \
