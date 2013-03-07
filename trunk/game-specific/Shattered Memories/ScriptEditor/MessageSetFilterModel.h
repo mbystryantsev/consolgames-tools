@@ -19,8 +19,6 @@ protected:
 	QString m_pattern;
 	bool m_patternAtBegin;
 	bool m_patternAtEnd;
-	quint64 m_filterHash;
-	int m_filterIndex;
 	Qt::CaseSensitivity m_caseSensitivity;
 	QSet<quint32> m_hashes;
 	QStringList m_tags;

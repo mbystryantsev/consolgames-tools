@@ -3,12 +3,15 @@
 
 //const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("&[^;]*;");
 const QRegExp ScriptHighlighter::s_tagExpression = QRegExp("<.(=\\d)?>");
+const QRegExp ScriptHighlighter::s_refExpression = QRegExp("\\{REF:[0-9a-zA-Z]{8}\\}");
 
 ScriptHighlighter::ScriptHighlighter(QPlainTextEdit* parent)
 	: QSyntaxHighlighter(parent->document())
 	, m_caseSensitivity(Qt::CaseInsensitive)
 {
 	m_tagFormat.setForeground(QBrush(Qt::gray));
+	m_refFormat.setBackground(QBrush(QColor("#FAF")));
+	m_refFormat.setFontWeight(QFont::DemiBold);
 }
 
 void ScriptHighlighter::setPattern(const QString& pattern)
@@ -33,17 +36,23 @@ void ScriptHighlighter::setPattern(const QString& pattern)
 	rehighlight();
 }
 
-void ScriptHighlighter::highlightBlock(const QString& text)
+void ScriptHighlighter::highlightExpression(const QString& text, const QRegExp& regExp, const QTextCharFormat& format)
 {
-	QRegExp expression(s_tagExpression);
-	
+	QRegExp expression(regExp);
+
 	int index = expression.indexIn(text);
 	while (index >= 0)
 	{
 		const int length = expression.matchedLength();
-		setFormat(index, length, m_tagFormat);
+		setFormat(index, length, format);
 		index = expression.indexIn(text, index + length);
 	}
+}
+
+void ScriptHighlighter::highlightBlock(const QString& text)
+{
+	highlightExpression(text, s_tagExpression, m_tagFormat);
+	highlightExpression(text, s_refExpression, m_refFormat);
 
 	highlightPattern(text);
 }

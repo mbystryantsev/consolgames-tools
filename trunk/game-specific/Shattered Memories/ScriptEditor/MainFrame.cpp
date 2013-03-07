@@ -3,6 +3,7 @@
 #include "EditorDockWidget.h"
 #include "ScriptEditor.h"
 #include "CommentWidget.h"
+#include "MessageSetModel.h"
 #include <QHBoxLayout>
 #include <QDir>
 #include <QListWidget>
@@ -74,6 +75,9 @@ void MainFrame::initMessageList()
 	VERIFY(connect(m_ui.filterPattern, SIGNAL(textChanged(const QString&)), this, SLOT(onFilterChanged(const QString&))));
 
 	m_ui.messageList->selectionModel()->setCurrentIndex(m_controller->messagesFilterModel()->index(0, 0), QItemSelectionModel::SelectCurrent);
+	m_ui.messageList->header()->resizeSection(MessageSetModel::colHash, 80);
+	m_ui.messageList->header()->resizeSection(MessageSetModel::colFlags, 45);
+	m_ui.messageList->header()->resizeSection(MessageSetModel::colAuthor, 80);
 }
 
 #define REG_ACT(name, key, icon) \
