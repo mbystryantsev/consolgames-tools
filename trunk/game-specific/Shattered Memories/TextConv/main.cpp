@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	QCoreApplication application(argc, argv);
 
 	const QStringList args = QCoreApplication::arguments();
-	const QString& act = args[1];
+	const QString act = args.size() >= 2 ? args[1] : QString();
 
 	if (act == "-e" && args.size() == 4)
 	{
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 			return -1;
 		}
 
-		if (!Strings::saveMessages(messages, outFile))
+		if (!Strings::saveMessages(outFile, messages))
 		{
 			cout << "Unable to save target file!" << endl;
 			return -1;
