@@ -116,6 +116,8 @@ void MainFrame::setMessage(const QString& message)
 
 void MainFrame::onActionStarted(const QByteArray& action)
 {
+	m_ui.statusLabel->setText(QString("Action: %1").arg(QString::fromLatin1(action.constData())));
+
 	const int index = m_actions.indexOf(action);
 	ASSERT(index >= 0);
 	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[%1] %2").arg(QChar(0x2026)).arg(QString::fromUtf8(action.constData())));
@@ -129,6 +131,7 @@ void MainFrame::onActionCompleted(const QByteArray& action)
 
 	if (index == m_actions.size() - 1)
 	{
+		m_ui.statusLabel->setText("Done!");
 		QApplication::beep();
 		reset();
 	}
@@ -143,6 +146,8 @@ void MainFrame::onFailed(const QByteArray& action, int errorCode, const QString&
 
 	DLOG << "Error: " << errorName << " (" << errorCode << "), " << errorData;
 
+	m_ui.statusLabel->setText(QString("Action failed: %1").arg(QString::fromLatin1(action.constData())));
+
 	QMessageBox::critical(this, "Error!", QString("An error occured during patching.\nCode: %1 (%2)\nData: %3").arg(errorName).arg(errorCode).arg(errorData));
 
 	reset();
@@ -153,6 +158,8 @@ void MainFrame::onCanceled(const QByteArray& action)
 	const int index = m_actions.indexOf(action);
 	ASSERT(index >= 0);
 	m_ui.actionList->item(index)->setData(Qt::DisplayRole, QString("[C] ") + QString::fromUtf8(action.constData()));
+
+	m_ui.statusLabel->setText("Cancelled");
 
 	QMessageBox::information(this, "Cancelled", "Process cancelled by user.");
 
