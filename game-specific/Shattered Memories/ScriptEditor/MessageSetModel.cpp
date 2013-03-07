@@ -1,6 +1,7 @@
 #include "MessageSetModel.h"
 #include "Category.h"
 #include <QColor>
+#include <QFont>
 #include <QStringList>
 
 using namespace ShatteredMemories;
@@ -71,6 +72,14 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 					return QColor(QColor(255, 220, 220));
 				}
 			}
+		}
+	}
+	if (role == Qt::FontRole)
+	{
+		if (index.column() == colHash || index.column() == colFlags)
+		{
+			static const QFont font("Lucida Console");
+			return font;
 		}
 	}
 	return QVariant();

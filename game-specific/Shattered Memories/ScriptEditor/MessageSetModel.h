@@ -39,7 +39,7 @@ public:
 private:
 	const QList<quint32>& hashSource() const;
 
-private:
+public:
 	enum Column
 	{
 		colHash,

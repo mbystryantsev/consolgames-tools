@@ -8,8 +8,6 @@ MessageSetFilterModel::MessageSetFilterModel(QObject* parent)
 	: QSortFilterProxyModel(parent)
 	, m_patternAtBegin(false)
 	, m_patternAtEnd(false)
-	, m_filterHash(0)
-	, m_filterIndex(-1)
 	, m_caseSensitivity(Qt::CaseInsensitive)
 {
 }
@@ -41,9 +39,6 @@ void MessageSetFilterModel::setPattern(const QString& pattern)
 		m_pattern.truncate(m_pattern.size() - 1);
 	}
 
-	bool isIdPointer = false;
-	m_filterHash = 0;
-	m_filterIndex = -1;
 	m_tags.clear();
 	m_hashes.clear();
 	if (!m_patternAtBegin && !m_patternAtEnd && pattern.startsWith('[') && pattern.endsWith(']'))
@@ -64,11 +59,6 @@ void MessageSetFilterModel::setPattern(const QString& pattern)
 		}
 	}
 
-	if (!isIdPointer)
-	{
-		m_filterHash = 0;
-		m_filterIndex = -1;
-	}
 	invalidateFilter();
 }
 
@@ -102,21 +92,9 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 
 	const MessageSetModel& model = dynamic_cast<const MessageSetModel&>(*sourceModel());
 	const MessageSet& messageSet = model.messages();
-	if (m_filterHash != 0)
-	{
-		if (!messageSet.messages.contains(m_filterHash))
-		{
-			return false;
-		}
-		if (m_filterIndex >= 0 && m_filterIndex != sourceRow)
-		{
-			return false;
-		}
-		return true;
-	}
-
 	const QString& text = messageSet.messages.find(hash)->text;
 	const quint32 refHash = Strings::isReference(text) ? Strings::extractReferenceHash(text) : 0;
+
 	if (stringSatisfyFilter(refHash == 0 ? text : messageSet.messages.find(refHash)->text))
 	{
 		return true;
@@ -124,7 +102,7 @@ bool MessageSetFilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& s
 
 	if (model.sourceMessages() != NULL && model.sourceMessages()->messages.contains(hash))
 	{
-		if (stringSatisfyFilter(model.sourceMessages()->messages[sourceRow].text))
+		if (stringSatisfyFilter(model.sourceMessages()->messages.find(hash)->text))
 		{
 			return true;
 		}

@@ -111,7 +111,7 @@ void MainController::loadComments()
 void MainController::loadAuthors()
 {
 	QFile file("../content/common/authors.txt");
-	ASSERT(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 	QTextStream stream(&file);
 
 	while (!stream.atEnd())
@@ -149,7 +149,7 @@ void MainController::loadAuthors()
 void MainController::loadTags()
 {
 	QFile file("../content/common/tags.txt");
-	ASSERT(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 	QTextStream stream(&file);
 
 	while (!stream.atEnd())
@@ -296,7 +296,7 @@ bool MainController::saveAuthors()
 	DLOG << "Saving authors...";
 
 	QFile file("../content/common/authors.txt");
-	ASSERT(file.open(QIODevice::WriteOnly | QIODevice::Text));
+	VERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
 
 	QTextStream stream(&file);
 
@@ -319,7 +319,7 @@ bool MainController::saveTags()
 	DLOG << "Saving tags...";
 
 	QFile file("../content/common/tags.txt");
-	ASSERT(file.open(QIODevice::WriteOnly | QIODevice::Text));
+	VERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
 
 	QTextStream stream(&file);
 

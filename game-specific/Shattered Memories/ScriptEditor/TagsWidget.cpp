@@ -8,7 +8,7 @@
 static QString loadHtmlTemplate()
 {
 	QFile file(":/resources/tagsTemplate.html");
-	ASSERT(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 
 	return QString::fromUtf8(file.readAll());
 }
