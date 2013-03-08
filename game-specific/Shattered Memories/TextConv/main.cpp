@@ -13,9 +13,11 @@ void printUsage()
 		"  -e <Strings.XXX> <Strings.txt>\n"
 		"     Extract text from Strings.XXX file\n"
 		"  -es <Strings.XXX> <BaseStrings.txt> <Strings.txt>\n"
-		"     Extract text from Strings.XXX file with some order and messages that in BaseStrings.txt\n"
+		"     Extract text from Strings.XXX file with some order and messages as in BaseStrings.txt\n"
 		"  -b <Strings.txt> <Strings.XXX>\n"
 		"     Build Strings.XXX file from source text file\n";
+		"  -bs <Strings.txt> <BaseStrings.txt> <Strings.XXX>\n"
+		"     Build Strings.XXX file from source text file with some order and messages as in BaseStrings.txt\n";
 }
 
 int main(int argc, char **argv)
@@ -71,6 +73,57 @@ int main(int argc, char **argv)
 			cout << "Unable to expand references!" << endl;
 			return -1;
 		}
+
+		if (!Strings::exportMessages(messages, outFile))
+		{
+			cout << "Unable to bild strings file!" << endl;
+			return -1;
+		}
+
+		cout << "Strings builded sucessfully!" << endl;
+	}
+	else if (act == "-bs" && args.size() == 5)
+	{
+		const QString& inputFile = args[2];
+		const QString& baseFile = args[3];
+		const QString& outFile = args[4];
+
+		MessageSet messages = Strings::loadMessages(inputFile);
+		if (messages.isEmpty())
+		{
+			cout << "Unable to load messages!" << endl;
+			return -1;
+		}
+
+		const MessageSet baseMessages = Strings::loadMessages(baseFile);
+		if (messages.isEmpty())
+		{
+			cout << "Unable to load base messages!" << endl;
+			return -1;
+		}
+
+		if (!Strings::expandReferences(messages))
+		{
+			cout << "Unable to expand references!" << endl;
+			return -1;
+		}
+
+		foreach (quint32 hash, messages.hashes)
+		{
+			if (!baseMessages.messages.contains(hash))
+			{
+				messages.messages.remove(hash);
+			}
+		}
+		foreach (quint32 hash, baseMessages.hashes)
+		{
+			if (!messages.messages.contains(hash))
+			{
+				cout << "Text contains no string from base file: " << QByteArray::number(hash, 16).toUpper().rightJustified(8, '0').constData() << endl;
+				return -1;
+			}
+		}
+		messages.hashes = baseMessages.hashes;
 
 		if (!Strings::exportMessages(messages, outFile))
 		{
