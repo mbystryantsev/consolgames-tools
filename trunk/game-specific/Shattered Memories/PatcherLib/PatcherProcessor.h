@@ -47,6 +47,7 @@ public:
 		CheckArchives_UnableToParseEmbededResource = 0x54,
 		CheckArchives_InvalidBootArcSize = 0x55,
 		CheckArchives_UnableToParseArchive = 0x56,
+		CheckArchives_UnableToOpenExecutable = 0x57,
 		CheckImage_Failed = 0x60,
 		PatchMainDol_UnableToOpenFileInImage = 0x70,
 		PatchMainDol_UnableToOpenTempFile = 0x71,
