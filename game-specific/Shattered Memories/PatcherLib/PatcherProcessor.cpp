@@ -74,7 +74,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 	if (textureDB.isNull())
 	{
 		m_errorCode = RebuildArchives_UnableToLoadTextureDatabase;
-		m_errorData = "";
+		m_errorData = "textures.csv";
 		return false;
 	}
 
@@ -84,7 +84,6 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 	{
 		mergeMap = loadMergeMap(resDir.absoluteFilePath(mergeMapFilename));
 	}
-
 
 	PatcherDirectoriesFileSource arcDirectoriesFileSource(resourcesPaths);
 	PatcherTexturesFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB);
@@ -412,8 +411,8 @@ bool PatcherProcessor::checkArchives(const QString& arcPath, const ExecutableInf
 		auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
 		{
-			m_errorCode = CheckArchives_UnableToOpenArchive;
-			m_errorData = "boot.arc";
+			m_errorCode = CheckArchives_UnableToOpenExecutable;
+			m_errorData = executableInfo.executablePath;
 			return false;
 		}
 
@@ -496,18 +495,46 @@ bool PatcherProcessor::checkArchives(const QString& arcPath, const ExecutableInf
 
 	DLOG << "Checking data.arc...";
 	{
-		auto_ptr<Stream> arcStream(m_image.openFile("data.arc", Stream::modeRead));
-		if (arcStream.get() == NULL)
-		{
-			m_errorCode = CheckArchives_UnableToOpenArchive;
-			m_errorData = "data.arc";
-			return false;
-		}
-
 		QtFileStream resultArcSream(dir.absoluteFilePath("data.arc"), QIODevice::ReadOnly);
 		if (!resultArcSream.opened())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
+			m_errorData = "data.arc";
+			return false;
+		}
+
+		auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
+		if (executableStream.get() == NULL)
+		{
+			m_errorCode = CheckArchives_UnableToOpenExecutable;
+			m_errorData = executableInfo.executablePath;
+			return false;
+		}
+
+		VERIFY(executableStream->seek(executableInfo.headersOffset, Stream::seekSet) == executableInfo.headersOffset);
+
+		const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
+		if (info.isNull())
+		{
+			m_errorCode = CheckArchives_UnableToParseEmbededResource;
+			m_errorData = "data.arc";
+			return false;
+		}
+
+		PartStream header(executableStream.get(), executableStream->position(), info.contentSize);
+		if (!compareStreams(&header, &resultArcSream, true, 0.01))
+		{
+			m_errorCode = CheckData_FilesAreDifferent;
+			m_errorData = "header:data.arc";
+			return false;
+		}
+
+		executableStream.reset();
+
+		auto_ptr<Stream> arcStream(m_image.openFile("data.arc", Stream::modeRead));
+		if (arcStream.get() == NULL)
+		{
+			m_errorCode = CheckArchives_UnableToOpenArchive;
 			m_errorData = "data.arc";
 			return false;
 		}
