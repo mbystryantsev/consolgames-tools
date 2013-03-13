@@ -7,6 +7,7 @@ struct Category
 	static Category fromFile(const QString& filename);
 	
 	bool contains(quint32 hash) const;
+	QList<quint32> allMessages() const;
 
 	QString name;
 	QList<Category> categories;
