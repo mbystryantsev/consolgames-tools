@@ -43,6 +43,7 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 				{
 					return m_messages.messages[refHash].text;
 				}
+				return QString("###ERROR### Invalid reference! Related string not found!");
 			}
 			return m_messages.messages[index.internalId()].text.simplified();
 		}
@@ -59,6 +60,11 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 	{
 		if (Strings::isReference(m_messages.messages[hash].text))
 		{
+			const quint32 refHash = extractReferenceHash(hash);
+			if (!m_messages.messages.contains(refHash))
+			{
+				return QColor(Qt::red);
+			}
 			return QColor(220, 220, 220);
 		}
 		if (m_sourceMessages != NULL)
@@ -198,8 +204,12 @@ void MessageSetModel::updateString(quint32 hash)
 
 	if (isReference(hash))
 	{
-		const QModelIndex index = indexByHash(extractReferenceHash(hash));
-		emit dataChanged(createIndex(index.row(), 0, hash), createIndex(index.row(), colCount - 1, hash));
+		const quint32 refHash = extractReferenceHash(hash);
+		if (hashSource().contains(refHash))
+		{
+			const QModelIndex index = indexByHash(refHash);
+			emit dataChanged(createIndex(index.row(), 0, hash), createIndex(index.row(), colCount - 1, hash));
+		}
 	}
 }
 
