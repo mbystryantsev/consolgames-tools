@@ -407,10 +407,28 @@ void MainController::updateTranslationStatistics(quint32 hash, const QString& ch
 	if (mainSourceLanguageData().messages.contains(hash))
 	{
 		const QString& originalText = mainSourceLanguageData().messages[hash].text;
-		const QString& prevText = mainLanguageData().messages[hash].text;
+		QString prevText = mainLanguageData().messages[hash].text;
+		if (Strings::isReference(prevText))
+		{
+			quint32 refHash = Strings::extractReferenceHash(prevText);
+			if (mainLanguageData().messages.contains(refHash))
+			{
+				prevText = mainLanguageData().messages[refHash].text;
+			}
+		}
+
+		QString currText = changedText;
+		if (Strings::isReference(currText))
+		{
+			const quint32 refHash = Strings::extractReferenceHash(currText);
+			if (mainLanguageData().messages.contains(refHash))
+			{
+				currText = mainLanguageData().messages[refHash].text;
+			}
+		}
 
 		const bool prevStateTranslated = (prevText != originalText);
-		const bool currStateTranslated = (changedText != originalText);
+		const bool currStateTranslated = (currText != originalText);
 
 		if (prevStateTranslated && !currStateTranslated)
 		{
@@ -517,6 +535,20 @@ const QMap<quint32, QStringList>& MainController::tags() const
 
 void MainController::increaseTranslatedCount(quint32 hash, const Category& category, int value)
 {
+	if (&category == &m_rootCategory)
+	{
+		const Category* allPtr = reinterpret_cast<const Category*>(CategoriesModel::All);
+		m_translatedCount[allPtr].first += value;
+
+		if (!m_rootCategory.contains(hash))
+		{
+			const Category* uncategorizedPtr = reinterpret_cast<const Category*>(CategoriesModel::Uncategorized);
+			m_translatedCount[uncategorizedPtr].first += value;
+		}
+
+		m_categoriesModel->updateRange(m_categoriesModel->index(0, 0), m_categoriesModel->index(CategoriesModel::s_extraCategoriesCount - 1, CategoriesModel::s_columnCount - 1));
+	}
+
 	if (category.contains(hash))
 	{
 		m_translatedCount[&category].first += value;
@@ -553,8 +585,10 @@ int MainController::translatedCount(const QList<quint32>& hashes) const
 		if (Strings::isReference(text))
 		{
 			const quint32 refHash = Strings::extractReferenceHash(text);
-			ASSERT(mainLanguageData().messages.contains(refHash));
-			text = mainLanguageData().messages[refHash].text;
+			if (mainLanguageData().messages.contains(refHash))
+			{
+				text = mainLanguageData().messages[refHash].text;
+			}
 		}
 		if (mainSourceLanguageData().messages.contains(hash) && text != mainSourceLanguageData().messages[hash].text)
 		{
