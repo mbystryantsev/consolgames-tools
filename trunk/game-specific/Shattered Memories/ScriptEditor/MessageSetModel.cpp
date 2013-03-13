@@ -141,18 +141,7 @@ const MessageSet* MessageSetModel::sourceMessages() const
 	return m_sourceMessages;
 }
 
-static QList<quint32> categoryHashes(const Category& category)
-{
-	QList<quint32> result = category.messages;
-	foreach (const Category& child, category.categories)
-	{
-		result.append(categoryHashes(child));
-	}
-
-	return result;
-}
-
-static QList<quint32> excludeFromList(const QList<quint32>& hashes, const QList<quint32>& hashesToExclude)
+QList<quint32> MessageSetModel::excludeFromList(const QList<quint32>& hashes, const QList<quint32>& hashesToExclude)
 {
 	QList<quint32> result;
 	result.reserve(hashes.size());
@@ -172,20 +161,20 @@ void MessageSetModel::setCategory(const Category& category)
 {
 	beginResetModel();
 	m_customCategory = true;
-	m_categoryHashes = categoryHashes(category);
+	m_categoryHashes = category.allMessages();
 	endResetModel();
 }
 
 void MessageSetModel::setRootCategory(const Category& category)
 {
-	m_categorizedHashes = categoryHashes(category).toSet();
+	m_categorizedHashes = category.allMessages().toSet();
 }
 
 void MessageSetModel::setExceptionCategory(const Category& category)
 {
 	beginResetModel();
 	m_customCategory = true;
-	m_categoryHashes = excludeFromList(m_messages.hashes, categoryHashes(category));
+	m_categoryHashes = excludeFromList(m_messages.hashes, category.allMessages());
 	endResetModel();
 }
 
@@ -199,13 +188,18 @@ void MessageSetModel::resetCategory()
 
 void MessageSetModel::updateString(quint32 hash)
 {
+	if (!hashSource().contains(hash))
+	{
+		return;
+	}
+
 	const QModelIndex index = indexByHash(hash);
-	emit dataChanged(index, index);
+	emit dataChanged(createIndex(index.row(), 0, hash), createIndex(index.row(), colCount - 1, hash));
 
 	if (isReference(hash))
 	{
 		const QModelIndex index = indexByHash(extractReferenceHash(hash));
-		emit dataChanged(index, index);
+		emit dataChanged(createIndex(index.row(), 0, hash), createIndex(index.row(), colCount - 1, hash));
 	}
 }
 

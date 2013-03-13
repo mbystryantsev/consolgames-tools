@@ -42,12 +42,14 @@ MainController::~MainController()
 void MainController::initCategories()
 {
 	m_rootCategory = Category::fromFile("../content/common/categories.txt");
+	calculateTranslatedCount(m_rootCategory);
 }
 
 void MainController::initCategoriesModels()
 {
 	m_categoriesModel = new CategoriesModel(m_rootCategory, this);
 	m_categoriesSelectionModel = new QItemSelectionModel(m_categoriesModel);
+	m_categoriesModel->setTranslationStatictics(m_translatedCount);
 
 	VERIFY(connect(m_categoriesSelectionModel, SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)), SLOT(onCategoryChanged(const QModelIndex&))));
 }
@@ -400,6 +402,27 @@ void MainController::onMessageChanged(const QModelIndex& index)
 	emit messageSelected(m_messagesFilterModel->mapToSource(index).internalId());
 }
 
+void MainController::updateTranslationStatistics(quint32 hash, const QString& changedText)
+{
+	if (mainSourceLanguageData().messages.contains(hash))
+	{
+		const QString& originalText = mainSourceLanguageData().messages[hash].text;
+		const QString& prevText = mainLanguageData().messages[hash].text;
+
+		const bool prevStateTranslated = (prevText != originalText);
+		const bool currStateTranslated = (changedText != originalText);
+
+		if (prevStateTranslated && !currStateTranslated)
+		{
+			decreaseTranslatedCount(hash);
+		}
+		else if (!prevStateTranslated && currStateTranslated)
+		{
+			increaseTranslatedCount(hash);
+		}
+	}
+}
+
 void MainController::onTextChanged(const QString& text, const QByteArray& languageId, quint32 hash)
 {
 	ASSERT(languageId == m_mainLanguageId);
@@ -409,6 +432,8 @@ void MainController::onTextChanged(const QString& text, const QByteArray& langua
 
 	if (hash != 0 && mainLanguageData().messages[hash].text != text)
 	{
+		updateTranslationStatistics(hash, text);
+
 		m_scripts[m_mainLanguageId].messages[hash].text = text;
 		m_messagesModel->updateString(hash);
 		m_languageChanged = true;
@@ -488,4 +513,77 @@ const QMap<quint32,QString>& MainController::comments() const
 const QMap<quint32, QStringList>& MainController::tags() const
 {
 	return m_tags;
+}
+
+void MainController::increaseTranslatedCount(quint32 hash, const Category& category, int value)
+{
+	if (category.contains(hash))
+	{
+		m_translatedCount[&category].first += value;
+
+		if (&category != &m_rootCategory)
+		{
+			const QModelIndex index = m_categoriesModel->indexByCategory(category);
+			const QModelIndex updateIndex = m_categoriesModel->index(index.row(), CategoriesModel::ProgressInfo, m_categoriesModel->parent(index));
+			m_categoriesModel->updateRange(updateIndex, updateIndex);
+		}
+	}
+	foreach (const Category& childCategory, category.categories)
+	{
+		increaseTranslatedCount(hash, childCategory, value);
+	}
+}
+
+void MainController::decreaseTranslatedCount(quint32 hash)
+{
+	increaseTranslatedCount(hash, m_rootCategory, -1);
+}
+
+void MainController::increaseTranslatedCount(quint32 hash)
+{
+	increaseTranslatedCount(hash, m_rootCategory, 1);
+}
+
+int MainController::translatedCount(const QList<quint32>& hashes) const
+{
+	int count = 0;
+	foreach (quint32 hash, hashes)
+	{
+		QString text = mainLanguageData().messages[hash].text;
+		if (Strings::isReference(text))
+		{
+			const quint32 refHash = Strings::extractReferenceHash(text);
+			ASSERT(mainLanguageData().messages.contains(refHash));
+			text = mainLanguageData().messages[refHash].text;
+		}
+		if (mainSourceLanguageData().messages.contains(hash) && text != mainSourceLanguageData().messages[hash].text)
+		{
+			count++;
+		}
+	}
+	return count;
+}
+
+void MainController::calculateTranslatedCount(const Category& category)
+{
+	const QList<quint32> hashes = category.allMessages();
+	m_translatedCount[&category].first = translatedCount(hashes);
+	m_translatedCount[&category].second = hashes.size();
+
+	foreach (const Category& childCategory, category.categories)
+	{
+		calculateTranslatedCount(childCategory);
+	}
+
+	if (&category == &m_rootCategory)
+	{
+		const Category* allPtr = reinterpret_cast<const Category*>(CategoriesModel::All);
+		m_translatedCount[allPtr].first = translatedCount(mainLanguageData().hashes);
+		m_translatedCount[allPtr].second = mainLanguageData().hashes.size();
+
+		const Category* uncategorizedPtr = reinterpret_cast<const Category*>(CategoriesModel::Uncategorized);
+		const QList<quint32> uncategorizedHashes = MessageSetModel::excludeFromList(mainLanguageData().hashes, hashes);
+		m_translatedCount[uncategorizedPtr].first = translatedCount(uncategorizedHashes);
+		m_translatedCount[uncategorizedPtr].second = uncategorizedHashes.size();
+	}
 }

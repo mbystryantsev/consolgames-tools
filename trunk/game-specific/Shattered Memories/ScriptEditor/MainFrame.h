@@ -43,6 +43,7 @@ protected:
 	Q_SLOT void closeEditor(const QByteArray& languageId);
 
 	void initUI();
+	void initCategoriesList();
 	void initMessageList();
 	void initActions();
 	void initToolbar();

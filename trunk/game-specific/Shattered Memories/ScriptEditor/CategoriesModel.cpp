@@ -14,6 +14,7 @@ static bool operator==(const Category& a, const Category& b)
 CategoriesModel::CategoriesModel(const Category& rootCategory, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_rootCategory(rootCategory)
+	, m_stat(NULL)
 {
 }
 
@@ -25,6 +26,17 @@ const Category& CategoriesModel::categoryByIndex(const QModelIndex& index) const
 		return m_rootCategory;
 	}
 	return *static_cast<const Category*>(categoryPtr);
+}
+
+QModelIndex CategoriesModel::indexByCategory(const Category& category) const
+{
+	const Category& parent = findParentCategory(category);
+	return createIndex(parent.categories.indexOf(category) + (parent == m_rootCategory ? s_extraCategoriesCount : 0), 0, const_cast<Category*>(&category));
+}
+
+void CategoriesModel::setTranslationStatictics(const QMap<const Category*, QPair<int, int>>& stat)
+{
+	m_stat = &stat;
 }
 
 const Category& CategoriesModel::findParentCategory(const Category& category) const
@@ -56,29 +68,38 @@ QVariant CategoriesModel::data(const QModelIndex& index, int role) const
 	if (role == Qt::DisplayRole)
 	{
 		const QModelIndex parent = index.parent();
-		if (!parent.isValid())
+		if (index.column() == CategoryName)
 		{
-			if (index.row() == All)
+			if (!parent.isValid())
 			{
-				return QString("All");
+				if (index.row() == All)
+				{
+					return QString("All");
+				}
+				if (index.row() == Uncategorized)
+				{
+					return QString("Uncategorized");
+				}
+				const int row = index.row() - s_extraCategoriesCount;
+				ASSERT(row < m_rootCategory.categories.size());
+				return m_rootCategory.categories[row].name;
 			}
-			if (index.row() == Uncategorized)
-			{
-				return QString("Uncategorized");
-			}
-			const int row = index.row() - s_extraCategoriesCount;
-			ASSERT(row < m_rootCategory.categories.size());
-			return m_rootCategory.categories[row].name;
+			const Category& category = categoryByIndex(parent);
+			const int row = index.row();
+			ASSERT(row <= category.categories.size());
+			return category.categories[row].name;
 		}
-		const Category& category = categoryByIndex(parent);
-		const int row = index.row();
-		ASSERT(row <= category.categories.size());
-		return category.categories[row].name;
+		if (index.column() == ProgressInfo && m_stat != NULL)
+		{
+			const QPair<int, int> progress = m_stat->value(static_cast<const Category*>(index.internalPointer()));
+			const double percent = (progress.second == 0 ? 0 : (static_cast<double>(progress.first) * 100.0) / progress.second);
+			return QString("%1%").arg(percent, 0, 'f', 1);
+		}
 	}
 	if (role == Qt::FontRole)
 	{
 		const QModelIndex parent = index.parent();
-		if (!parent.isValid() && (index.row() == All || index.row() == Uncategorized))
+		if (!parent.isValid() && index.column() == CategoryName && (index.row() == All || index.row() == Uncategorized))
 		{
 			QFont font;
 			font.setItalic(true);
@@ -134,12 +155,35 @@ QModelIndex CategoriesModel::parent(const QModelIndex& index) const
 		return QModelIndex();
 	}
 
-	const void* categoryPtr = reinterpret_cast<const void*>(&parent);
-	return createIndex(parent.categories.indexOf(category), 0, const_cast<void*>(categoryPtr));
+	return indexByCategory(parent);
 }
 
 int CategoriesModel::columnCount(const QModelIndex &parent) const 
 {
 	Q_UNUSED(parent);
-	return 1;
+	return s_columnCount;
+}
+
+QVariant CategoriesModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	Q_UNUSED(orientation);
+
+	if (role == Qt::DisplayRole)
+	{
+		if (section == CategoryName)
+		{
+			return "Category";
+		}
+		if (section == ProgressInfo)
+		{
+			return "Progress";
+		}
+	}
+
+	return QVariant();
+}
+
+void CategoriesModel::updateRange(const QModelIndex& indexFrom, const QModelIndex& indexTo)
+{
+	emit dataChanged(indexFrom, indexTo);
 }

@@ -4,6 +4,7 @@
 #include "ScriptEditor.h"
 #include "CommentWidget.h"
 #include "MessageSetModel.h"
+#include "CategoriesModel.h"
 #include <QHBoxLayout>
 #include <QDir>
 #include <QListWidget>
@@ -43,9 +44,7 @@ void MainFrame::initUI()
 	m_ui.setupUi(centralWidget);
 	setCentralWidget(centralWidget);
 
-	m_ui.categoryList->setModel(m_controller->categoriesModel());
-	m_ui.categoryList->setSelectionModel(m_controller->categoriesSelectionModel());
-
+	initCategoriesList();
  	initMessageList();
  	initActions();
  	initMenu();
@@ -61,6 +60,13 @@ void MainFrame::initUI()
 	openEditor("Russian");
 	openEditor("English");
 	openEditor("Japan");
+}
+
+void MainFrame::initCategoriesList()
+{
+	m_ui.categoryList->setModel(m_controller->categoriesModel());
+	m_ui.categoryList->setSelectionModel(m_controller->categoriesSelectionModel());
+	m_ui.categoryList->header()->resizeSection(CategoriesModel::All, 300);
 }
 
 void MainFrame::initMessageList()

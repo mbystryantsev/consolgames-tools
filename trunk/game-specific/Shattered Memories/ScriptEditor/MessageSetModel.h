@@ -36,6 +36,8 @@ public:
 	const QMap<quint32, QStringList>* tags() const;
 	const QMap<quint32, QString>* comments() const;
 
+	static QList<quint32> excludeFromList(const QList<quint32>& hashes, const QList<quint32>& hashesToExclude);
+
 private:
 	const QList<quint32>& hashSource() const;
 

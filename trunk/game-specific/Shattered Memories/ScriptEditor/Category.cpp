@@ -113,3 +113,14 @@ bool Category::contains(quint32 hash) const
 	}
 	return false;
 }
+
+QList<quint32> Category::allMessages() const
+{
+	QList<quint32> result = messages;
+	foreach (const Category& child, categories)
+	{
+		result.append(child.allMessages());
+	}
+
+	return result;
+}
