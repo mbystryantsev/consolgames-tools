@@ -30,6 +30,14 @@ private:
 
 		u32 originalSize() const;
 		bool isPacked() const;
+
+		bool operator == (const FileRecord& other) const
+		{
+			return hash == other.hash
+				&& offset == other.offset
+				&& storedSize == other.storedSize
+				&& decompressedSize == other.decompressedSize;
+		}
 	};
 
 public:
@@ -59,6 +67,22 @@ public:
 
 	typedef std::map<u32, u32> MergeMap;
 
+	struct FileInfo
+	{
+		FileInfo()
+			: index(0)
+			, offset(0)
+			, size(0)
+			, packed(false)
+		{
+		}
+
+		int index;
+		u32 offset;
+		u32 size;
+		bool packed;
+	};
+
 public:
 	Archive(const std::string& filename);
 	Archive(const std::wstring& filename);
@@ -75,6 +99,10 @@ public:
 	void setNames(const std::list<std::string>& names);
 
 	void addProgressListener(IProgressListener* listener);
+
+	u32 alignment() const;
+	FileInfo fileInfo(u32 hash) const;
+	FileInfo fileInfo(const std::string& filename) const;
 
 private:
 	struct Header
