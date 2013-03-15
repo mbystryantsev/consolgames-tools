@@ -236,6 +236,7 @@ bool PatcherProcessor::checkImage()
 		m_errorData = QString::fromStdString(m_image.lastErrorData());
 		return false;
 	}
+
 	return true;
 }
 
@@ -254,6 +255,8 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 
 	DLOG << "Replacing boot.arc...";
 	{
+		m_image.setProgressHandler(NULL);
+
 		executableStream->seek(executableInfo.bootArcOffset, Stream::seekSet);
 		const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
 		if (info.isNull())
@@ -291,15 +294,15 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 
 	DLOG << "Replacing ui.arc...";
 	{
-		auto_ptr<Stream> pakStream(m_image.openFile("igc.arc", Stream::modeReadWrite));
-		if (pakStream.get() == NULL)
+		auto_ptr<Stream> arcStream(m_image.openFile("igc.arc", Stream::modeReadWrite));
+		if (arcStream.get() == NULL)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
 			m_errorData = "igc.arc";
 			return false;
 		}
 
-		Archive arc(pakStream.get());
+		Archive arc(arcStream.get());
 		if (!arc.open())
 		{
 			m_errorCode = ReplaceArchives_UnableToParseArc;
@@ -307,13 +310,11 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 			return false;
 		}
 
-		shared_ptr<Stream> uiArcStream = arc.openFile("ui.arc");
-		if (uiArcStream.get() == NULL)
-		{
-			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
-			m_errorData = "ui.arc";
-			return false;
-		}
+		const Archive::FileInfo info = arc.fileInfo("ui.arc");
+		ASSERT(!info.packed);
+
+		quint32 maxSize = info.size + arc.alignment() - 1;
+		maxSize = maxSize - (maxSize % arc.alignment());
 
 		QtFileStream stream(dir.absoluteFilePath("ui.arc"), QIODevice::ReadOnly);
 		if (!stream.opened())
@@ -323,15 +324,23 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 			return false;
 		}
 
-		if (stream.size() > uiArcStream->size())
+		if (stream.size() > maxSize)
 		{
-			DLOG << "Input ui.arc too big: " << stream.size() << " bytes / " << uiArcStream->size() << " bytes";
+			DLOG << "Input ui.arc too big: " << stream.size() << " bytes / " << maxSize << " bytes";
 			m_errorCode = ReplaceArchives_InputArcFileTooBig;
-			m_errorData = QString("data.arc;%2;%3").arg(stream.size()).arg(uiArcStream->size());
+			m_errorData = QString("ui.arc;%2;%3").arg(stream.size()).arg(maxSize);
 			return false;
 		}
 
-		if (uiArcStream->writeStream(&stream, stream.size()) != stream.size())
+		if (stream.size() > info.size)
+		{
+			DLOG << "Writing extended size for ui.arc...";
+			arcStream->seek(0x10 + 0x10 * info.index + 8, Stream::seekSet);
+			arcStream->write32(stream.size());
+		}
+
+		arcStream->seek(info.offset, Stream::seekSet);
+		if (arcStream->writeStream(&stream, stream.size()) != stream.size())
 		{
 			DLOG << "Unable to write ui.arc!";
 			m_errorCode = ReplaceArchives_UnableToWriteFile;
@@ -389,6 +398,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 			return false;
 		}
 
+		m_image.setProgressHandler(NULL);
 		stream.seek(0, Stream::seekSet);
 		if (executableStream->writeStream(&stream, info.contentSize) != info.contentSize)
 		{
