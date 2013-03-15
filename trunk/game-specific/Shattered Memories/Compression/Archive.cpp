@@ -227,7 +227,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 			}
 			if (mergeMap.find(targetHash) != mergeMap.end())
 			{
-				DLOG << "Found recursive mapping!";
+				DLOG << "Found recursive mapping: " << Hash::toString(record->hash) << "->" << Hash::toString(targetHash) << "!";
 				return false;
 			}
 
@@ -381,6 +381,32 @@ bool Archive::stopRequested()
 		}
 	}
 	return false;
+}
+
+u32 Archive::alignment() const
+{
+	return m_alignment;
+}
+
+Archive::FileInfo Archive::fileInfo(u32 hash) const
+{
+	if (m_fileRecordsMap.find(hash) == m_fileRecordsMap.end())
+	{
+		return FileInfo();
+	}
+
+	const FileRecord& record = *m_fileRecordsMap.find(hash)->second;
+	FileInfo info;
+	info.offset = record.offset;
+	info.packed = record.isPacked();
+	info.size = record.originalSize();
+	info.index = std::distance(m_fileRecords.begin(), std::find(m_fileRecords.begin(), m_fileRecords.end(), record));
+	return info;
+}
+
+Archive::FileInfo Archive::fileInfo(const std::string& filename) const
+{
+	return fileInfo(Hash::calc(filename.c_str()));
 }
 
 //////////////////////////////////////////////////////////////////////////
