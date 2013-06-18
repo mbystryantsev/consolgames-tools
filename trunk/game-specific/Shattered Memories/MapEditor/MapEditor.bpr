@@ -4,28 +4,18 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="MapEditor.exe"/>
-    <OBJFILES value="MapEditor.obj map_editor.obj 
-      D:\_job\Programming\FVTFantasy\engine\program\application.obj 
-      D:\_job\Programming\FVTFantasy\engine\render\draw.obj 
-      D:\_job\Programming\FVTFantasy\engine\program\MapForm.obj map.obj 
-      D:\_job\Programming\FVTFantasy\engine\render\GLDraw.obj font.obj"/>
+    <OBJFILES value="MapEditor.obj map_editor.obj draw.obj MapForm.obj map.obj GLDraw.obj 
+      font.obj"/>
     <RESFILES value="MapEditor.res"/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) map_editor.dfm 
-      D:\_job\Programming\FVTFantasy\engine\program\MapForm.dfm"/>
+    <RESDEPEN value="$(RESFILES) map_editor.dfm MapForm.dfm"/>
     <LIBFILES value=""/>
-    <LIBRARIES value="Indy60.lib rtl.lib vcl.lib"/>
-    <SPARELIBS value="vcl.lib rtl.lib Indy60.lib"/>
-    <PACKAGES value="vcl.bpi rtl.bpi dbrtl.bpi adortl.bpi vcldb.bpi vclx.bpi bdertl.bpi 
-      vcldbx.bpi ibxpress.bpi dsnap.bpi cds.bpi bdecds.bpi qrpt.bpi teeui.bpi 
-      teedb.bpi tee.bpi dss.bpi teeqr.bpi visualclx.bpi visualdbclx.bpi 
-      dsnapcrba.bpi dsnapcon.bpi bcbsmp.bpi vclie.bpi xmlrtl.bpi inet.bpi 
-      inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi webdsnap.bpi 
-      bcbie.bpi websnap.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
-      bcb2kaxserver.bpi indy.bpi"/>
-    <PATHCPP value=".;D:\_job\Programming\FVTFantasy\engine\program;D:\_job\Programming\FVTFantasy\engine\render"/>
+    <LIBRARIES value="rtl.lib vcl.lib"/>
+    <SPARELIBS value="vcl.lib rtl.lib"/>
+    <PACKAGES value="vcl.bpi rtl.bpi"/>
+    <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -35,16 +25,13 @@
     <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="MapEditor.cpp"/>
-    <INCLUDEPATH value="D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
-    <LIBPATH value="D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
+    <LIBPATH value="$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-ID:\_job\Programming\FVTFantasy\engine\render 
-      -ID:\_job\Programming\FVTFantasy\engine\program 
-      -I&quot;D:\Program Files\Borland\CBuilder6\Projects&quot; -IF:\_job\SHSM\code\map 
-      -I$(BCB)\include -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -src_suffix 
+    <IDLCFLAGS value="-I$(BCB)\include -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -src_suffix 
       cpp -boa"/>
     <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -c -tW -tWM"/>
     <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
@@ -63,11 +50,10 @@
       <FILE FILENAME="MapEditor.res" FORMNAME="" UNITNAME="MapEditor.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="MapEditor.cpp" FORMNAME="" UNITNAME="MapEditor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="map_editor.cpp" FORMNAME="MainForm" UNITNAME="map_editor" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="D:\_job\Programming\FVTFantasy\engine\program\application.cpp" FORMNAME="" UNITNAME="application" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="D:\_job\Programming\FVTFantasy\engine\render\draw.cpp" FORMNAME="" UNITNAME="draw" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="D:\_job\Programming\FVTFantasy\engine\program\MapForm.cpp" FORMNAME="FormMap" UNITNAME="MapForm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="draw.cpp" FORMNAME="" UNITNAME="draw" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="MapForm.cpp" FORMNAME="FormMap" UNITNAME="MapForm" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="map.cpp" FORMNAME="" UNITNAME="map" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
-      <FILE FILENAME="D:\_job\Programming\FVTFantasy\engine\render\GLDraw.cpp" FORMNAME="" UNITNAME="GLDraw" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="GLDraw.cpp" FORMNAME="" UNITNAME="GLDraw" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="font.cpp" FORMNAME="" UNITNAME="font" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
@@ -103,13 +89,13 @@ Comments=
 
 [HistoryLists\hlIncludePath]
 Count=3
-Item0=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item0=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
 Item1=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
 Item2=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
 Count=2
-Item0=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item0=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
 Item1=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
@@ -144,10 +130,5 @@ LinkCGLIB=0
 AddServerUnit=1
 AddClientUnit=1
 PrecompiledHeaders=1
-
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
   </IDEOPTIONS>
 </PROJECT>
