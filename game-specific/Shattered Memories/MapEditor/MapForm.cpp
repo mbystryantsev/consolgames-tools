@@ -167,8 +167,14 @@ void __fastcall TFormMap::FormCreate(TObject *Sender)
 
   draw.Initialize(this->Handle, hDC);
 
-  font_tex = MainForm->LoadFont("FontEUR.shf");
+  const AnsiString c_fontFile = "FontEUR.kft";
 
+  font_tex = MainForm->LoadFont(c_fontFile);
+
+  if (font_tex == 0)
+  {
+        ShowMessage("Unable to load font file: " + c_fontFile);
+  }
 
   glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER, 0.0f);

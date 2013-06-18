@@ -171,7 +171,9 @@ int CMap::SaveToFile(char* name){
   FILE *f = fopen(name, "wb");
   fwrite(buf, size, 1, f);
   fclose(f);
-  free(buf);   
+  free(buf);
+
+  return 0;
 }
 
 

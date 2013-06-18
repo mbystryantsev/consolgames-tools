@@ -4,7 +4,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 USEFORM("map_editor.cpp", MainForm);
-USEFORM("D:\_job\Programming\FVTFantasy\engine\program\MapForm.cpp", FormMap);
+USEFORM("MapForm.cpp", FormMap);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

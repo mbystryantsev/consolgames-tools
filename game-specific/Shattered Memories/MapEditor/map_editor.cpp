@@ -163,15 +163,44 @@ int GREY_PALETTE[] = {
 extern SCharData* chars;
 extern int char_count;
 extern CGLDraw draw;
-int __fastcall TMainForm::LoadFont(String FileName){
-    FILE* f;
-    f = fopen((char*)FileName.data(), "rb");
+
+void skipStream(FILE* f)
+{
+        unsigned int dummy = 0;
+        unsigned int size = 0;
+        fread(&dummy, 4, 1, f);
+        fread(&size, 4, 1, f);  
+        fread(&dummy, 4, 1, f);
+        fseek(f, size, SEEK_CUR);
+}
+
+int __fastcall TMainForm::LoadFont(String FileName)
+{
+    FILE* f = fopen(FileName.c_str(), "rb");
+
+    if (f == NULL)
+    {
+        return 0;
+    }
+
     fseek(f, 0, SEEK_END);
     int size = ftell(f);
     fseek(f, 0, SEEK_SET);
+
+    fseek(f, 0x4C, SEEK_SET); // skip header
+
+    // Skip unkown rect records
+    skipStream(f);
+
+    // Skip palette
+    skipStream(f);
+
+    // Skip kerning
+    skipStream(f);
+
     SFontHeader header;
     fread(&header, sizeof(header), 1, f);
-    fseek(f, 48, SEEK_SET);
+    fseek(f, 0x20, SEEK_CUR);
     chars = (SCharData*)malloc(sizeof(SCharData) * header.count);
     fread(chars, sizeof(SCharData) * header.count, 1, f);
     char_count = header.count;
