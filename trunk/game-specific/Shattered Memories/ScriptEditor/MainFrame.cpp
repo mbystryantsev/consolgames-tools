@@ -57,7 +57,7 @@ void MainFrame::initUI()
 	VERIFY(connect(m_ui.tagsWidget, SIGNAL(tagsChanged(const QStringList&, quint32)), m_controller, SLOT(onTagsChanged(const QStringList&, quint32))));
 	VERIFY(connect(m_ui.tagsWidget, SIGNAL(tagSelected(const QString&)), SLOT(onTagSelected(const QString&))));
 
-	openEditor("Russian");
+	openEditor(m_controller->mainLanguageId());
 	openEditor("English");
 	openEditor("Japan");
 }
