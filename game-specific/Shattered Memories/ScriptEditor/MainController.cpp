@@ -12,6 +12,16 @@ using namespace ShatteredMemories;
 
 LOG_CATEGORY("ScriptEditor.MainController");
 
+static QString contentPathFor(const QString& filename)
+{
+	return QString("../content/common/%1").arg(filename);
+}
+
+static QString langPath(const QString& shortLangId)
+{
+	return QString("../content/%1/text/wii").arg(shortLangId);
+}
+
 MainController::MainController(MainFrame* parent)
 	: QObject(parent)
 	, m_parent(parent)
@@ -41,7 +51,7 @@ MainController::~MainController()
 
 void MainController::initCategories()
 {
-	m_rootCategory = Category::fromFile("../content/common/categories.txt");
+	m_rootCategory = Category::fromFile(contentPathFor("categories.txt"));
 	calculateTranslatedCount(m_rootCategory);
 }
 
@@ -95,14 +105,9 @@ QItemSelectionModel* MainController::categoriesSelectionModel() const
 	return m_categoriesSelectionModel;
 }
 
-static QString langPath(const QString& shortLangId)
-{
-	return QString("../content/%1/text/wii").arg(shortLangId);
-}
-
 void MainController::loadComments()
 {
-	const MessageSet comments = Strings::loadMessages("../content/common/comments.txt");
+	const MessageSet comments = Strings::loadMessages(contentPathFor("comments.txt"));
 	m_comments.clear();
 	foreach (const Message& message, comments.messages)
 	{
@@ -112,7 +117,7 @@ void MainController::loadComments()
 
 void MainController::loadAuthors()
 {
-	QFile file("../content/common/authors.txt");
+	QFile file(contentPathFor("authors.txt"));
 	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 	QTextStream stream(&file);
 
@@ -150,7 +155,7 @@ void MainController::loadAuthors()
 
 void MainController::loadTags()
 {
-	QFile file("../content/common/tags.txt");
+	QFile file(contentPathFor("tags.txt"));
 	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 	QTextStream stream(&file);
 
@@ -193,16 +198,109 @@ void MainController::loadTags()
 	}
 }
 
+typedef QList<QPair<QString,QString>> LanguageList;
+
+static LanguageList loadLanguageList()
+{
+	LanguageList list;
+
+	QFile file(contentPathFor("languages.csv"));
+	VERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+	QTextStream stream(&file);
+
+	while (!stream.atEnd())
+	{
+		const QString line = stream.readLine().trimmed().simplified();
+		if (line.isEmpty())
+		{
+			continue;
+		}
+
+		const QStringList info = line.split(';');
+		if (info.size() != 2)
+		{
+			DLOG << "Invalid language info: " << line;
+			continue;
+		}
+
+		list.append(QPair<QString, QString>(info.first(), info.last()));
+	}
+
+	return list;
+}
+
+static QVariantMap loadSettings()
+{
+	QVariantMap settings;
+
+	QFile file("ScriptEditor.config");
+
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		return settings;
+	}
+
+	QTextStream stream(&file);
+
+	while (!stream.atEnd())
+	{
+		const QString line = stream.readLine().trimmed().simplified();
+		if (line.isEmpty())
+		{
+			continue;
+		}
+
+		const QStringList pair = line.split('=');
+		if (pair.size() != 2)
+		{
+			DLOG << "Invalid settings line: " << line;
+			continue;
+		}
+
+		settings[pair.first()] = pair.last();
+	}
+
+	return settings;
+}
+
 void MainController::loadLanguages()
 {
-	loadMainLanguage("Russian",   langPath("rus"));
-	loadSourceLanguage("English", langPath("eng"));
-	loadSourceLanguage("Japan",   langPath("jap"));
-	loadSourceLanguage("French",  langPath("fre"));
-	loadSourceLanguage("Spanish", langPath("spa"));
-	loadSourceLanguage("German",  langPath("ger"));
-	loadSourceLanguage("Italian", langPath("ita"));
-	setMainSourceLanguage("English");
+	const LanguageList list = loadLanguageList();
+	const QVariantMap settings = loadSettings();
+
+	const QString mainSourceLanguage = settings.value("mainSourceLanguage", "English").toString();
+	const QString mainTargetLanguage = settings.value("mainTargetLanguage", "Russian").toString();
+
+	if (list.isEmpty())
+	{
+		loadMainLanguage("Russian",   langPath("rus"));
+		loadSourceLanguage("English", langPath("eng"));
+		loadSourceLanguage("Japan",   langPath("jap"));
+		loadSourceLanguage("French",  langPath("fre"));
+		loadSourceLanguage("Spanish", langPath("spa"));
+		loadSourceLanguage("German",  langPath("ger"));
+		loadSourceLanguage("Italian", langPath("ita"));
+		setMainSourceLanguage("English");
+	}
+	else
+	{
+		for (LanguageList::const_iterator lang = list.begin(); lang != list.end(); lang++)
+		{
+			if (lang->second == mainTargetLanguage)
+			{
+				loadMainLanguage(lang->second.toUtf8(), langPath(lang->first));
+			}
+			else
+			{
+				loadSourceLanguage(lang->second.toUtf8(), langPath(lang->first));
+				if (lang->second == mainSourceLanguage)
+				{
+					setMainSourceLanguage(mainTargetLanguage.toUtf8());
+				}
+			}
+		}
+
+	}
 }
 
 void MainController::loadMainLanguage(const QByteArray& languageId, const QString& path)
@@ -275,7 +373,7 @@ bool MainController::saveComments()
 	}
 
 
-	if (!Strings::saveMessages("../content/common/comments.txt", m_comments))
+	if (!Strings::saveMessages(contentPathFor("comments.txt"), m_comments))
 	{
 		return false;
 	}
@@ -297,7 +395,7 @@ bool MainController::saveAuthors()
 
 	DLOG << "Saving authors...";
 
-	QFile file("../content/common/authors.txt");
+	QFile file(contentPathFor("authors.txt"));
 	VERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
 
 	QTextStream stream(&file);
@@ -320,7 +418,7 @@ bool MainController::saveTags()
 
 	DLOG << "Saving tags...";
 
-	QFile file("../content/common/tags.txt");
+	QFile file(contentPathFor("tags.txt"));
 	VERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
 
 	QTextStream stream(&file);
