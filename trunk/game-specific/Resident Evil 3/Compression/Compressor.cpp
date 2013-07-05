@@ -161,16 +161,16 @@ Compressor::MatchInfo Compressor::findBestMatch(const CyclicBuffer& window, int 
 	int bestPos = 0;
 	int j = 0;
 
-	const int lastWindowMatchIndex = window.size() - s_referenceIncrement;
-	const int lastWindowStartIndex = lastWindowMatchIndex - lookbackSize;
+	const int lastWindowStartIndex = window.size() - forwardBufferSize - s_referenceIncrement;
+	const int lastWindowMatchIndex = lastWindowStartIndex + patternSize;
 	const int lastPatternIndex = patternSize - 1;
 
-	if (window.size() - lookbackSize > lastWindowStartIndex)
+	if (lookbackSize < s_referenceIncrement)
 	{
 		return MatchInfo();
 	}
 
-	for (int i = window.size() - lookbackSize; i <= lastWindowMatchIndex; i++)
+	for (int i = window.size() - forwardBufferSize - lookbackSize; i <= lastWindowMatchIndex; i++)
 	{
 		if (pattern[j] != window[i])
 		{
@@ -204,7 +204,7 @@ Compressor::MatchInfo Compressor::findBestMatch(const CyclicBuffer& window, int 
 		}
 	}
 
-	return MatchInfo(window.size() - patternSize - bestPos, bestLen);
+	return MatchInfo(window.size() - forwardBufferSize - bestPos, bestLen);
 }
 
 int Compressor::flushUncompressed(Consolgames::Stream* output, const CyclicBuffer& window, int& count, int patternSize)
