@@ -7,16 +7,15 @@ MemoryStream::MemoryStream()
 	: Stream()
 	, m_buffer(BLOCK_SIZE)
 	, m_externalPointer(false)
-	, m_bufferSize(BLOCK_SIZE)
 	, m_size(0)
 	, m_position(0)
+	, m_mode(modeReadWrite)
 {
 	m_memory = &m_buffer[0];
 }
 
 MemoryStream::MemoryStream(const void* data, ptrdiff_t size)
 	: Stream()
-	, m_bufferSize(size)
 	, m_size(size)
 	, m_mode(modeRead)
 	, m_constMemory(reinterpret_cast<const u8*>(data))
@@ -37,8 +36,15 @@ largesize_t MemoryStream::read(void* buf, largesize_t size)
 		size = m_size - m_position;
 	}
 
-    memcpy(buf, &m_constMemory[static_cast<size_t>(m_position)], static_cast<size_t>(size));
-    
+	if (m_externalPointer && isReadOnly())
+	{
+		memcpy(buf, &m_constMemory[static_cast<size_t>(m_position)], static_cast<size_t>(size));
+	}
+	else
+	{
+		memcpy(buf, &m_memory[static_cast<size_t>(m_position)], static_cast<size_t>(size));
+	}
+
 	m_position += size;
 
     return size;
@@ -46,7 +52,11 @@ largesize_t MemoryStream::read(void* buf, largesize_t size)
 
 largesize_t MemoryStream::write(const void* buf, largesize_t size)
 {
-	ASSERT(m_mode == modeWrite || m_mode == modeReadWrite);
+	ASSERT(!isReadOnly());
+	if (isReadOnly())
+	{
+		return -1;
+	}
 
     largesize_t preparedSize;
 
@@ -60,16 +70,18 @@ largesize_t MemoryStream::write(const void* buf, largesize_t size)
     }
 	else
 	{
-        largesize_t pos = m_position + size;
-        if (pos >= m_bufferSize)
+        const size_t pos = static_cast<size_t>(m_position + size);
+        if (pos >= m_buffer.size())
 		{
-            m_bufferSize = ((pos + BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE;
-            m_buffer.reserve(static_cast<size_t>(m_bufferSize));
+            const size_t newSize = ((pos + BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE;
+            m_buffer.resize(newSize);
+			m_memory = &m_buffer[0];
         }
         preparedSize = size;
     }
 
-    memcpy(&m_memory[static_cast<size_t>(m_position)], buf, static_cast<size_t>(preparedSize));
+	memcpy(&m_memory[static_cast<size_t>(m_position)], buf, static_cast<size_t>(preparedSize));
+
     m_position += preparedSize;
     if (m_size < m_position)
 	{
@@ -93,7 +105,7 @@ offset_t MemoryStream::seek(offset_t offset, SeekOrigin origin)
 	default:
 		ASSERT(!"Invalid seek origin");
 	}
-	ASSERT(offset > 0);
+	ASSERT(offset >= 0);
 	m_position = offset;
 	return offset;
 }
@@ -115,6 +127,16 @@ offset_t MemoryStream::size() const
 bool MemoryStream::atEnd() const 
 {
 	return (m_position == m_size);
+}
+
+const void* MemoryStream::memory() const
+{
+	return isReadOnly() ? m_constMemory : &m_buffer.front();
+}
+
+bool MemoryStream::isReadOnly() const
+{
+	return (m_mode == modeRead);
 }
 
 }

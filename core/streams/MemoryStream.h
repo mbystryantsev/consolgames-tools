@@ -26,9 +26,13 @@ public:
 	virtual offset_t size() const override;
 	virtual bool atEnd() const override;
 
+	const void* memory() const;
+
+private:
+	bool isReadOnly() const;
+
 private:
 	largesize_t m_size;
-	largesize_t m_bufferSize;
 	OpenMode m_mode;
 	largesize_t m_position;
 	u8* m_memory;
