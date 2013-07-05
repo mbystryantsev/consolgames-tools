@@ -8,4 +8,5 @@ class CompressionTests : public QObject
 private:
 	Q_SLOT void test();
 	Q_SLOT void test_data();
+	Q_SLOT void sizeTest();
 };

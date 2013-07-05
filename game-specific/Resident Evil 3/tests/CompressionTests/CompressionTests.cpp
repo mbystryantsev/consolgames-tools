@@ -1,5 +1,4 @@
 #include "CompressionTests.h"
-#include "StringBuffer.h"
 #include "Compressor.h"
 #include "MemoryStream.h"
 #include <QByteArray>
@@ -57,4 +56,14 @@ void CompressionTests::test_data()
 		"(Screen: Jill sitting on a bed, legs crossed, and loading a gun.)"
 		"Jill Valentine:  It was Raccoon City’s last chance... and my last chance... "
 		"My last escape.");
+}
+
+void CompressionTests::sizeTest()
+{
+	{
+		MemoryStream result;
+		Compressor::encode(&MemoryStream("aaaaaaaaaaaaaaa", 15), &result);
+		QCOMPARE(static_cast<int>(result.size()), 11);
+	}
+
 }
