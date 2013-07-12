@@ -6,4 +6,5 @@ SUBDIRS = \
 	Compression \
 	PackTool \
 	externals/core \
+	externals/CompressionLib \
 	tests/CompressionTests \
