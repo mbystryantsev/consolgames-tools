@@ -7,4 +7,4 @@ TEMPLATE = app
 
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
-LIBS += core.lib Compression.lib
+LIBS += core.lib Compression.lib CompressionLib.lib

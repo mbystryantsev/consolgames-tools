@@ -14,9 +14,11 @@ INCLUDEPATH += \
 	$$PWD/Compression \
 	$$PWD/../../core \
 	$$PWD/../../core/streams \
+	$$PWD/../../compression \
 	
 DESTDIR = $$PWD/$$QT_ARCH/$$CONFIG_NAME
 
 QMAKE_LIBDIR += \
 	$$DESTDIR \
 	$$EXTERNALS/core/$$CONFIG_NAME \
+	$$EXTERNALS/CompressionLib/$$CONFIG_NAME \
