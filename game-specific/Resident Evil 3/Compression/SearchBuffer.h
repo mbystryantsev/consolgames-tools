@@ -28,7 +28,7 @@ public:
 
 private:
 	void removeOldestString();
-	void insertNewString();
+	void insertNewString(int forwardBufferSize);
 
 private:
 	CyclicBuffer m_buffer;
