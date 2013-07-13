@@ -149,6 +149,11 @@ Compressor::MatchInfo Compressor::findBestMatch(const CyclicBuffer& window, int 
 {
 	// Search best match using Knuth–Morris–Pratt algorithm
 
+	if (lookbackSize < s_referenceIncrement)
+	{
+		return MatchInfo();
+	}
+
 	const int patternSize = std::min<int>(s_maxEncodingLength, forwardBufferSize);
 
 	char prefix[s_maxEncodingLength + 1] = {0};
@@ -164,11 +169,6 @@ Compressor::MatchInfo Compressor::findBestMatch(const CyclicBuffer& window, int 
 	const int lastWindowStartIndex = window.size() - forwardBufferSize - s_referenceIncrement;
 	const int lastWindowMatchIndex = lastWindowStartIndex + patternSize;
 	const int lastPatternIndex = patternSize - 1;
-
-	if (lookbackSize < s_referenceIncrement)
-	{
-		return MatchInfo();
-	}
 
 	for (int i = window.size() - forwardBufferSize - lookbackSize; i <= lastWindowMatchIndex; i++)
 	{
