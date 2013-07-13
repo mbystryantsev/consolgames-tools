@@ -26,7 +26,7 @@ void SearchBuffer::write(uint8 c)
 	removeOldestString();
 	m_buffer.write(c);
 	m_position++;
-	insertNewString();
+	insertNewString(c_maxEncodingLength);
 }
 
 void SearchBuffer::write(Consolgames::Stream* stream, int count)
@@ -46,11 +46,7 @@ void SearchBuffer::processLastBytes(int count)
 	while (count--)
 	{
 		m_dataLeft--;
-		const int patternIndex = m_position - m_dataLeft;
-		if (patternIndex >= c_minReference)
-		{
-			m_tree.insert((patternIndex - c_minReference) % m_buffer.size());
-		}
+		insertNewString(m_dataLeft);
 	}
 }
 
@@ -79,13 +75,13 @@ void SearchBuffer::removeOldestString()
 	}
 }
 
-void SearchBuffer::insertNewString()
+void SearchBuffer::insertNewString(int forwardBufferSize)
 {
-	const int patternIndex = m_position - c_maxEncodingLength;
+	const int patternIndex = m_position - forwardBufferSize;
 
-	if (patternIndex >= c_maxEncodingLength)
+	if (patternIndex >= c_minReference)
 	{
-		const int newStringIndex = patternIndex - c_maxEncodingLength;
+		const int newStringIndex = patternIndex - c_minReference;
 		m_tree.insert(newStringIndex % m_buffer.size());
 	}
 }
@@ -95,15 +91,6 @@ void SearchBuffer::setFinishingMode(int dataLeft)
 	ASSERT(!m_finishingMode);
 	m_dataLeft = dataLeft;
 	m_finishingMode = true;
-
-	// Index left strings
-	const int patternIndex = m_position - dataLeft;
-	const int startIndex = max(0, patternIndex - c_maxEncodingLength);
-	const int endIndex = patternIndex - c_minReference;
-	for (int i = startIndex; i <= endIndex; i++)
-	{
-		m_tree.insert(i % m_buffer.size());
-	}
 }
 
 bool SearchBuffer::finishingMode() const
