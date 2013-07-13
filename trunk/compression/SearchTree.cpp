@@ -201,17 +201,39 @@ SearchTree::Node* SearchTree::insertString(Node* node, int charIndex)
 	return node->performBalance();
 }
 
-int SearchTree::compare(int fistIndex, int secondIndex) const
+int SearchTree::compare(int firstIndex, int secondIndex) const
 {
+	ASSERT(firstIndex != secondIndex);
+
+	if (firstIndex == secondIndex)
+	{
+		return 0;
+	}
+
+	const uint8* c1 = m_window + firstIndex;
+	const uint8* c2 = m_window + secondIndex;
+	const uint8* const end = m_window + m_windowSize;
+
 	int result = 0;
+
 	for (int offset = 0; offset < m_maxStringLength; offset++)
 	{
-		result = m_window[(fistIndex + offset) % m_windowSize] - m_window[(secondIndex + offset) % m_windowSize];
+		result = *c1++ - *c2++;
 		if (result != 0)
 		{
 			break;
 		}
+
+		if (c1 == end)
+		{
+			c1 = m_window;
+		}
+		else if (c2 == end)
+		{
+			c2 = m_window;
+		}
 	}
+
 	return result;
 }
 
@@ -234,20 +256,41 @@ SearchTree::SearchResult SearchTree::findString(const uint8* buffer, int bufferS
 
 	Node* node = m_root;
 
+	const uint8* const end1 = buffer + bufferSize;
+	const uint8* const end2 = m_window + m_windowSize;
+
 	while (node != NULL)
 	{
 		ASSERT(!node->isNull());
 
-		const int windowIndex = node->charIndex;
-
 		int comparisonResult = 0;
 		int offset = 0;
+
+		const uint8* c1 = buffer + (stringPosition % bufferSize);
+		const uint8* c2 = m_window + node->charIndex;
+
+		if (c1 == c2)
+		{
+			result.position = node->charIndex;
+			result.length = stringLength;
+			break;
+		}
+
 		while (offset < stringLength)	
 		{
-			comparisonResult = buffer[(stringPosition + offset) % bufferSize] - m_window[(windowIndex + offset) % m_windowSize];
+			comparisonResult = *c1++ - *c2++;
 			if (comparisonResult != 0)
 			{
-				break;;
+				break;
+			}
+
+			if (c1 == end1)
+			{
+				c1 = buffer;
+			}
+			else if (c2 == end2)
+			{
+				c2 = m_window;
 			}
 
 			offset++;
