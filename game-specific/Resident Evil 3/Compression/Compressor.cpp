@@ -1,7 +1,8 @@
 #include "Compressor.h"
-#include "CyclicBuffer.h"
+#include "SearchBuffer.h"
 
 using namespace Consolgames;
+using namespace Compression;
 
 namespace ResidentEvil
 {
@@ -11,8 +12,7 @@ enum
 	s_referenceIncrement = 4,
 	s_lenghtIncrement = 2,
 	s_windowSize = 0x7FF + s_referenceIncrement,
-	s_maxEncodingLength = 0xF + s_lenghtIncrement,
-	s_effectiveForwardBufferSize = s_maxEncodingLength - s_referenceIncrement
+	s_maxEncodingLength = 0xF + s_lenghtIncrement
 };
 
 bool Compressor::decode(Consolgames::Stream* input, Consolgames::Stream* output)
@@ -63,148 +63,92 @@ bool Compressor::encode(Consolgames::Stream* input, Consolgames::Stream* output)
 	// intersected logical parts: search window and forward buffer.
 	// Intersection needed for encoding periodic sequences at
 	// front of search buffer like "ab|ababab" or "a|aaaaaa".
-	CyclicBuffer cache(s_windowSize + s_effectiveForwardBufferSize);
+	// For search used AVL tree (self-balancing binary search tree).
+	SearchBuffer searchBuffer(s_windowSize, s_maxEncodingLength, s_referenceIncrement);
 
-	int forwardBufferSize = std::min<int>(s_effectiveForwardBufferSize, static_cast<int>(input->size() - input->position()));
+	int forwardBufferSize = std::min<int>(s_maxEncodingLength, static_cast<int>(input->size() - input->position()));
 	int blockCount = 0;
-	int cacheFilledSize = forwardBufferSize;
 	int bytesToCopy = 0;
-	cache.write(input, forwardBufferSize);
+	searchBuffer.write(input, forwardBufferSize);
 
 	while (forwardBufferSize > 0)
 	{
-		const int lookback = std::min<int>(s_windowSize, cacheFilledSize - forwardBufferSize);
-		const MatchInfo matchInfo = findBestMatch(cache, lookback, forwardBufferSize);
+		if (forwardBufferSize < s_maxEncodingLength && !searchBuffer.finishingMode())
+		{
+			// Finish indexing left positions
+			searchBuffer.setFinishingMode(forwardBufferSize);
+		}
 
-		if (matchInfo.size < s_lenghtIncrement)
+		const int patternPosition = searchBuffer.position() - forwardBufferSize;
+		const SearchTree::SearchResult searchResult = patternPosition >= s_referenceIncrement
+			? searchBuffer.tree().find(patternPosition, forwardBufferSize)
+			: SearchTree::SearchResult();
+
+		if (searchResult.length < s_lenghtIncrement)
 		{
 			bytesToCopy++;
 			if (!input->atEnd())
 			{
-				cache.write(input, 1);
-				cacheFilledSize = std::min<int>(cacheFilledSize + 1, cache.size());
+				searchBuffer.write(input->read8());
 			}
 			else
 			{
+				searchBuffer.processLastBytes(1);
 				forwardBufferSize--;
 			}
 
+			// In any case periodic flush needed for prevent cyclic buffer overflow
 			if (bytesToCopy >= 0x7F)
 			{
-				blockCount += flushUncompressed(output, cache, bytesToCopy, forwardBufferSize);
+				blockCount += flushUncompressed(output, searchBuffer.window(), bytesToCopy, forwardBufferSize);
 			}
 		}
 		else
 		{
-			blockCount += flushUncompressed(output, cache, bytesToCopy, forwardBufferSize);
+			blockCount += flushUncompressed(output, searchBuffer.window(), bytesToCopy, forwardBufferSize);
 
-			ASSERT(matchInfo.size <= s_maxEncodingLength);
-			ASSERT(matchInfo.size >= s_lenghtIncrement);
-			ASSERT(matchInfo.reference <= s_windowSize);
-			ASSERT(matchInfo.reference >= s_referenceIncrement);
-			const uint16 packedReference = ((matchInfo.reference - s_referenceIncrement) | ((matchInfo.size - s_lenghtIncrement) << 11));
+			// Calculate reference from relative position in cyclic buffer
+			int absolutePosition = 0;
+		
+			const int currentWindowPosition = searchBuffer.window().position() % searchBuffer.window().size();
+			const int currentWindowStart = searchBuffer.position() - searchBuffer.position() % searchBuffer.window().size();
+			if (searchResult.position >= currentWindowPosition)
+			{
+				absolutePosition = currentWindowStart - searchBuffer.window().size() + searchResult.position;
+			}
+			else
+			{
+				absolutePosition = currentWindowStart + searchResult.position;
+			}
+			
+			const int reference = patternPosition - absolutePosition;
+
+			ASSERT(searchResult.length <= s_maxEncodingLength);
+			ASSERT(searchResult.length >= s_lenghtIncrement);
+			ASSERT(reference <= s_windowSize);
+			ASSERT(reference >= s_referenceIncrement);
+			const uint16 packedReference = ((reference - s_referenceIncrement) | ((searchResult.length - s_lenghtIncrement) << 11));
 			output->write16(packedReference);
 
-			const int availableInput = std::min<int>(static_cast<int>(input->size() - input->position()), matchInfo.size);
+			const int availableInput = std::min<int>(static_cast<int>(input->size() - input->position()), searchResult.length);
 
 			if (availableInput != 0)
 			{
-				cache.write(input, availableInput);
-				cacheFilledSize = std::min<int>(cacheFilledSize + availableInput, cache.size());
+				searchBuffer.write(input, availableInput);
 			}
-			forwardBufferSize = forwardBufferSize - matchInfo.size + availableInput;
+			forwardBufferSize = forwardBufferSize - searchResult.length + availableInput;
 
 			blockCount++;
 		}
 	}
 
-	blockCount += flushUncompressed(output, cache, bytesToCopy, forwardBufferSize);
+	blockCount += flushUncompressed(output, searchBuffer.window(), bytesToCopy, forwardBufferSize);
 
 	output->setByteOrder(Stream::orderLittleEndian);
 	output->seek(initialPosition, Stream::seekSet);
 	output->write32(blockCount);
 
 	return true;
-}
-
-void Compressor::calcPrefix(const uint8* pattern, int patternSize, char* prefix)
-{
-	prefix[0] = 0;
-	int k = 0;
-	for(int i = 1; i < patternSize; i++)
-	{
-		while (k > 0 && pattern[k] != pattern[i])
-		{
-			k = prefix[k - 1];
-		}
-		if (pattern[k] == pattern[i])
-		{
-			k++;
-		}
-		prefix[i] = k;
-	}
-}
-
-Compressor::MatchInfo Compressor::findBestMatch(const CyclicBuffer& window, int lookbackSize, int forwardBufferSize)
-{
-	// Search best match using Knuth–Morris–Pratt algorithm
-
-	if (lookbackSize < s_referenceIncrement)
-	{
-		return MatchInfo();
-	}
-
-	const int patternSize = std::min<int>(s_maxEncodingLength, forwardBufferSize);
-
-	char prefix[s_maxEncodingLength + 1] = {0};
-	uint8 pattern[s_maxEncodingLength];
-	window.readTail(pattern, patternSize);
-
-	calcPrefix(pattern, patternSize, &prefix[1]);
-
-	int bestLen = 0;
-	int bestPos = 0;
-	int j = 0;
-
-	const int lastWindowStartIndex = window.size() - forwardBufferSize - s_referenceIncrement;
-	const int lastWindowMatchIndex = lastWindowStartIndex + patternSize;
-	const int lastPatternIndex = patternSize - 1;
-
-	for (int i = window.size() - forwardBufferSize - lookbackSize; i <= lastWindowMatchIndex; i++)
-	{
-		if (pattern[j] != window[i])
-		{
-			if (j > bestLen)
-			{
-				bestLen = j;
-				bestPos = i - j;
-			}
-			if (i >= lastWindowStartIndex)
-			{
-				break;
-			}
-			if (j != 0)
-			{
-				i--;
-			}
-			j = prefix[j];
-		}
-		else if (j == lastPatternIndex || i == lastWindowMatchIndex || j + 1 == s_maxEncodingLength)
-		{
-			if (j + 1 > bestLen)
-			{
-				bestLen = j + 1;
-				bestPos = i - j;
-			}
-			break;
-		}
-		else
-		{
-			j++;
-		}
-	}
-
-	return MatchInfo(window.size() - forwardBufferSize - bestPos, bestLen);
 }
 
 int Compressor::flushUncompressed(Consolgames::Stream* output, const CyclicBuffer& window, int& count, int patternSize)
