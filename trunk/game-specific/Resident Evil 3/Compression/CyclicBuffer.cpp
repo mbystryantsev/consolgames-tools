@@ -20,11 +20,10 @@ void CyclicBuffer::write(const uint8* data, int size)
 
 	while (size > 0)
 	{
-		const int chunk = min(this->size() - m_position, size);
-		memcpy(&m_data[m_position], data, chunk);
-		//std::copy(data, data + chunk, &m_data[pos()]);
+		const int chunk = min(this->size() - pos(), size);
+		memcpy(&m_data[pos()], data, chunk);
 		data += chunk;
-		m_position = (m_position + chunk) % this->size();
+		m_position += chunk;
 		size -= chunk;
 	}
 }
@@ -38,22 +37,17 @@ void CyclicBuffer::write(Consolgames::Stream* data, int size)
 
 	while (size > 0)
 	{
-		const int chunk = min(this->size() - m_position, size);
-		data->read(&m_data[m_position], chunk);
-		m_position = (m_position + chunk) % this->size();
+		const int chunk = min(this->size() - pos(), size);
+		data->read(&m_data[pos()], chunk);
+		m_position += chunk;
 		size -= chunk;
 	}
 }
 
-void CyclicBuffer::fill(uint8 value, int size)
+void CyclicBuffer::write(const uint8 c)
 {
-	while (size > 0)
-	{
-		const int chunk = min(this->size() - m_position, size);
-		memset(&m_data[m_position], value, chunk);
-		m_position = (m_position + chunk) % this->size();
-		size -= chunk;
-	}
+	m_data[m_position] = c;
+	m_position = (m_position + 1) % size();
 }
 
 void CyclicBuffer::readTail(Consolgames::Stream* data, int size, int backTo) const
@@ -95,8 +89,8 @@ void CyclicBuffer::reply(int backReference, int size)
 
 	while (size > 0)
 	{
-		m_data[m_position] = m_data[position];
-		m_position = (m_position + 1) % this->size();
+		m_data[pos()] = m_data[position];
+		m_position++;
 		position = (position + 1) % this->size();
 		size--;
 	}
@@ -104,12 +98,27 @@ void CyclicBuffer::reply(int backReference, int size)
 
 uint8 CyclicBuffer::at(int index) const
 {
-	return m_data[(m_position + index) % m_data.size()];
+	return m_data[index % size()];
 }
 
 uint8 CyclicBuffer::operator[](int index) const
 {
 	return at(index);
+}
+
+int CyclicBuffer::pos() const
+{
+	return m_position % size();
+}
+
+const uint8* CyclicBuffer::data() const
+{
+	return &m_data[0];
+}
+
+int CyclicBuffer::position() const
+{
+	return m_position;
 }
 
 }
