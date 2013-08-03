@@ -229,6 +229,7 @@ bool PatcherProcessor::checkImage()
 	CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	WiiImageProgressNotifier listener;
 	m_image.setProgressHandler(&listener);
+	m_progressNotifier.setCurrentNotifier(&listener);
 
 	if (!m_image.checkPartition(m_image.dataPartition()))
 	{
