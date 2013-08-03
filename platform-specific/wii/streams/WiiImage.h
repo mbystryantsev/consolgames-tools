@@ -48,6 +48,23 @@ private:
 		}
 	};
 
+	class ProgressHandlerHolder
+	{
+	public:
+		ProgressHandlerHolder(IProgressHandler& handler, const char* action, int maxSize)
+			: m_handler(handler)
+		{
+			m_handler.startProgress(action, maxSize);
+		}
+		~ProgressHandlerHolder()
+		{
+			m_handler.finishProgress();
+		}
+
+	private:
+		IProgressHandler& m_handler;
+	};
+
 public:
 	bool open(const std::wstring& filename, Stream::OpenMode mode);
 	bool opened() const;
@@ -71,7 +88,7 @@ public:
 
 protected:
 	void saveDecryptedFile(const std::wstring& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt = false);
-	u32 parse_fst_and_save(u8 *fst, const char* names, int i, int part);
+	uint32 parse_fst_and_save(uint8 *fst, const char* names, int i, int part);
 
 public:
 	bool checkPartition(int partition);
@@ -91,7 +108,7 @@ public:
 	void readDirect(offset_t offset, void* data, largesize_t size);
 	bool writeDirect(offset_t offset, const void* data, largesize_t size);
 	bool writeDirect(offset_t offset, Stream* stream, largesize_t size){offset;stream;size;return false;};
-	bool loadDecryptedFile(const std::wstring& filename, u32 partition, offset_t offset, largesize_t size, int fstReference);
+	bool loadDecryptedFile(const std::wstring& filename, uint32 partition, offset_t offset, largesize_t size, int fstReference);
 	
 	//! http://wiibrew.org/wiki/Signing_bug
 	//! http://hackmii.com/2008/04/keys-keys-keys/
@@ -107,17 +124,17 @@ public:
 	//void			tmd_load (struct ImageFile *image, u32 part);
 
 	int wii_nb_cluster(int partition) const;
-	bool wii_read_cluster(int partition, int cluster, u8 *data, u8 *header);
-	bool wii_read_cluster_hashes(int partition, int cluster, u8 *h0, u8 *h1, u8 *h2);
+	bool wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *header);
+	bool wii_read_cluster_hashes(int partition, int cluster, uint8 *h0, uint8 *h1, uint8 *h2);
 	bool wii_calc_group_hash(int partition, int cluster);
-	bool wii_write_cluster(int partition, int cluster, const u8* in);
-	bool wii_write_clusters(int partition, int cluster, const u8 *in, u32 nClusterOffset, u32 nBytesToWrite, Stream* stream);
+	bool wii_write_cluster(int partition, int cluster, const uint8* in);
+	bool wii_write_clusters(int partition, int cluster, const uint8 *in, uint32 nClusterOffset, uint32 nBytesToWrite, Stream* stream);
 	bool wii_write_clusters(int partition, int cluster, int nClusterOffset, int nBytesToWrite, Stream* inStream);
 
 	// AES
-	static void aes_cbc_dec(const u8* in, u8* out, u32 len, const u8* key, u8* iv);
-	static void aes_cbc_enc(const u8 *in, u8* out, u32 len, const u8* key, u8* iv);
-	static void sha1(const u8 *data, u32 len, u8 *hash);
+	static void aes_cbc_dec(const uint8* in, uint8* out, uint32 len, const uint8* key, uint8* iv);
+	static void aes_cbc_enc(const uint8 *in, uint8* out, uint32 len, const uint8* key, uint8* iv);
+	static void sha1(const uint8 *data, uint32 len, uint8 *hash);
 
 	bool wii_write_data_file(int partition, offset_t offset, Stream* file, largesize_t size);
 	bool wii_write_data_file(int partition, offset_t offset, void* data, largesize_t size);
@@ -128,13 +145,13 @@ public:
 
 	largesize_t findRequiredFreeSpaceInPartition(int partition, largesize_t requiredSize){partition;requiredSize;return 0;};
 
-	static void store32(void* data, u32 value);
+	static void store32(void* data, uint32 value);
 
 	void markAsUsed(...){}
 	void markAsUsedDC(...){}
 	void markAsUnused(...){}
 
-	static u32 calcDolSize(const u8* header);
+	static uint32 calcDolSize(const uint8* header);
 
 	int partitionCount()
 	{
@@ -144,7 +161,7 @@ public:
 
 	bool m_isWii;
 
-	static const u8 s_truchaSignature[256];
+	static const uint8 s_truchaSignature[256];
 
 	int m_generalPartitionCount;
 	std::vector<WiiPartition> m_partitions;
@@ -169,8 +186,8 @@ public:
 
 	std::auto_ptr<FileStream> m_stream;	
 	// save the tables instead of reading and writing them all the time
-	u8 m_h3[SIZE_H3];
-	u8 m_h4[SIZE_H4];
+	uint8 m_h3[SIZE_H3];
+	uint8 m_h4[SIZE_H4];
 	PartitionHeader m_header;
 	int m_currentPartition;
 	IProgressHandler* m_progressHandler;

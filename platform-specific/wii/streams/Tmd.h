@@ -16,11 +16,11 @@ enum WiiPartitionType
 
 struct TmdContent
 {
-	u32 cid;
+	uint32 cid;
 	int index;
 	WiiPartitionType type;
 	largesize_t size;
-	u8 hash[20];
+	uint8 hash[20];
 };
 
 struct Tmd 
@@ -43,19 +43,19 @@ struct Tmd
 	}
 
 	TmdSigType sigType;
-	std::vector<u8> signature;
+	std::vector<uint8> signature;
 	char issuer[64];
-	u8 version;
-	u8 ca_crl_version;
-	u8 signer_crl_version;
-	u64 sys_version;
-	u64 title_id;
-	u32 title_type;
-	u16 group_id;
-	u32 accessRights;
-	u16 titleVersion;
-	u16 numContents;
-	u16 bootIndex;
+	uint8 version;
+	uint8 ca_crl_version;
+	uint8 signer_crl_version;
+	uint64 sys_version;
+	uint64 title_id;
+	uint32 title_type;
+	uint16 group_id;
+	uint32 accessRights;
+	uint16 titleVersion;
+	uint16 numContents;
+	uint16 bootIndex;
 	std::vector<TmdContent> contents;
 };
 

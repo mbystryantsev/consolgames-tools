@@ -15,11 +15,11 @@ public:
 		largesize_t dataSize;
 		offset_t certOffset;
 		largesize_t certSize;
-		u32 appldrSize;
+		uint32 appldrSize;
 
 		//! http://wiibrew.org/wiki/Title_metadata
 		offset_t tmdOffset;
-		u32 tmdSize;
+		uint32 tmdSize;
 		Nullable<Tmd> tmd;
 		offset_t h3_offset;
  		char title_id_str[17];
@@ -36,10 +36,10 @@ public:
 	bool isEncrypted;
 	char chan_id[5];
 	AES_KEY key;
-	u8 title_key[16];
-	u8 dec_buffer[0x8000];
+	uint8 title_key[16];
+	uint8 dec_buffer[0x8000];
 	int cached_block;
-	u8 cache[0x7c00];
+	uint8 cache[0x7c00];
 	int fileCount;
 
 	int m_index;
@@ -47,7 +47,7 @@ public:
 
 	Tree<FileInfo>::Node* addFilesystemObject(Tree<FileInfo>::Node* parentNode, const std::string& name, offset_t offset, largesize_t size, int fstReference, FsObjectType fsType);
 	Tree<FileInfo>::Node* addFilesystemObject(const std::string& name, offset_t offset, largesize_t size, int fstReference, FsObjectType fsType);
-	u32 parseFst(u8* fstData, int index, Tree<FileInfo>::Node* node = NULL);
+	uint32 parseFst(uint8* fstData, int index, Tree<FileInfo>::Node* node = NULL);
 };
 
 }

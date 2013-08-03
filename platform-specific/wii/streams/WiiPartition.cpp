@@ -23,7 +23,7 @@ Tree<FileInfo>::Node* WiiPartition::addFilesystemObject(const std::string& name,
 	return addFilesystemObject(&m_filesystem.root(), name, offset, size, fstReference, fsType);
 }
 
-u32 WiiPartition::parseFst(u8* fstData, int index, Tree<FileInfo>::Node* node)
+uint32 WiiPartition::parseFst(uint8* fstData, int index, Tree<FileInfo>::Node* node)
 {
 	const char* names = reinterpret_cast<const char*>(&fstData[12 * fileCount]);
 
