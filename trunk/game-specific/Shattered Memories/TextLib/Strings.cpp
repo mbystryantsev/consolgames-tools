@@ -300,8 +300,8 @@ bool Strings::exportMessages(const MessageSet& messageSet, const QString& filena
 
 	const int version = 2;
 	const int count = messageSet.messages.size();
-	stream.write32(version);
-	stream.write32(count);
+	stream.writeUInt32(version);
+	stream.writeUInt32(count);
 	stream.seek(messageSet.messages.size() * 8, Stream::seekCur);
 
 	QList<MessageRecord> records;
@@ -331,8 +331,8 @@ bool Strings::exportMessages(const MessageSet& messageSet, const QString& filena
 	stream.seek(8, Stream::seekSet);
 	foreach (const MessageRecord& record, records)
 	{
-		stream.write32(record.hash);
-		stream.write32(record.offset);
+		stream.writeUInt32(record.hash);
+		stream.writeUInt32(record.offset);
 	}
 
 	return true;

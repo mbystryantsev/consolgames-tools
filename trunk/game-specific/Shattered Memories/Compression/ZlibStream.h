@@ -21,7 +21,7 @@ protected:
 	z_stream m_zStream;
 	bool m_opened;
 	bool m_finished;
-	u8 m_buf[s_chunkSize];
+	uint8 m_buf[s_chunkSize];
 };
 
 }

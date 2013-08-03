@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 		//QtFileStream stream(dir.absoluteFilePath("CB3596FE.BIN"), QIODevice::ReadOnly);
 		ASSERT(stream.opened());
 
-		if (stream.read32() == 0xE0FFD8FF)
+		if (stream.readUInt32() == 0xE0FFD8FF)
 		{
 			stream.file().close();
 			dir.rename(file, file.left(file.length() - 4) + ".jpg");

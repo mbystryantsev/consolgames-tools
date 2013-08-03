@@ -14,7 +14,7 @@ DirectoriesFileSource::DirectoriesFileSource(const vector<wstring>& directories)
 {
 }
 
-shared_ptr<Stream> DirectoriesFileSource::file(u32 hash, FileAccessor&)
+shared_ptr<Stream> DirectoriesFileSource::file(uint32 hash, FileAccessor&)
 {
 	for (vector<wstring>::const_iterator dir = m_directories.begin(); dir != m_directories.end(); dir++)
 	{
@@ -52,7 +52,7 @@ shared_ptr<Stream> DirectoriesFileSource::fileByName(const string& name, FileAcc
 	return file(Hash::calc(name.c_str()), accessor);
 }
 
-wstring DirectoriesFileSource::filename(const wstring& path, u32 hash, const wstring& ext)
+wstring DirectoriesFileSource::filename(const wstring& path, uint32 hash, const wstring& ext)
 {
 	const string hashStr = Hash::toString(hash);
 	return path + PATH_SEPARATOR_L + wstring(hashStr.begin(), hashStr.end()) + ext;

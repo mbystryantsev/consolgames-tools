@@ -58,7 +58,7 @@ bool DataStreamParser::fetch()
 
 	m_stream->setByteOrder(m_byteOrder);
 
-	m_currentItemSize = m_stream->read32();
+	m_currentItemSize = m_stream->readUInt32();
 	m_position += 4;
 
 	const int alignedItemSize = (m_currentItemSize % 4 == 0) ? m_currentItemSize : m_currentItemSize + (4 - (m_currentItemSize % 4));
@@ -122,19 +122,19 @@ bool DataStreamParser::initSegment()
 
 	//DLOG << "New segment at " << HEX << m_stream->position();
 
-	const int signature = m_stream->read32();
+	const int signature = m_stream->readUInt32();
 	if (signature != 0 && (signature & 0x0F00) != 0x0700)
 	{
 		//DLOG << "Invalid signature: " << HEX << signature;
 		return false;
 	}
 	
-	m_segmentSize = m_stream->read32();
+	m_segmentSize = m_stream->readUInt32();
 
 	m_currentSegmentInfo.signature = signature;
 	m_currentSegmentInfo.size = m_segmentSize;
-	m_currentSegmentInfo.unk1 = m_stream->read16();
-	m_currentSegmentInfo.unk2 = m_stream->read16();
+	m_currentSegmentInfo.unk1 = m_stream->readUInt16();
+	m_currentSegmentInfo.unk2 = m_stream->readUInt16();
 
 	m_nextSegmentPosition = m_nextSegmentPosition + 12 + m_segmentSize;
 
@@ -179,32 +179,32 @@ DataStreamParser::MetaInfo DataStreamParser::readMetaInfo()
 {
 	m_stream->setByteOrder(m_byteOrder);
 
-	const int size = m_stream->read32();
+	const int size = m_stream->readUInt32();
 	Q_UNUSED(size);
 
 	MetaInfo info;
 
 	info.unknown = readString();
-	info.unk1 = m_stream->read64();
-	info.unk2 = m_stream->read32();
-	info.unk3 = m_stream->read32();
+	info.unk1 = m_stream->readUInt64();
+	info.unk2 = m_stream->readUInt32();
+	info.unk3 = m_stream->readUInt32();
 	info.typeId = readString();
 	info.targetPath = readString();
 	info.sourcePath = readString();
-	info.unk4 = m_stream->read32();
+	info.unk4 = m_stream->readUInt32();
 
 	return info;
 }
 
 std::string DataStreamParser::readString()
 {
-	const int length = m_stream->read32();
+	const int length = m_stream->readUInt32();
 	std::string result;
 	result.reserve(length);
 
 	for (int i = 0; i < length; i++)
 	{
-		const char c = m_stream->read8();
+		const char c = m_stream->readUInt8();
 		if (c == '\0')
 		{
 			break;
@@ -215,7 +215,7 @@ std::string DataStreamParser::readString()
 	int delta = length - (result.size() + 1);
 	while (delta > 0)
 	{
-		m_stream->read8();
+		m_stream->readUInt8();
 		delta--;
 	}
 
@@ -232,17 +232,17 @@ bool DataStreamParser::atSegmentEnd() const
 	return (m_stream->position() == nextSegmentPosition());
 }
 
-u32 DataStreamParser::totalSegmentSize() const
+uint32 DataStreamParser::totalSegmentSize() const
 {
 	return m_segmentSize + s_segmentHeaderSize;
 }
 
-u32 DataStreamParser::itemSize() const
+uint32 DataStreamParser::itemSize() const
 {
 	return m_currentItemSize;
 }
 
-u32 DataStreamParser::segmentSize() const
+uint32 DataStreamParser::segmentSize() const
 {
 	return m_segmentSize;
 }

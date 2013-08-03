@@ -22,7 +22,7 @@ PatcherTexturesFileSource::PatcherTexturesFileSource(FileSource* primarySource, 
 {
 }
 
-shared_ptr<Stream> PatcherTexturesFileSource::file(u32 hash, FileAccessor& accessor)
+shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& accessor)
 {
 	if (hash == s_fontFilenameHash)
 	{
@@ -96,10 +96,10 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	// TODO: Rewrite converter and remove next line
 	stream->setByteOrder(Stream::orderBigEndian);
 	
-	const int type = stream->read32();
-	const int width = stream->read16();
-	const int height = stream->read16();
-	const int mipmapCount = stream->read32();
+	const int type = stream->readUInt32();
+	const int width = stream->readUInt16();
+	const int height = stream->readUInt16();
+	const int mipmapCount = stream->readUInt32();
 
 	ASSERT(type != 0);
 	ASSERT(width == m_texturesInfo[index].width);

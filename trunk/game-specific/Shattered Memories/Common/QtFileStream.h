@@ -13,7 +13,7 @@ public:
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) override;
 	virtual offset_t position() const override;
 	virtual void flush() override;
-	virtual offset_t size() const override;
+	virtual largesize_t size() const override;
 	virtual bool opened() const override;
 	virtual bool atEnd() const override;
 

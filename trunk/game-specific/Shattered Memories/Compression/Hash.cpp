@@ -4,18 +4,18 @@
 namespace ShatteredMemories
 {
 	
-u32 Hash::calc(const char* str, u32 hash)
+uint32 Hash::calc(const char* str, uint32 hash)
 {
 	const char* c = str;
 	while (*c != '\0')
 	{
-		const u32 v = tolower(*c++);
+		const uint32 v = tolower(*c++);
 		hash = ((hash << 5) + hash) ^ v;
 	}
 	return hash;
 }
 
-std::string Hash::toString(u32 hash)
+std::string Hash::toString(uint32 hash)
 {
 	char buf[32];
 	_ultoa(hash, buf, 16);
