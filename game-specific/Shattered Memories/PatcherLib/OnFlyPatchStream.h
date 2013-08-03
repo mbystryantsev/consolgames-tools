@@ -19,8 +19,8 @@ public:
 			return (offset == 0 && size == 0);
 		}
 
-		u32 offset;
-		u32 size;
+		uint32 offset;
+		uint32 size;
 	};
 
 	class DataSource

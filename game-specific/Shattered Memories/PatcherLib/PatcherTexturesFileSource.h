@@ -12,7 +12,7 @@ class PatcherTexturesFileSource : public FileSource
 public:
 	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase);
 
-	virtual std::tr1::shared_ptr<Consolgames::Stream> file(u32 hash, FileAccessor& accessor) override;
+	virtual std::tr1::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
 
 private:
 	class TextureDataSource : public OnFlyPatchStream::DataSource

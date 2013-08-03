@@ -42,14 +42,14 @@ EmbededResourceInfo EmbededResourceInfo::parse(Consolgames::Stream* stream)
 	}
 
 	const quint32 c_tag = 0x2C2A4569;
-	const quint32 tag = stream->read32();
+	const quint32 tag = stream->readUInt32();
 	if (tag != c_tag)
 	{
 		return EmbededResourceInfo();
 	}
 
-	info.streamSizeLeft = stream->read32();
-	info.contentSize = stream->read32();
+	info.streamSizeLeft = stream->readUInt32();
+	info.contentSize = stream->readUInt32();
 
 	char name[33] = "";
 	stream->read(name, 32);

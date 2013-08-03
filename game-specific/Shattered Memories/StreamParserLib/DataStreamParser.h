@@ -18,10 +18,10 @@ public:
 		{
 		}
 
-		u32 signature;
-		u32 size;
-		u16 unk1;
-		u16 unk2;
+		uint32 signature;
+		uint32 size;
+		uint16 unk1;
+		uint16 unk2;
 	};
 
 	struct MetaInfo
@@ -30,13 +30,13 @@ public:
 		void clear();
 
 		std::string unknown;
-		u64 unk1;
-		u32 unk2;
-		u32 unk3;
+		uint64 unk1;
+		uint32 unk2;
+		uint32 unk3;
 		std::string typeId;
 		std::string targetPath;
 		std::string sourcePath;
-		u32 unk4;
+		uint32 unk4;
 	};
 
 public:
@@ -48,19 +48,19 @@ public:
 	bool initSegment();
 	offset_t nextSegmentPosition() const;
 	bool atSegmentEnd() const;
-	u32 segmentSize() const;
+	uint32 segmentSize() const;
 
 	bool fetch();
 	bool atEnd() const;
 	const MetaInfo& metaInfo() const;
 	const SegmentInfo& segmentInfo() const;
 
-	u32 itemSize() const;
+	uint32 itemSize() const;
 
 private:
 	MetaInfo readMetaInfo();
 	std::string readString();
-	u32 totalSegmentSize() const;
+	uint32 totalSegmentSize() const;
 
 private:
 	const Consolgames::Stream::ByteOrder m_byteOrder;

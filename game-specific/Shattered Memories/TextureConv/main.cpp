@@ -16,10 +16,10 @@ struct TexHeader
 	static TexHeader read(Stream* stream)
 	{
 		TexHeader header;
-		header.textureType = stream->read32();
-		header.width = stream->read16();
-		header.height = stream->read16();
-		header.mipmapCount = stream->read32();
+		header.textureType = stream->readUInt32();
+		header.width = stream->readUInt16();
+		header.height = stream->readUInt16();
+		header.mipmapCount = stream->readUInt32();
 
 		return header;
 	}

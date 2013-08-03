@@ -27,19 +27,19 @@ class TextureDictionaryParserWii: public TextureDictionaryParser
     {
         struct
         {
-            u32 magic; // ???
-            u32 flags;
-            u16 unk1;
-            u16 unk2;
+            uint32 magic; // ???
+            uint32 flags;
+            uint16 unk1;
+            uint16 unk2;
         } header_data;
-        u32 unk1;
-        u32 size;
-        u32 flags;
-        u32 unk_arr[9];
+        uint32 unk1;
+        uint32 size;
+        uint32 flags;
+        uint32 unk_arr[9];
         char name[0x40];
-        u32 unk2;
-        u16 width;
-        u16 height;
+        uint32 unk2;
+        uint16 width;
+        uint16 height;
         char bits_per_pixel;
         char mipmap_count;
         char format_id; // format_id???

@@ -6,6 +6,10 @@ CONFIG(debug, debug|release) {
 	CONFIG_NAME = release
 }
 
+!contains(DEFINES, PRODUCTION) {
+	DEFINES += CG_LOG_ENABLED
+}
+
 DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
 EXTERNALS = $$PWD/../../externals/

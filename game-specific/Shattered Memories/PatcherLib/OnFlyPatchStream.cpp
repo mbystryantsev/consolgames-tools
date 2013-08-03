@@ -16,7 +16,7 @@ OnFlyPatchStream::OnFlyPatchStream(shared_ptr<Stream> stream, shared_ptr<DataSou
 
 largesize_t OnFlyPatchStream::read(void* buf, largesize_t size)
 {
-	u8* data = static_cast<u8*>(buf);
+	uint8* data = static_cast<uint8*>(buf);
 	largesize_t totalReaded = 0;
 	while (size > 0 && !m_stream->atEnd())
 	{

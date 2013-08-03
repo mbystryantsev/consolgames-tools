@@ -19,7 +19,7 @@ PatcherDirectoriesFileSource::PatcherDirectoriesFileSource(const QStringList& di
 	}
 }
 
-shared_ptr<Stream> PatcherDirectoriesFileSource::file(u32 hash, FileAccessor& accessor)
+shared_ptr<Stream> PatcherDirectoriesFileSource::file(uint32 hash, FileAccessor& accessor)
 {
 	return fileByName(Hash::toString(hash), accessor);
 }

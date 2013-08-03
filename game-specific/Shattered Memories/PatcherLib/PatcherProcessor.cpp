@@ -289,7 +289,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 		}
 
 		executableStream->seek(executableInfo.bootArcOffset + EmbededResourceInfo::s_contentSizeOffset, Stream::seekSet);
-		executableStream->write32(stream.size());
+		executableStream->writeUInt32(stream.size());
 	}
 
 	DLOG << "Replacing ui.arc...";
@@ -336,7 +336,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 		{
 			DLOG << "Writing extended size for ui.arc...";
 			arcStream->seek(0x10 + 0x10 * info.index + 8, Stream::seekSet);
-			arcStream->write32(stream.size());
+			arcStream->writeUInt32(stream.size());
 		}
 
 		arcStream->seek(info.offset, Stream::seekSet);

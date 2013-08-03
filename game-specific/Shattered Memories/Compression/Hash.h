@@ -7,8 +7,8 @@ namespace ShatteredMemories
 class Hash
 {
 public:
-	static u32 calc(const char* str, u32 hash = 0);
-	static std::string toString(u32 hash);
+	static uint32 calc(const char* str, uint32 hash = 0);
+	static std::string toString(uint32 hash);
 };
 
 }
