@@ -75,68 +75,68 @@ Stream::ByteOrder Stream::byteOrder() const
 	return m_byteOrder;
 }
 
-u8 Stream::read8()
+uint8 Stream::readUInt8()
 {
-	return read<u8>();
+	return read<uint8>();
 }
 
-u16 Stream::read16()
-{
-	if (m_byteOrder != s_nativeByteOrder)
-	{
-		return endian16(read<u16>());
-	}
-	return read<u16>();
-}
-
-u32 Stream::read32()
+uint16 Stream::readUInt16()
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
-		return endian32(read<u32>());
+		return endian16(read<uint16>());
 	}
-	return read<u32>();
+	return read<uint16>();
 }
 
-u64 Stream::read64()
+uint32 Stream::readUInt32()
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
-		return endian64(read<u64>());
+		return endian32(read<uint32>());
 	}
-	return read<u64>();
+	return read<uint32>();
 }
 
-void Stream::write8(u8 value)
+uint64 Stream::readUInt64()
 {
-	write<u8>(value);	
+	if (m_byteOrder != s_nativeByteOrder)
+	{
+		return endian64(read<uint64>());
+	}
+	return read<uint64>();
 }
 
-void Stream::write16(u16 value)
+void Stream::writeUInt8(uint8 value)
+{
+	write<uint8>(value);	
+}
+
+void Stream::writeUInt16(uint16 value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian16(value);
 	}
-	write<u16>(value);
+	write<uint16>(value);
 }
 
-void Stream::write32(u32 value)
+void Stream::writeUInt32(uint32 value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian32(value);
 	}
-	return write<u32>(value);	
+	return write<uint32>(value);	
 }
 
-void Stream::write64(u64 value)
+void Stream::writeUInt64(uint64 value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian64(value);
 	}
-	return write<u64>(value);	
+	return write<uint64>(value);	
 }
 
 bool Stream::opened() const
@@ -146,12 +146,12 @@ bool Stream::opened() const
 
 int Stream::readInt()
 {
-	return read<int>();
+	return static_cast<int>(readUInt());
 }
 
-u32 Stream::readUInt()
+uint32 Stream::readUInt()
 {
-	return read<u32>();
+	return readUInt32();
 }
 
 }
