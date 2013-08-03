@@ -27,14 +27,10 @@
 # include <windows.h>
 #endif
 
-typedef unsigned int u32;
-typedef unsigned short u16;
-typedef unsigned __int64 u64;
-typedef unsigned char u8;
-typedef char s8;
-typedef short s16;
-typedef int s32;
-typedef __int64 s64;
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned __int64 uint64;
 
 namespace Consolgames
 {
@@ -51,17 +47,17 @@ namespace Consolgames
 # define PATH_SEPARATOR_STR_L L"/"
 #endif
 
-inline u16 endian16(u16 v)
+inline uint16 endian16(uint16 v)
 {
 	return (v >> 8) | (v << 8);
 }
 
-inline u32 endian32(u32 v)
+inline uint32 endian32(uint32 v)
 {
 	return (v >> 24) | (v << 24) | ((v >> 8) & 0xFF00) | ((v << 8) & 0xFF0000);
 }
 
-inline u64 endian64(u64 v)
+inline uint64 endian64(uint64 v)
 {
 	return (v >> 56)
 		| (v << 56)
@@ -84,10 +80,10 @@ public:
 		, m_expression(expression)
 	{
 		std::cerr << "ASSERT\n";
-		std::cerr << "File:       " << m_file;
-		std::cerr << "Line:       " << m_line;
-		std::cerr << "Function:   " << m_function;
-		std::cerr << "Expression: " << expression;
+		std::cerr << "File:       " << m_file << std::endl;
+		std::cerr << "Line:       " << m_line << std::endl;
+		std::cerr << "Function:   " << m_function << std::endl;
+		std::cerr << "Expression: " << expression << std::endl;
 	}
 
 private:
@@ -103,14 +99,14 @@ public:
 	AssertHandler(const char* file, int line, const char* function, const char* expression)
 	{
 #ifdef CG_LOG_ENABLED
-		std::cout << "ASSERT triggered at " << file << "@" << line << " (" << function << "): " << expression;
+		std::cout << "ASSERT triggered at " << file << "@" << line << " (" << function << "): " << expression << std::endl;
 #endif
 # ifdef _MSC_VER
-		try
-		{
-			DebugBreak();
-		}
-		catch(...)
+// 		try
+// 		{
+// 			DebugBreak();
+// 		}
+// 		catch(...)
 		{
 			throw new AssertException(file, line, function, expression);
 		}

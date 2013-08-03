@@ -36,7 +36,7 @@ public:
 	template <typename T>
 	T read()
 	{
-		T value;
+		T value = T();
 		read(&value, sizeof(T));
 		return value;
 	}
@@ -52,7 +52,7 @@ public:
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) = 0;
 	virtual offset_t position() const = 0;
 	virtual void flush() = 0;
-	virtual offset_t size() const = 0;
+	virtual largesize_t size() const = 0;
 	virtual bool opened() const;
 	virtual bool atEnd() const = 0;
 
@@ -63,18 +63,17 @@ public:
 	void setByteOrder(ByteOrder order);
 	ByteOrder byteOrder() const;
 
-	virtual u8 read8();
-	virtual u16 read16();
-	virtual u32 read32();
-	virtual u64 read64();
-
+	uint8 readUInt8();
+	uint16 readUInt16();
+	uint32 readUInt32();
+	uint64 readUInt64();
 	int readInt();
-	u32 readUInt();
+	uint32 readUInt();
 
-	virtual void write8(u8 value);
-	virtual void write16(u16 value);
-	virtual void write32(u32 value);
-	virtual void write64(u64 value);
+	void writeUInt8(uint8 value);
+	void writeUInt16(uint16 value);
+	void writeUInt32(uint32 value);
+	void writeUInt64(uint64 value);
 
 protected:
 	ByteOrder m_byteOrder;

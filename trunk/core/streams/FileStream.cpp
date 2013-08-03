@@ -89,7 +89,7 @@ largesize_t FileStream::read(void *buf, largesize_t size)
 	unsigned long readed;
 	if(!ReadFile(m_handle, buf, static_cast<DWORD>(size), &readed, NULL))
 	{
-		return - 1;
+		return -1;
 	}
 	else
 	{

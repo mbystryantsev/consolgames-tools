@@ -35,9 +35,9 @@ private:
 	largesize_t m_size;
 	OpenMode m_mode;
 	largesize_t m_position;
-	u8* m_memory;
-	const u8* m_constMemory;
-	std::vector<u8> m_buffer;
+	uint8* m_memory;
+	const uint8* m_constMemory;
+	std::vector<uint8> m_buffer;
 	bool m_externalPointer;
 };
 

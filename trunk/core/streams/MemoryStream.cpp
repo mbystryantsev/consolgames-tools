@@ -18,7 +18,7 @@ MemoryStream::MemoryStream(const void* data, ptrdiff_t size)
 	: Stream()
 	, m_size(size)
 	, m_mode(modeRead)
-	, m_constMemory(reinterpret_cast<const u8*>(data))
+	, m_constMemory(reinterpret_cast<const uint8*>(data))
 	, m_externalPointer(true)
 	, m_position(0)
 {
