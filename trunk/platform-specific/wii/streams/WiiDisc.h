@@ -121,7 +121,7 @@ public:
         node->data.subtype     = subtype;
         return node;
     }
-    PNode addItemToTree(PNode parent, CString name, u32 part, u64 offset, u64 size, int fst_reference, int data_type = dataFile){
+    PNode addItemToTree(PNode parent, CString name, uint32 part, u64 offset, u64 size, int fst_reference, int data_type = dataFile){
         PNode node = parent->addChild();
         node->data.name   = name;
         node->data.partition   = part;
@@ -160,13 +160,13 @@ void AfxMessageBox(const CString& s)
 #   define _file fd
 #endif
 
-u16 be16 (const u8 *p);
-u32 be32 (const u8 *p);
-u64 be64 (const u8 *p);
+uint16 be16 (const uint8 *p);
+uint32 be32 (const uint8 *p);
+u64 be64 (const uint8 *p);
 
-extern u8 verbose_level;
+extern uint8 verbose_level;
 size_t g_strnlen (const char *s, size_t size);
-u32 get_dol_size (const u8 *header);
+uint32 get_dol_size (const uint8 *header);
 
 
 
@@ -288,7 +288,7 @@ struct Partition
 class WiiDisc
 {
 public:
-	largesize_t findRequiredFreeSpaceInPartition(struct ImageFile *image, u64 nPartition, u32 nRequiredSize);
+	largesize_t findRequiredFreeSpaceInPartition(struct ImageFile *image, u64 nPartition, uint32 nRequiredSize);
 	bool checkForFreeSpace(int partition, offset_t offset, int blockCount);
 	bool extractPartitionFiles(int partition, const std::string& directory);
 	bool doPartitionShrink(int partition);
@@ -301,30 +301,30 @@ public:
 	bool setBootMode();
 	offset_t nImageSize;
 
-	void aes_cbc_dec(u8 *in, u8 *out, u32 len, u8 *key, u8 *iv);
-	void aes_cbc_enc(u8 *in, u8 *out, u32 len, u8 *key, u8 *iv);
-	void sha1(u8 *data, u32 len, u8 *hash);
+	void aes_cbc_dec(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv);
+	void aes_cbc_enc(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv);
+	void sha1(uint8 *data, uint32 len, uint8 *hash);
 
-	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, u8 *in, std::FILE * fIn= NULL, IWiiDiscProcessHandler* _ProgressBox = NULL);
-	bool wii_write_clusters(int partition, int cluster,  u8 *in, u32 nClusterOffset, u32 nBytesToWrite, std::FILE * fIn);
-	int wii_read_data(int partition, u64 offset, u32 size, u8 **out);
-	bool wii_read_cluster_hashes(int partition, int cluster, u8 *h0, u8 *h1, u8 *h2);
-	int wii_write_cluster(int partition, int cluster, u8 *in);
-	int wii_read_cluster(int partition, int cluster, u8 *data, u8 *header);
+	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, uint8 *in, std::FILE * fIn= NULL, IWiiDiscProcessHandler* _ProgressBox = NULL);
+	bool wii_write_clusters(int partition, int cluster,  uint8 *in, uint32 nClusterOffset, uint32 nBytesToWrite, std::FILE * fIn);
+	int wii_read_data(int partition, u64 offset, uint32 size, uint8 **out);
+	bool wii_read_cluster_hashes(int partition, int cluster, uint8 *h0, uint8 *h1, uint8 *h2);
+	int wii_write_cluster(int partition, int cluster, uint8 *in);
+	int wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *header);
 	bool wii_calc_group_hash(int partition, int cluster);
 	int wii_nb_cluster(int partition);
 
 	bool wii_trucha_signing(int partition);
 	bool discWriteDirect(offset_t offset, void* data, largesize_t size);
 	void markAsUnused(offset_t offset, largesize_t size);
-	bool mergeAndRelocateFSTs(unsigned char *pFST1, u32 nSizeofFST1, unsigned char *pFST2, u32 nSizeofFST2, unsigned char *pNewFST,  u32 * nSizeofNewFST, u64 nNewOffset, u64 nOldOffset);
+	bool mergeAndRelocateFSTs(unsigned char *pFST1, uint32 nSizeofFST1, unsigned char *pFST2, uint32 nSizeofFST2, unsigned char *pNewFST,  uint32 * nSizeofNewFST, u64 nNewOffset, u64 nOldOffset);
 	bool TruchaScrub(struct ImageFile * image, unsigned int nPartition);
 	bool RecreateOriginalFile(const std::string& csScrubbedName, const std::string& csDIFName, const std::string& csOutName);
 	bool CheckAndLoadKey(bool bLoadCrypto = false, struct ImageFile *image = NULL);
 	bool SaveDecryptedFile(CString csDestinationFilename,  struct ImageFile *image,
-							u32 part, u64 nFileOffset, u64 nFileSize, bool bOverrideEncrypt = false);
+							uint32 part, u64 nFileOffset, u64 nFileSize, bool bOverrideEncrypt = false);
 	bool LoadDecryptedFile(CString csDestinationFilename,  struct ImageFile *image,
-							u32 part, u64 nFileOffset, u64 nFileSize, int nFSTReference, IWiiDiscProcessHandler* _ProgressBox = NULL);
+							uint32 part, u64 nFileOffset, u64 nFileSize, int nFSTReference, IWiiDiscProcessHandler* _ProgressBox = NULL);
 	void Reset(void);
 	void markAsUsed(offset_t offset, largesize_t size);
 	void markAsUsedDC(offset_t partitionOffset, offset_t offset, largesize_t size, bool isEncrypted);
@@ -346,16 +346,16 @@ public:
         PNode hPartition[20];
         PNode hDisc;
 
-	u8			image_parse_header (struct PartitionHeader *header, u8 *buffer);
+	uint8			image_parse_header (struct PartitionHeader *header, uint8 *buffer);
 	struct ImageFile *	image_init (const char *filename, int file_p = 0);
 	int			image_parse (struct ImageFile *image);
 	void			image_deinit (struct ImageFile *image, bool close_file = true);
-	u32			parse_fst (u8 *fst, const char *names, u32 i, struct tree *tree, struct ImageFile *image, u32 part, PNode hParent);
-	u8			get_partitions (struct ImageFile *image);
-	void			tmd_load (struct ImageFile *image, u32 part);
+	uint32			parse_fst (uint8 *fst, const char *names, uint32 i, struct tree *tree, struct ImageFile *image, uint32 part, PNode hParent);
+	uint8			get_partitions (struct ImageFile *image);
+	void			tmd_load (struct ImageFile *image, uint32 part);
 	int			io_read (void *ptr, size_t size, struct ImageFile *image, u64 offset);
-	size_t			io_read_part (void* ptr, size_t size, struct ImageFile *image, u32 part, u64 offset);
-	int			decrypt_block (struct ImageFile *image, u32 part, u32 block);
+	size_t			io_read_part (void* ptr, size_t size, struct ImageFile *image, uint32 part, u64 offset);
+	int			decrypt_block (struct ImageFile *image, uint32 part, uint32 block);
 
 
 CString	m_csText;
@@ -366,13 +366,13 @@ private:
 	ImageFile* m_imageFile;
 
 
-	u32 parse_fst_and_save(u8 *fst, const char *names, u32 i, ImageFile *image, u32 part);
+	uint32 parse_fst_and_save(uint8 *fst, const char *names, uint32 i, ImageFile *image, uint32 part);
 
 	u64 findFirstData(u64 nStartOffset,  u64 nLength, bool bUsed = true);
 	bool CopyDiscDataDirect(struct ImageFile * image, int nPart, u64 nSource, u64 nDest, u64 nLength);
 	u64 SearchBackwards(u64 nStartPosition, u64 nEndPosition);
 	void FindFreeSpaceInPartition(_int64 nPartOffset, u64 * pStart, u64 * pSize);
-	void Write32( u8 *p, u32 nVal);
+	void Write32( uint8 *p, uint32 nVal);
 
 	CString m_filename;
 };

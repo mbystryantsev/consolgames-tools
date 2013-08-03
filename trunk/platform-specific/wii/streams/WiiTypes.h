@@ -58,22 +58,22 @@ enum TmdSigType
 	SIG_RSA_4096
 };
 
-inline u16 be16 (const u8 *p)
+inline uint16 be16 (const uint8 *p)
 {
 	return (p[0] << 8) | p[1];
 }
 
-inline u32 be32 (const u8 *p)
+inline uint32 be32 (const uint8 *p)
 {
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
-inline u64 be64 (const u8 *p)
+inline uint64 be64 (const uint8 *p)
 {
-	return ((u64) be32 (p) << 32) | be32 (p + 4);
+	return ((uint64) be32 (p) << 32) | be32 (p + 4);
 }
 
-#define ROUNDUP64B(x) (((u64)(x) + 64 - 1) & ~(64 - 1))
+#define ROUNDUP64B(x) (((uint64)(x) + 64 - 1) & ~(64 - 1))
 
 struct PartitionHeader 
 {
@@ -86,10 +86,10 @@ struct PartitionHeader
 	char name[0x60];
 
 	offset_t dolOffset;
-	u32 dolSize;
+	uint32 dolSize;
 
 	offset_t fstOffset;
-	u32 fstSize;
+	uint32 fstSize;
 
 	static PartitionHeader parse(void* data)
 	{
@@ -173,7 +173,7 @@ struct FileInfo
 
 struct Certificate
 {
-	u32 signatureType;
+	uint32 signatureType;
 	char signature[256];
 	char issuer[64];
 	int tag;
