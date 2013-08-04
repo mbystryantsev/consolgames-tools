@@ -25,7 +25,7 @@ largesize_t WiiFileStream::read(void* buf, largesize_t size)
 largesize_t WiiFileStream::write(const void* buf, largesize_t size)
 {
 	size = min(m_size - m_position, size);
-	const largesize_t written = m_image.wii_write_data(m_partition, m_offset + m_position, &MemoryStream(buf, static_cast<ptrdiff_t>(size)), size) ? size : 0;
+	const largesize_t written = m_image.wii_write_data_file(m_partition, m_offset + m_position, &MemoryStream(buf, static_cast<ptrdiff_t>(size)), size) ? size : 0;
 	m_position += written;
 	return written;
 }
@@ -72,7 +72,7 @@ offset_t WiiFileStream::size() const
 
 largesize_t WiiFileStream::writeStream(Stream *stream, largesize_t size)
 {
-	return m_image.wii_write_data(m_partition, m_offset + m_position, stream, size) ? size : 0;
+	return m_image.wii_write_data_file(m_partition, m_offset + m_position, stream, size) ? size : 0;
 }
 
 offset_t WiiFileStream::offset() const

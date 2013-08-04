@@ -563,7 +563,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 			{
 				// normal file so change the FST.BIN
 				std::vector<uint8> fstData(m_partitions[partition].header.fstSize);
-				//u8 * pFSTBin = (unsigned char *) calloc(m_partitions[partition].header.fstSize, 1);
+				//uint8 * pFSTBin = (unsigned char *) calloc(m_partitions[partition].header.fstSize, 1);
 
 				io_read_part(&fstData[0], m_partitions[partition].header.fstSize, partition, m_partitions[partition].header.fstOffset);
 
@@ -1220,10 +1220,10 @@ bool WiiImage::checkForFreeSpace(int partition, offset_t offset, int blockCount)
 	return true;
 #if 0
 	// convert offset to block representation
-	u32 nBlockOffsetStart = 0;
+	uint32 nBlockOffsetStart = 0;
 
-	nBlockOffsetStart = (u32)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64)0x8000);
-	nBlockOffsetStart = nBlockOffsetStart + (u32)(nOffset / (uint64) 0x7c00);
+	nBlockOffsetStart = (uint32)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64)0x8000);
+	nBlockOffsetStart = nBlockOffsetStart + (uint32)(nOffset / (uint64) 0x7c00);
 	if (0!=nOffset%0x7c00)
 	{
 		// starts part way into a block so need to check the number of blocks plus one
@@ -1233,7 +1233,7 @@ bool WiiImage::checkForFreeSpace(int partition, offset_t offset, int blockCount)
 		nBlockOffsetStart++;
 	}
 
-	for (u32 x = 0; x < nBlocks; x++)
+	for (uint32 x = 0; x < nBlocks; x++)
 	{
 		if (1==pFreeTable[nBlockOffsetStart+x])
 		{
@@ -1980,8 +1980,8 @@ bool WiiImage::checkPartition(int partition)
 
 	// Checking signature...
 // 	{
-// 		const u32 size = m_partitions[partition].tmdSize;
-// 		std::vector<u8> buffer(size);
+// 		const uint32 size = m_partitions[partition].tmdSize;
+// 		std::vector<uint8> buffer(size);
 // 
 // 		readDirect(m_partitions[partition].offset + m_partitions[partition].tmdOffset, &buffer[0], size);
 // 		HashData contentHash;
@@ -1991,7 +1991,7 @@ bool WiiImage::checkPartition(int partition)
 // 
 // 		if (!std::equal(signatureHash, signatureHash + 20, contentHash))
 // 		{
-// 			u8 decryptedSignature[256];
+// 			uint8 decryptedSignature[256];
 // 
 // 			RSA_public_decrypt()
 // 			if (signatureHash[0] != 0 && contentHash[0] != 0)
