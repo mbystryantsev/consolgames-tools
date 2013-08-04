@@ -1822,6 +1822,8 @@ begin
     CharList[i].Char^.Rect.Right := CharList[i].Rect.Right / FontData.TexHeader.Width;
     CharList[i].Char^.Rect.Bottom := CharList[i].Rect.Bottom / FontData.TexHeader.Height;
     CharList[i].Char^.Layer := CharList[i].Layer;
+
+    CharList[i].Char^.WW := CharList[i].Rect.Right - CharList[i].Rect.Left;
   end;
   For i := 0 To FontData.Count - 1 do
   begin

@@ -2,10 +2,10 @@ unit DIB;
 
 interface
 
-//{$INCLUDE DelphiXcfg.inc}
+{$INCLUDE DelphiXcfg.inc}
 
 uses
-  Windows, SysUtils, Classes, Graphics, Controls, Forms, Messages;
+  Windows, SysUtils, Classes, Graphics, Controls, Forms, Messages, DXConsts;
 
 type
   TRGBQuads = array[0..255] of TRGBQuad;
