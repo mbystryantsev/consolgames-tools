@@ -84,5 +84,9 @@ offset_t ImageFileStream::size() const
 	return m_fileSize;
 }
 
+bool ImageFileStream::atEnd() const 
+{
+	return (m_position == m_fileSize);
+}
 
 }
