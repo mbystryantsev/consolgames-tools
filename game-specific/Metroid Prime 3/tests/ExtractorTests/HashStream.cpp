@@ -22,7 +22,6 @@ largesize_t HashStream::write(const void* buf, largesize_t size)
 	return size;
 }
 
-
 offset_t HashStream::size() const
 {
 	return 16;
