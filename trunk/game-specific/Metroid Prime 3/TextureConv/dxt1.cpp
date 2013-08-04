@@ -1,95 +1,106 @@
-#include <nvimage/BlockDXT.h>
-#include <nvimage/ColorBlock.h>
-#include <nvimage/Filter.h>
-#include <nvimage/Image.h>
-#include <nvimage/FloatImage.h>
-#include <nvtt/nvtt.h>
-#include <nvtt/QuickCompressDXT.h>
+#include "dxt1.h"
+#include <BlockDXT.h>
+#include <ColorBlock.h>
+#include <Filter.h>
+#include <Image.h>
+#include <FloatImage.h>
+#include <QuickCompressDXT.h>
+#include <memory>
+#include <iostream>
+#include <fstream>
 
-inline void swap(uint16& a, uint16& b){
-  uint16 t = a;
-  a = b;
-  b = t;
+template <typename T, typename DT>
+static inline void copy(const T src, DT dest, int count)
+{
+	std::copy(src, src + count, dest);
 }
 
-void flip_image(void* data, int w, int h)
+void DXTCodec::flipImage(void* data, int w, int h)
 {
-	nv::Color32 *src = (nv::Color32*)data, *colors = new nv::Color32[w];
+	nv::Color32* src = static_cast<nv::Color32*>(data);
+	nv::Color32* colors = new nv::Color32[w];
 	for(int i = 0; i < h / 2; i++)
 	{
-		memcpy(colors, &src[i*w], w * sizeof(nv::Color32));
-		memcpy(&src[i*w], &src[(h-i-1)*w], w * sizeof(nv::Color32));
-		memcpy(&src[(h-i-1)*w], colors, w * sizeof(nv::Color32));
+		copy(&src[i * w], colors, w);
+		copy(&src[(h - i - 1) * w], &src[i * w], w);
+		copy(colors, &src[(h - i - 1) * w], w);
 	}
 	delete []colors;
 }
 
-#define img_pos(X) (i * 8 + X + (k > 1) * 4) * width + j * 8 + (k & 1) * 4 //  + key
-//#define i_pos(X)   (i * 8 + X + (k > 1) * 4) * width + j * 8 + (k & 1) * 4 //  + key
-
-void DeswizzleImage(void* src, void* dest, int width, int height)
+void DXTCodec::deswizzleImage(void* src, void* dest, int width, int height)
 {
-	int *img = (int*)dest;
-	nv::ColorBlock *rgba = (nv::ColorBlock*)src;
+	nv::Color32* image = static_cast<nv::Color32*>(dest);
+	nv::ColorBlock* rgba = static_cast<nv::ColorBlock*>(src);
 
-	for(int i = 0; i < height / 4; i++)
+	for (int i = 0; i < height / 4; i++)
 	{
-		for(int j = 0; j < width / 8; j++)
+		for (int j = 0; j < width / 8; j++)
 		{
 			//for(int k = 0; k < 2; k++)
 			{
-				memcpy(&img[(i*4+0)*width+j*8], &rgba->colors()[0],  32);
-				memcpy(&img[(i*4+1)*width+j*8], &rgba->colors()[8],  32);
+				copy(&rgba->colors()[0], &image[(i*4+0)*width+j*8], 32);
+				copy(&rgba->colors()[8], &image[(i*4+1)*width+j*8], 32);
 				rgba++;
-				memcpy(&img[(i*4+2)*width+j*8], &rgba->colors()[0], 32);
-				memcpy(&img[(i*4+3)*width+j*8], &rgba->colors()[8], 32);
+				copy(&rgba->colors()[0], &image[(i*4+2)*width+j*8], 32);
+				copy(&rgba->colors()[8], &image[(i*4+3)*width+j*8], 32);
 				rgba++;
 			}
 		}
 	}
-	flip_image(dest, width, height);
+	flipImage(dest, width, height);
 }
 
+#define img_pos(line) (i * 8 + line + (k > 1) * 4) * width + j * 8 + (k % 2) * 4 //  + key
 
-void DecodeDXT1(void* src, void* dest, int width, int height)
+void DXTCodec::decodeDXT1(void* src, void* dest, int width, int height)
 {
-	int a = 0, *img = (int*)dest;
-	nv::BlockDXT1 *blocks = (nv::BlockDXT1*)src, block_dxt;
-	nv::ColorBlock rgba;
+	int a = 0;
 
-	for(int i = 0; i < height / 8; i++)
+	std::ofstream file("D:\\rev\\corruption\\txtr\\dxt", std::ofstream::out | std::ofstream::binary);
+	
+	nv::Color32* imageData = static_cast<nv::Color32*>(dest);
+	const nv::BlockDXT1* blocks = static_cast<nv::BlockDXT1*>(src);
+	std::fill(imageData, imageData + width * height, nv::Color32(0xFF, 0, 0, 0xFF));
+
+	for (int i = 0; i < height / 8; i++)
 	{
-		for(int j = 0; j < width / 8; j++)
+		for (int j = 0; j < width / 8; j++)
 		{
-			//k = 0;
-			for(int k = 0; k < 4; k++)
+			for (int k = 0; k < 4; k++)
 			{
-				block_dxt = blocks[a];
-				block_dxt.col1.u = (block_dxt.col1.u << 8) | (block_dxt.col1.u >> 8);
-				block_dxt.col0.u = (block_dxt.col0.u << 8) | (block_dxt.col0.u >> 8);
+				nv::BlockDXT1 blockDXT = blocks[a];
+				blockDXT.col1.u = (blockDXT.col1.u << 8) | (blockDXT.col1.u >> 8);
+				blockDXT.col0.u = (blockDXT.col0.u << 8) | (blockDXT.col0.u >> 8);
 
-				for(int n = 0; n < 4; n++) block_dxt.row[n] =
-					(block_dxt.row[n] << 6) | ((block_dxt.row[n] << 2) & 0x30) |
-					((block_dxt.row[n] >> 2) & 0x0C) | (block_dxt.row[n] >> 6);
-					//block_dxt.flip4();
-				block_dxt.decodeBlock(&rgba);
-				for(int n = 0; n < 16; n++)
+				for (int n = 0; n < 4; n++)
 				{
-					((nv::Color32*)rgba.colors())[n].u = ((rgba.colors()[n].u >> 16) & 0xFF) | ((rgba.colors()[n].u << 16) & 0xFF0000) | (rgba.colors()[n].u & 0xFF00FF00);
-					//n = n + 0;
+					blockDXT.row[n] =
+						(blockDXT.row[n] << 6)
+						| ((blockDXT.row[n] << 2) & 0x30)
+						| ((blockDXT.row[n] >> 2) & 0x0C)
+						| (blockDXT.row[n] >> 6);	
 				}
-				memcpy(&img[img_pos(0)], &rgba.colors()[0],  16);
-				memcpy(&img[img_pos(1)], &rgba.colors()[4],  16);
-				memcpy(&img[img_pos(2)], &rgba.colors()[8],  16);
-				memcpy(&img[img_pos(3)], &rgba.colors()[12], 16);
+				file.write((char*)&blockDXT, sizeof(blockDXT));
+
+				nv::ColorBlock rgba;
+				blockDXT.decodeBlock(&rgba);
+				for (int n = 0; n < 16; n++)
+				{
+					rgba.color(n).u = ((rgba.colors()[n].u >> 16) & 0xFF) | ((rgba.colors()[n].u << 16) & 0xFF0000) | (rgba.colors()[n].u & 0xFF00FF00);
+				}
+				copy(&rgba.color(0),  &imageData[img_pos(0)], 4);
+				copy(&rgba.color(4),  &imageData[img_pos(1)], 4);
+				copy(&rgba.color(8),  &imageData[img_pos(2)], 4);
+				copy(&rgba.color(12), &imageData[img_pos(3)], 4);
 				a++;
 			}
 		}
 	}
-	flip_image(dest, width, height);
+	flipImage(dest, width, height);
 }
 
-void DecodeDXT3(void* src, void* dest, int width, int height)
+void DXTCodec::decodeDXT3(void* src, void* dest, int width, int height)
 {
 	int a = 0;
 	nv::Color32 *img = (nv::Color32*)dest;
@@ -100,7 +111,6 @@ void DecodeDXT3(void* src, void* dest, int width, int height)
 	{
 		for(int j = 0; j < width / 8; j++)
 		{
-			//k = 0;
 			for(int k = 0; k < 4; k++)
 			{
 				block_dxt = blocks[a];
@@ -117,37 +127,38 @@ void DecodeDXT3(void* src, void* dest, int width, int height)
 					((nv::Color32*)rgba.colors())[n].u = ((rgba.colors()[n].u >> 16) & 0xFF) | ((rgba.colors()[n].u << 16) & 0xFF0000) | (rgba.colors()[n].u & 0xFF00FF00);
 					//n = n + 0;
 				}
-				memcpy(&img[img_pos(0)], &rgba.colors()[0],  16);
-				memcpy(&img[img_pos(1)], &rgba.colors()[4],  16);
-				memcpy(&img[img_pos(2)], &rgba.colors()[8],  16);
-				memcpy(&img[img_pos(3)], &rgba.colors()[12], 16);
+				copy(&rgba.colors()[0],  &img[img_pos(0)], 4);
+				copy(&rgba.colors()[4],  &img[img_pos(1)], 4);
+				copy(&rgba.colors()[8],  &img[img_pos(2)], 4);
+				copy(&rgba.colors()[12], &img[img_pos(3)], 4);
 				a++;
 			}
 		}
 	}
-	flip_image(dest, width, height);
+	flipImage(dest, width, height);
 }
 
-int EncodeDXT1(void* src, void* dest, int width, int height)
-{	int a = 0;
-	nv::Color32 *img = (nv::Color32*)malloc(width * height * sizeof(nv::Color32));
-	memcpy(img, src, width * height * sizeof(nv::Color32));
-	flip_image(img, width, height);
+int DXTCodec::encodeDXT1(void* src, void* dest, int width, int height)
+{
+	int a = 0;
+	nv::Color32* imageData = static_cast<nv::Color32*>(malloc(width * height * sizeof(nv::Color32)));
+	copy(static_cast<const nv::Color32*>(src), imageData, width * height);
+	flipImage(imageData, width, height);
 
 	nv::BlockDXT1 *blocks = (nv::BlockDXT1*)dest, block_dxt;
 	nv::ColorBlock rgba;
 
-	for(int i = 0; i < height / 8; i++)
+	for (int i = 0; i < height / 8; i++)
 	{
-		for(int j = 0; j < width / 8; j++)
+		for (int j = 0; j < width / 8; j++)
 		{
 			//k = 0;
-			for(int k = 0; k < 4; k++)
+			for (int k = 0; k < 4; k++)
 			{
-				memcpy((void*)&rgba.colors()[0],  &img[img_pos(0)], 16);
-				memcpy((void*)&rgba.colors()[4],  &img[img_pos(1)], 16);
-				memcpy((void*)&rgba.colors()[8],  &img[img_pos(2)], 16);
-				memcpy((void*)&rgba.colors()[12], &img[img_pos(3)], 16);
+				copy(&rgba.colors()[0],  &imageData[img_pos(0)], 4);
+				copy(&rgba.colors()[4],  &imageData[img_pos(1)], 4);
+				copy(&rgba.colors()[8],  &imageData[img_pos(2)], 4);
+				copy(&rgba.colors()[12], &imageData[img_pos(3)], 4);
 #if 0
 				for(int n = 0; n < 16; n++)
 				{
@@ -171,55 +182,56 @@ int EncodeDXT1(void* src, void* dest, int width, int height)
 			}
 		}
 	}
-	free(img);
+	free(imageData);
 	return (width * height) / 2;
 }
 #undef img_pos
 
-int EncodeDXT1(void* src, void* dest, int width, int height, int mipmaps, int min_width, int min_height)
+int DXTCodec::encodeDXT1(void* src, void* dest, int width, int height, int mipmaps, int minWidth, int maxHeight)
 {
-    //using namespace nv;
-    unsigned char *d = (unsigned char*)dest;
+    unsigned char* destByte = static_cast<unsigned char*>(dest);
     nv::BoxFilter filter;
-    nv::Image *image = new nv::Image();
+	std::auto_ptr<nv::Image> image(new nv::Image());
     int size = 0;
 
 	image->allocate(width, height);
-    memcpy(image->pixels(), src, width * height * sizeof(nv::Color32));
-    while(mipmaps > 0)
+
+    while (mipmaps > 0)
     {
-        int w = nv::max(width, min_width);
-        int h = nv::max(height, min_height);
-		EncodeDXT1(image->pixels(), d, w, h);
-		size += w * h / 2;
+        int currentWidth = nv::max(width, minWidth);
+        int currentHeight = nv::max(height, maxHeight);
+		encodeDXT1(image->pixels(), destByte, currentWidth, currentHeight);
+		size += currentWidth * currentHeight / 2;
 		mipmaps--;
 
-        if(mipmaps == 0) break;
+        if (mipmaps == 0)
+		{
+			break;
+		}
 
-		d += w * h / 2;
+		destByte += currentWidth * currentHeight / 2;
 		width /= 2;
 		height /= 2;
 
-        nv::FloatImage* fimg = new nv::FloatImage(image);
-        nv::FloatImage* new_fimg = fimg->resize(filter, width, height, nv::FloatImage::WrapMode_Mirror);
-        delete fimg;
-        nv::Image* new_image = new_fimg->createImage();
-        delete new_fimg;
-        if(width < min_width || height < min_height)
+		nv::FloatImage floatImage(image.get());
+		std::auto_ptr<nv::FloatImage> resizedFloatImage(floatImage.resize(filter, width, height, nv::FloatImage::WrapMode_Mirror));
+		std::auto_ptr<nv::Image> resultImage(resizedFloatImage->createImage());
+        
+		if (width < minWidth || height < maxHeight)
         {
-            w = nv::max(width, min_width);
-            h = nv::max(height, min_height);
+            currentWidth = nv::max(width, minWidth);
+            currentHeight = nv::max(height, maxHeight);
 
-            image->allocate(w, h);
+            image->allocate(currentWidth, currentHeight);
             const nv::Color32 white(0xFF, 0xFF, 0xFF);
 
-            for(int y = 0; y < h; y++)
+            for(int y = 0; y < currentHeight; y++)
             {
-                nv::Color32* src_p = y < height ? new_image->scanline(y) : NULL;
+                nv::Color32* src_p = y < height ? resultImage->scanline(y) : NULL;
                 nv::Color32* dst_p = image->scanline(y);
-                for(int x = 0; x < w; x++)
+                for(int x = 0; x < currentWidth; x++)
                 {
-                    if(x >= width || y >= height)
+                    if (x >= width || y >= height)
                     {
                         *dst_p++ = white;
                     }
@@ -229,16 +241,26 @@ int EncodeDXT1(void* src, void* dest, int width, int height, int mipmaps, int mi
                     }
                 }
             }
-            delete new_image;
+            resultImage.reset();
         }
         else
         {
-            delete image;
-            image = new_image;
+            image.reset(resultImage.release());
         }
 	}
-	delete image;
 
     return size;
 }
 
+int DXTCodec::convert8bppaToGray(const void* inData, void* outData, int width, int height)
+{
+	nv::Color32 *color = static_cast<nv::Color32*>(outData);
+	const unsigned char* c = static_cast<const unsigned char*>(inData);
+	for(int i = 0; i < width * height; i++)
+	{
+		color->a = *c++;
+		color->r = color->g = color->b = *c++;
+		color++;
+	}
+	return 0;
+}

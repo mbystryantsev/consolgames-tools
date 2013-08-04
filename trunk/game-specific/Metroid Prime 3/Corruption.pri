@@ -8,6 +8,8 @@ CONFIG(debug, debug|release) {
 
 DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
+EXTERNALS = $$PWD/../../externals/
+
 INCLUDEPATH += \
 	$$PWD/Common \
 	$$PWD/ScriptTesterLib \
@@ -20,13 +22,15 @@ INCLUDEPATH += \
 	$$PWD/../../core \
 	$$PWD/../../core/streams \
 	$$PWD/../../core/classes \
-	$$PWD/../../externals/pnglite \
-	$$PWD/../../externals/nvidia-texture-tools/project/vc9 \
-	$$PWD/../../externals/nvidia-texture-tools/src \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvcore \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvmath \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvimage \
-	$$PWD/../../externals/nvidia-texture-tools/src/nvtt \
+	$$EXTERNALS/zlib \
+	$$EXTERNALS/pnglite \
+	$$EXTERNALS/nvidia-texture-tools/project/vc9 \
+	$$EXTERNALS/nvidia-texture-tools/src \
+	$$EXTERNALS/nvidia-texture-tools/src/nvcore \
+	$$EXTERNALS/nvidia-texture-tools/src/nvmath \
+	$$EXTERNALS/nvidia-texture-tools/src/nvimage \
+	$$EXTERNALS/nvidia-texture-tools/src/nvtt \
+	$$EXTERNALS/nvidia-texture-tools/extern/poshlib \
 
 QMAKE_LIBDIR += \
 	$$PWD/ScriptTesterLib/$$CONFIG_NAME \
@@ -34,4 +38,8 @@ QMAKE_LIBDIR += \
 	$$PWD/PasterLib/$$CONFIG_NAME \
 	$$PWD/FontLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
+	$$PWD/externals/pnglite/$$CONFIG_NAME \
+	$$PWD/externals/zlib/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
+	$$PWD/externals/nvtt/$$CONFIG_NAME \
+	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \
