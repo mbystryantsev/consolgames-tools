@@ -2,13 +2,13 @@
 #include <QUuid>
 #include <QWidget>
 
-class UsbDriveListener : public QWidget
+class DriveListener : public QWidget
 {
 	Q_OBJECT
 
 public:
-	UsbDriveListener(QWidget* parent = NULL);
-	~UsbDriveListener();
+	DriveListener(QWidget* parent = NULL);
+	~DriveListener();
 
 	Q_SIGNAL void drivesInserted(const QList<QChar>& letters);
 	Q_SIGNAL void drivesRemoved(const QList<QChar>& letters);

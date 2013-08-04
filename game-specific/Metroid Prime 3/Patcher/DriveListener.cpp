@@ -1,16 +1,16 @@
-#include "UsbDriveListener.h"
+#include "DriveListener.h"
 #include <dbt.h>
 
-UsbDriveListener::UsbDriveListener(QWidget* parent)
+DriveListener::DriveListener(QWidget* parent)
 	: QWidget(parent)
 	, m_uid(QUuid::createUuid())
 	, m_handle(NULL)
 {
-	DLOG << "UsbDriveListener created";
+	DLOG << "DriveListener created";
  	registerDeviceNotification();
 }
 
-void UsbDriveListener::registerDeviceNotification()
+void DriveListener::registerDeviceNotification()
 {
 	DEV_BROADCAST_DEVICEINTERFACE notificationFilter;
 	ZeroMemory(&notificationFilter, sizeof(notificationFilter));
@@ -21,7 +21,7 @@ void UsbDriveListener::registerDeviceNotification()
 	ASSERT(m_handle != NULL);
 }
 
-bool UsbDriveListener::winEvent(MSG* message, long* result)
+bool DriveListener::winEvent(MSG* message, long* result)
 {
 	Q_UNUSED(result);
 
@@ -38,7 +38,7 @@ bool UsbDriveListener::winEvent(MSG* message, long* result)
 					const DEV_BROADCAST_VOLUME* volume = reinterpret_cast<const DEV_BROADCAST_VOLUME*>(pMsgPtr);
 					
 					QList<QChar> letterList;
-					for (int i = 0; i < 32; i++)
+					for (int i = 0; i < 24; i++)
 					{
 						if (volume->dbcv_unitmask & (1 << i))
 						{
@@ -64,7 +64,7 @@ bool UsbDriveListener::winEvent(MSG* message, long* result)
 	return false;
 }
 
-void UsbDriveListener::unregisterDeviceNotification()
+void DriveListener::unregisterDeviceNotification()
 {
 	if (m_handle != NULL)
 	{
@@ -72,8 +72,8 @@ void UsbDriveListener::unregisterDeviceNotification()
 	}
 }
 
-UsbDriveListener::~UsbDriveListener()
+DriveListener::~DriveListener()
 {
-	DLOG << "UsbDriveListener destroyed";
+	DLOG << "DriveListener destroyed";
 	unregisterDeviceNotification();
 }

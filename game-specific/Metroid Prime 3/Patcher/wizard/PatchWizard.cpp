@@ -4,6 +4,7 @@
 #include "EulaPage.h"
 #include "PatchSelectPage.h"
 #include "ImagePatchPage.h"
+#include "RiivolutionPatchPage.h"
 #include "CompletedPage.h"
 #include "FailedPage.h"
 #include "CanceledPage.h"
@@ -39,6 +40,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	setPage(PageEula, new EulaPage());
 	setPage(PagePatchType, new PatchSelectPage());
 	setPage(PageImagePatch, new ImagePatchPage());
+	setPage(PageRiivolutionPatch, new RiivolutionPatchPage());
 	setPage(PageProgress, new ProgressPage());
 	setPage(PageCompleted, new CompletedPage());
 	setPage(PageFailed, new FailedPage());
