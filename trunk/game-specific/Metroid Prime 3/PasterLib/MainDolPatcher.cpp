@@ -100,7 +100,7 @@ bool MainDolPatcher::patchStrings(const QString& messagesFilename)
 		const quint32 ptrValue = info.offset + s_ptrDiff;
 		for (int j = 0; j < s_languageCount; j++)
 		{
-			m_fileStream->write32(ptrValue);
+			m_fileStream->writeUInt32(ptrValue);
 		}
 
 		const int avaibleLen = info.size / 2 - 1;
@@ -113,9 +113,9 @@ bool MainDolPatcher::patchStrings(const QString& messagesFilename)
 		m_fileStream->seek(info.offset, Stream::seekSet);
 		foreach (const QChar c, messages[i])
 		{
-			m_fileStream->write16(c.unicode());
+			m_fileStream->writeUInt16(c.unicode());
 		}
-		m_fileStream->write16(0);
+		m_fileStream->writeUInt16(0);
 	}
 
 	return true;
@@ -149,7 +149,7 @@ bool MainDolPatcher::patchCompressedItem(const QString& filename, quint32 offset
 	}
 	for (quint32 i = lzoSize; i < size; i++)
 	{
-		m_fileStream->write8(0);
+		m_fileStream->writeUInt8(0);
 	}
 
 	return true;

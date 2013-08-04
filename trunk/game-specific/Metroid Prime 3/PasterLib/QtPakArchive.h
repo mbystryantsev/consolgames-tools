@@ -6,5 +6,5 @@ class QtPakArchive : public PakArchive
 {
 protected:
 	virtual std::wstring findFile(const std::vector<std::wstring>& inputDirs, Hash hash, ResType res) const override;
-	virtual u32 storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, u8 flags) override;
+	virtual uint32 storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8 flags) override;
 };

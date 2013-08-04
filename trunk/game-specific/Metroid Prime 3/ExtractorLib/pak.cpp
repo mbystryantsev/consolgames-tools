@@ -22,7 +22,7 @@ static std::wstring strToWStr(const std::string& str)
 	return result;
 }
 
-static u32 alignSize(u32 size)
+static uint32 alignSize(uint32 size)
 {
 	return ((size + (ALIGN - 1)) / ALIGN) * ALIGN;
 }
@@ -44,7 +44,7 @@ Hash hashFromData(const char* c)
 	for (int i = 0; i < 8; i++)
 	{
 		hash <<= 8;
-		hash |= static_cast<u8>(c[i]);
+		hash |= static_cast<uint8>(c[i]);
 	}
 	return hash;
 }
@@ -90,8 +90,8 @@ bool PakArchive::extractFile(const FileRecord& file, Stream* out)
 			}
 			case CompressedFileHeader::Texture:
 			{
-				m_stream->read32(); // 12
-				m_stream->read32(); // 12
+				m_stream->readUInt32(); // 12
+				m_stream->readUInt32(); // 12
 				CompressedStreamHeader cmpdHeader = readCmpdStreamHeader();
 
 				const bool packed = ((cmpdHeader.flags & FlagCompressed) != 0);
@@ -129,40 +129,40 @@ bool PakArchive::extractFile(Hash filenameHash, Consolgames::Stream* out)
 	return false;
 }
 
-u32 PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkMem)
+uint32 PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkMem)
 {
 	unsigned int lzo_size = 0;
 	const int cChunk = 0x4000;
-	u8 buf[cChunk];
-	std::vector<u8> compressionBuffer(MAX_LZO_SIZE(cChunk));
+	uint8 buf[cChunk];
+	std::vector<uint8> compressionBuffer(MAX_LZO_SIZE(cChunk));
 	while (size > 0)
 	{
 		int chunk = min(cChunk, size);
 		lzo_uint lzoChunk = 0;
-		u16 lzoChunkStored = 0;
+		uint16 lzoChunkStored = 0;
 		size -= chunk;
 		in->read(buf, chunk);
 		VERIFY(lzo1x_999_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, lzoWorkMem) == LZO_E_OK);
 		lzo_size += lzoChunk + 2;
-		lzoChunkStored = endian16(static_cast<u16>(lzoChunk));
+		lzoChunkStored = endian16(static_cast<uint16>(lzoChunk));
 		out->write(&lzoChunkStored, 2);
 		out->write(&compressionBuffer[0], lzoChunk);
 	}
 	return lzo_size;
 }
 
-u32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
+uint32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
 {
 	return compressLzo(in, size, out, &m_lzoWorkMem[0]);
 }
 
-void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream)
+void PakArchive::decompressLzo(Stream* lzoStream, uint32 lzoSize, Stream* outStream)
 {
-	u8 lzoBuffer[MAX_CHUNK];
-	u8 decompressionBuffer[MAX_LZO_SIZE(MAX_CHUNK)];
+	uint8 lzoBuffer[MAX_CHUNK];
+	uint8 decompressionBuffer[MAX_LZO_SIZE(MAX_CHUNK)];
 	while (lzoSize > 0)
 	{
-		unsigned short chunk = endian16(lzoStream->read16());
+		unsigned short chunk = endian16(lzoStream->readUInt16());
 		lzoSize -= 2;
 		lzoStream->read(&lzoBuffer[0], chunk);
 		lzoSize -= chunk;
@@ -172,10 +172,10 @@ void PakArchive::decompressLzo(Stream* lzoStream, u32 lzoSize, Stream* outStream
 	}
 }
 
-u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture, u8 flags)
+uint32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture, uint8 flags)
 {
 	int size = static_cast<int>(file->size());
-	u32 totalSize = 0;
+	uint32 totalSize = 0;
 	offset_t offset = stream->position();
 
 	if (isPacked)
@@ -201,7 +201,7 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 
 		if (dataPacked)
 		{
-			const u32 lzoSize = compressLzo(file, size, stream);
+			const uint32 lzoSize = compressLzo(file, size, stream);
 			cmpdHeader.lzoSize = endian32(lzoSize) >> 8;
 			totalSize += lzoSize;
 		}
@@ -215,8 +215,8 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 		stream->write(&header, sizeof(header));
 		if (isTexture)
 		{
-			stream->write32(endian32(12));
-			stream->write32(endian32(12));
+			stream->writeUInt32(endian32(12));
+			stream->writeUInt32(endian32(12));
 			totalSize += 8;
 		}
 		stream->write(&cmpdHeader, sizeof(cmpdHeader)); 
@@ -238,13 +238,13 @@ u32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTe
 
 	while (padding > 0)
 	{
-		stream->write8(0xFF);
+		stream->writeUInt8(0xFF);
 		padding--;
 	}
 	return totalSize;
 }
 
-u32 PakArchive::storeFile(const std::wstring& filename, Stream* stream, bool isPacked, bool isTexture, u8 flags)
+uint32 PakArchive::storeFile(const std::wstring& filename, Stream* stream, bool isPacked, bool isTexture, uint8 flags)
 {
 	FileStream file(filename, Stream::modeRead);
 	return storeFile(&file, stream, isPacked, isTexture, flags);
@@ -271,7 +271,7 @@ bool PakArchive::open(Stream* pak)
 	}
 
 	pak->seek(ALIGN, Stream::seekSet);
-	const int fileCount = endian32(pak->read32());
+	const int fileCount = endian32(pak->readUInt32());
 	ASSERT(fileCount < 10000);
 	m_segments.resize(fileCount);
 
@@ -317,7 +317,7 @@ bool PakArchive::open(Stream* pak)
 	m_dataOffset = getSegmentOffset(m_dataIndex) + ALIGN * 2;
 
 	pak->seek(m_rshdOffset, Stream::seekSet);
-	m_files.resize(endian32(pak->read32()));
+	m_files.resize(endian32(pak->readUInt32()));
 
 	if (m_files.empty())
 	{
@@ -331,7 +331,7 @@ bool PakArchive::open(Stream* pak)
 	if (m_strgIndex != -1)
 	{
 		pak->seek(m_strgOffset, Stream::seekSet);
-		m_names.resize(endian32(pak->read32()));
+		m_names.resize(endian32(pak->readUInt32()));
 		
 		if (!m_names.empty())
 		{
@@ -487,7 +487,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 			if (!filename.empty())
 			{
 				bool isTexture = false;
-				u8 flags = 0xFF;
+				uint8 flags = 0xFF;
 				// read flags
 				if (files[i].packed != 0)
 				{
@@ -497,7 +497,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 					ASSERT(fileHeader.type == CompressedFileHeader::Normal || fileHeader.type == CompressedFileHeader::Texture);
 
 					m_stream->seek(m_dataOffset + m_files[i].offset + sizeof(CompressedFileHeader) + (isTexture ? 8 : 0), Stream::seekSet);
-					flags = m_stream->read8();
+					flags = m_stream->readUInt8();
 				}
 
 				files[i].size = alignSize(storeFile(filename, outStream, (files[i].packed != 0), isTexture, flags));
@@ -547,7 +547,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	outStream->write(&segments[0], segments.size() * sizeof(SegmentRecord)); 
 								 
 	outStream->seek(m_rshdOffset, Stream::seekSet);
-	u32 fileCount = endian32(files.size());
+	uint32 fileCount = endian32(files.size());
 	outStream->write(&fileCount, 4);
 	
 	std::for_each(files.begin(), files.end(), swapFileEndian);
