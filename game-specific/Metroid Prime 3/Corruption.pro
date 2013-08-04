@@ -11,9 +11,13 @@ SUBDIRS = \
 	Paster \
 	FontLib \
 	FontTool \
+	TextureConv \
 	Patcher \
 	ScriptViewer \
 	externals/core \
 	externals/WiiStreams \
+	externals/pnglite \
+	externals/zlib \
+	externals/nvtt \
 	tests/ScriptTesterTests \
 	tests/ExtractorTests \
