@@ -558,14 +558,19 @@ bool DataPaster::removeTempFiles(const QString& tempDirectory)
 	int processed = 0;
 	foreach (const QString& file, files)
 	{
+		DLOG << "Removing temporary file: " << file;
 		m_pakProgressHandler->progress(processed++, file.toLatin1().constData());
 		if (!dir.remove(file))
 		{
+			DLOG << "Removing temporary file failed: " << file;
 			return false;
 		}
 	}
+
+	DLOG << "Removing temporary dir: " << tempDirectory;
 	if (!dir.rmdir(tempDirectory))
 	{
+		DLOG << "Removing temporary dir failed: " << tempDirectory;
 		return false;
 	}
 
