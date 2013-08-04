@@ -28,10 +28,10 @@ public:
 // 	bool m_isEncrypted;
 // 	char m_channelId[5];
 // 	AES_KEY m_key;
-// 	u8 m_titleKey[16];
-// 	u8 m_decryptionBuffer[0x8000];
+// 	uint8 m_titleKey[16];
+// 	uint8 m_decryptionBuffer[0x8000];
 // 	int m_cachedBlock;
-// 	u8 m_cache[0x7c00];
+// 	uint8 m_cache[0x7c00];
 // 	int m_fileCount;
 	bool isEncrypted;
 	char chan_id[5];

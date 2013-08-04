@@ -115,13 +115,13 @@ public:
 	bool wii_trucha_signing(int partition);
 
 	// TO REFACTORING:
-	//u8			image_parse_header (struct PartitionHeader *header, u8 *buffer);
+	//uint8			image_parse_header (struct PartitionHeader *header, uint8 *buffer);
 	//struct ImageFile *	image_init (const char *filename, int file_p = 0);
 	//int			image_parse (struct ImageFile *image);
 	//void			image_deinit (struct ImageFile *image, bool close_file = true);
-	//u32			parse_fst (u8 *fst, const char *names, u32 i, struct tree *tree, struct ImageFile *image, u32 part, PNode hParent);
-	//u8			get_partitions (struct ImageFile *image);
-	//void			tmd_load (struct ImageFile *image, u32 part);
+	//uint32			parse_fst (uint8 *fst, const char *names, uint32 i, struct tree *tree, struct ImageFile *image, uint32 part, PNode hParent);
+	//uint8			get_partitions (struct ImageFile *image);
+	//void			tmd_load (struct ImageFile *image, uint32 part);
 
 	int wii_nb_cluster(int partition) const;
 	bool wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *header);

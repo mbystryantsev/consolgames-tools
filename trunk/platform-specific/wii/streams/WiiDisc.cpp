@@ -236,7 +236,7 @@ WiiDisc::~WiiDisc()
 }
 
 /*
-u8 WiiDisc::image_parse_header (struct PartitionHeader *header, u8 *buffer)
+uint8 WiiDisc::image_parse_header (struct PartitionHeader *header, uint8 *buffer)
 {
     memset (header, 0, sizeof (struct PartitionHeader));
 
@@ -602,7 +602,7 @@ struct ImageFile * WiiDisc::image_init (const char *filename, int file_p)
 
     //OFSTRUCT OpenBuff;
 
-    u8 buffer[0x440];
+    uint8 buffer[0x440];
     m_csFilename = "";
 
     if(!fp) fp = _open (filename, _O_BINARY | _O_RDWR);
@@ -898,15 +898,15 @@ int WiiDisc::image_parse (struct ImageFile *image)
 }
 
 /*
-void WiiDisc::tmd_load (struct ImageFile *image, u32 part)
+void WiiDisc::tmd_load (struct ImageFile *image, uint32 part)
 {
     struct tmd *tmd;
-    u32 tmd_offset, tmd_size;
+    uint32 tmd_offset, tmd_size;
     enum TmdSigType sig = SIG_UNKNOWN;
 
     uint64 off, cert_size, cert_off;
-    u8 buffer[64];
-    u16 i, s;
+    uint8 buffer[64];
+    uint16 i, s;
 
     off = image->parts[part].offset;
     io_read (buffer, 16, image, off + 0x2a4);
@@ -1449,7 +1449,7 @@ bool WiiDisc::saveDecryptedFile(const std::string& destFilename, int partition, 
     {
         if (-1==_lseeki64 (m_imageFile->fp, offset, SEEK_SET))
         {
-            //u32 x = GetLastError();
+            //uint32 x = GetLastError();
             DLOG << "io_seek error";
             return false;
         }
@@ -1924,7 +1924,7 @@ BOOL WiiDisc::MergeAndRelocateFSTs(unsigned char *pFST1, uint32 nSizeofFST1, uns
 
     uint32 nFilesFST1 = 0;
     uint32 nFilesFST2 = 0;
-    //u32 nFilesNewFST = 0;
+    //uint32 nFilesNewFST = 0;
     uint32 nStringTableOffset;
 
     //uint64	nOffsetCalc = 0;
@@ -2581,10 +2581,10 @@ BOOL WiiDisc::CheckForFreeSpace(uint32 nPartition, uint64 nOffset, uint32 nBlock
 // Also works on channels                                               //
 //////////////////////////////////////////////////////////////////////////
 /*
-BOOL WIIDisc::DeletePartition(u32 nPartition)
+BOOL WIIDisc::DeletePartition(uint32 nPartition)
 {
 
-	u8	buffer[16];
+	uint8	buffer[16];
 	uint64	WriteLocation;
 	int	i;
 
@@ -2653,14 +2653,14 @@ BOOL WIIDisc::DeletePartition(u32 nPartition)
 // as some discs have 'interesting' values in here                      //
 //////////////////////////////////////////////////////////////////////////
 /*
-BOOL WIIDisc::ResizePartition(u32 nPartition)
+BOOL WIIDisc::ResizePartition(uint32 nPartition)
 {
 	uint64 nCurrentSize = 0;
 	uint64 nMinimumSize = 0;
 	uint64 nMaximumSize = 0;
 	uint64 nNewSize = 0;
 
-	u8 buffer[16];
+	uint8 buffer[16];
 
 	// Get size of current partition
 	nCurrentSize = m_imageFile->parts[nPartition].data_size;
@@ -2708,7 +2708,7 @@ BOOL WIIDisc::ResizePartition(u32 nPartition)
 
 		// now simply write out the new size and store it
 		m_imageFile->parts[nPartition].data_size = nNewSize;
-		Write32(buffer, (u32)((uint64) nNewSize >> 2));
+		Write32(buffer, (uint32)((uint64) nNewSize >> 2));
 		DiscWriteDirect(m_imageFile->parts[nPartition].offset + 0x2bc, buffer, 4);
 
 		return true;
@@ -3154,7 +3154,7 @@ HoRRoR
 
 BOOL WIIDisc::SetBootMode(image_file *image)
 {
-	u8 cOldValue;
+	uint8 cOldValue;
 	int i;
 
 	unsigned char cModes[5] = {'R','_','H','0','4'};
@@ -3572,7 +3572,7 @@ bool WiiDisc::loadDecryptedPartition(const std::string& name, ImageFile *image, 
 
     uint8 * pData;
     FILE * fIn;
-    //u32 nBlockCount = 0;
+    //uint32 nBlockCount = 0;
 
     uint64 nFileSize;
 
@@ -3651,19 +3651,19 @@ bool WiiDisc::doPartitionShrink(int partition)
     uint64 nDestClusterGroup;
     uint64 nClusterGroups;
 
-    u32 nDifference;
+    uint32 nDifference;
 
     uint64 i;
 
     // allocate space for the fst.bin
 
-    u8 * pFST = (u8 *)malloc((u32)(image->parts[nPartition].header.fst_size));
+    uint8 * pFST = (uint8 *)malloc((uint32)(image->parts[nPartition].header.fst_size));
 
     // allocate space for the data size (as we modify it
-    u8 nDataSize[4];
+    uint8 nDataSize[4];
 
     // read the fst.bin and data size files
-    io_read_part(pFST, (u32)(image->parts[nPartition].header.fst_size), image, nPartition, image->parts[nPartition].header.fst_offset);
+    io_read_part(pFST, (uint32)(image->parts[nPartition].header.fst_size), image, nPartition, image->parts[nPartition].header.fst_offset);
     io_read(nDataSize, 0x0004, image, image->parts[nPartition].offset + 0x2bC);
 
     // find the first empty block from main.dol onwards
@@ -3730,10 +3730,10 @@ bool WiiDisc::doPartitionShrink(int partition)
     DiscWriteDirect(image, image->parts[nPartition].offset + image->parts[nPartition].h3_offset, h3, SIZE_H3);
 
     // now update the fst table entries
-    nDifference = (u32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x7c00) >> 2);
+    nDifference = (uint32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x7c00) >> 2);
 
-    u32 nFSTEntries  = be32(pFST + 8);
-    u32 nTempOffset;
+    uint32 nFSTEntries  = be32(pFST + 8);
+    uint32 nTempOffset;
 
     for (i = 0; i < nFSTEntries; i++)
     {
@@ -3752,9 +3752,9 @@ bool WiiDisc::doPartitionShrink(int partition)
     wii_write_data_file(image, nPartition, image->parts[nPartition].header.fst_offset, image->parts[nPartition].header.fst_size, pFST);
 
     // update the data size in boot.bin
-    u32 nSize = be32(nDataSize);
+    uint32 nSize = be32(nDataSize);
 
-    nDifference = (u32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x8000) >> 2);
+    nDifference = (uint32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x8000) >> 2);
 
     Write32(nDataSize, nSize - nDifference);
 
