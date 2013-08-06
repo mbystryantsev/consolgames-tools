@@ -2,5 +2,8 @@
 <RCC version="1.0">
 	<qresource>
 		<file>patchdata/readme.txt</file>
+		<file>patchdata/wii/dummy</file>
+		<file>patchdata/ps2/dummy</file>
+		<file>patchdata/psp/dummy</file>
 	</qresource>
 </RCC>

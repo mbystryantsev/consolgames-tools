@@ -1,6 +1,11 @@
 #pragma once
 #include <memory>
 
+namespace ShatteredMemories
+{
+class PatcherController;
+}
+
 class Configurator
 {
 	Configurator();
@@ -16,28 +21,23 @@ public:
 public:
 	static Configurator& instanse();
 
+	void configure(ShatteredMemories::PatcherController& controller) const;
+
 	void setPlatforms(const QSet<Platform>& platforms);
-	void setCheckArchives(bool enabled);
-	void setCheckImage(bool enabled);
-	void setErrorCode(int code);
-	void setErrorData(const QByteArray& data);
+	void setDebug(bool debug);
 	void setImagePath(const QString& path);
 	void setTempPath(const QString& path);
-
-	QString imagePath() const;
-	QString tempPath() const;
-	bool checkArchives() const;
-	bool checkImage() const;
-	QStringList resourceDirectories() const;
-
+	void setErrorCode(int code);
+	void setErrorData(const QByteArray& data);
+	
 private:
 	static std::auto_ptr<Configurator> s_instance;
 
+	bool m_isDebug;
+	Platform m_platform;
 	QString m_tempPath;
 	QString m_imagePath;
 	QStringList m_resourceDirectories;
 	int m_errorCode;
 	QByteArray m_errorData;
-	bool m_checkArchives;
-	bool m_checkImage;
 };
