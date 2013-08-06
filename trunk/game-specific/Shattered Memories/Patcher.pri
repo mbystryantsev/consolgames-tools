@@ -14,6 +14,7 @@ INCLUDEPATH += \
 	$$PWD/externals/WiiStreams \
 	$$PWD/externals/WiiStreams/include \
 	$$PWD/externals/WiiStreams/include/openssl \
+	$$PWD/externals/zlib \
 	$$PWD/externals/core \
 	$$PWD/externals/core/streams \
 	$$PWD/externals/core/classes \
@@ -25,3 +26,4 @@ QMAKE_LIBDIR += \
 	$$PWD/StreamParserLib/$$CONFIG_NAME \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
+	$$PWD/externals/zlib/$$CONFIG_NAME \
