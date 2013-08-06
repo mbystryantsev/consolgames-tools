@@ -11,9 +11,11 @@ SUBDIRS = \
 	PatcherLib \
 	WorkPatcher \
 	ScriptEditor \
+	NamesFinder \
 	StreamParserLib \
 	StreamParser \
 	TextureConv \
+	Patcher \
 	externals/core \
 	externals/WiiStreams \
 	externals/pnglite \

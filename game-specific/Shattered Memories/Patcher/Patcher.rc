@@ -1,0 +1,28 @@
+#include "version.h"
+#include <windows.h>
+
+1 ICON DISCARDABLE "resources\\icon.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION    	VER_FILEVERSION
+PRODUCTVERSION 	VER_PRODUCTVERSION
+FILETYPE        VFT_APP
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904E4"
+		BEGIN
+			VALUE "CompanyName",        "Consolgames.ru"
+			VALUE "FileDescription",    "Silent Hill: Shattered Memories Russian Translation Patch"
+			VALUE "FileVersion",        VER_FILEVERSION_STR
+			VALUE "LegalCopyright",     "Copyright © 2013 Consolgames.ru"
+			VALUE "OriginalFilename",   "SHSMPatch.exe"
+			VALUE "ProductName",        "SHSM Russian Translation Patch"
+			VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
+		END
+    END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", 0x0419, 1200
+	END
+END
