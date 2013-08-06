@@ -65,12 +65,8 @@ bool ProgressPage::isComplete() const
 void ProgressPage::startPatching()
 {	
 	const Configurator& configurator = Configurator::instanse();
+	configurator.configure(m_patcherController);
 
-	m_patcherController.reset();
-	m_patcherController.setImagePath(configurator.imagePath());
-	m_patcherController.setTempPath(configurator.tempPath());
-	m_patcherController.setCheckArchives(configurator.checkArchives());
-	m_patcherController.setCheckImage(configurator.checkImage());
 	m_patcherController.start();
 
 	m_ui.staff->start();
