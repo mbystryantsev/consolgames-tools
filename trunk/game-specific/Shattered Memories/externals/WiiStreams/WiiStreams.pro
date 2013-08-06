@@ -1,11 +1,15 @@
 QT -= core gui
 CONFIG += static
-#CONFIG -= flat
 TEMPLATE = lib
 DEFINES += _SCL_SECURE_NO_WARNINGS
 
-STRDIR = ../../../../platform-specific/wii/streams
-COREDIR = ../../../../core
+CONFIG(external_build){
+	STRDIR = $$PWD
+	COREDIR = $$PWD/../core
+} else {
+	STRDIR = $$PWD/../../../../platform-specific/wii/streams
+	COREDIR = $$PWD/../../../../core
+}
 
 HEADERS = \
 	$$STRDIR/*.h \
