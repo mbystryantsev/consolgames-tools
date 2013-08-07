@@ -1,7 +1,7 @@
 #include "PatcherTexturesFileSource.h"
 #include "FontStreamRebuilder.h"
 #include <Hash.h>
-#include <FileStream.h>
+#include <QtFileStream.h>
 #include <QDir>
 
 using namespace Consolgames;
@@ -89,7 +89,7 @@ PatcherTexturesFileSource::TextureDataSource::TextureDataSource(const QString& p
 shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index)
 {
 	const QString filename = QDir(m_path).absoluteFilePath(m_texturesInfo[index].textureName + ".TXTR");
-	shared_ptr<Stream> stream(new FileStream(filename.toStdWString(), Stream::modeRead));
+	shared_ptr<Stream> stream(new QtFileStream(filename, QIODevice::ReadOnly));
 
 	ASSERT(stream->opened());
 

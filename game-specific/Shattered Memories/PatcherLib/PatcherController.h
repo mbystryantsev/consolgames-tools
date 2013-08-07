@@ -40,8 +40,6 @@ public:
 	Q_SIGNAL void progressChanged(int value, const QString& message);
 	Q_SIGNAL void progressFinish();
 
-	QObject* progressHandler();
-
 	int errorCode() const;
 	QString errorData() const;
 	QString errorMessage() const;

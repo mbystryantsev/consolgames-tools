@@ -229,12 +229,6 @@ void PatcherController::finish()
 	m_started = false;
 }
 
-QObject* PatcherController::progressHandler()
-{
-	//return &m_progressHandler;
-	return NULL;
-}
-
 bool PatcherController::isStarted() const
 {
 	return m_started;
