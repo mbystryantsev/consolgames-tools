@@ -35,6 +35,7 @@ INCLUDEPATH += \
 	$$EXTERNALS/nvidia-texture-tools/extern/poshlib \
 	$$EXTERNALS/pnglite \
 	$$EXTERNALS/zlib \
+	$$EXTERNALS/imagequant \
 
 QMAKE_LIBDIR += \
 	$$PWD/Common/$$CONFIG_NAME \
@@ -47,6 +48,7 @@ QMAKE_LIBDIR += \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
 	$$PWD/externals/nvtt/$$CONFIG_NAME \
+	$$PWD/../../libs \
 	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \
 
 	
