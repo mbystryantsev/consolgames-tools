@@ -8,4 +8,4 @@ TEMPLATE = app
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp) $$files(*.c)
 
-LIBS += core.lib nvtt.lib pnglite.lib libpng.a zlib.lib
+LIBS += core.lib nvtt.lib pnglite.lib libpng.a zlib.lib libimagequant_dll.a
