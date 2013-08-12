@@ -74,6 +74,7 @@ public:
 	void writeUInt16(uint16 value);
 	void writeUInt32(uint32 value);
 	void writeUInt64(uint64 value);
+	void writeInt(int value);
 
 protected:
 	ByteOrder m_byteOrder;

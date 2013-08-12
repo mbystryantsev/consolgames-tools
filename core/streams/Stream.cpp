@@ -139,6 +139,11 @@ void Stream::writeUInt64(uint64 value)
 	return write<uint64>(value);	
 }
 
+void Stream::writeInt(int value)
+{
+	writeUInt32(static_cast<uint32>(value));
+}
+
 bool Stream::opened() const
 {
 	return true;
