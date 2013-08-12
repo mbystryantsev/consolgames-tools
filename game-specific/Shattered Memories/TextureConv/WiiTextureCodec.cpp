@@ -1,6 +1,11 @@
 #include "WiiTextureCodec.h"
 #include "dxt1.h"
 
+bool WiiTextureCodec::formatIsSupported(Format format) const
+{
+	return (format == formatDXT1);
+}
+
 uint32 WiiTextureCodec::encodedRasterSize(Format format, int width, int height, int mipmaps) const 
 {
 	if (format != formatDXT1)
