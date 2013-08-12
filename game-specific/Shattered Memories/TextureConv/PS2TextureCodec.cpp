@@ -115,25 +115,14 @@ static void convertIndexed8ToBGRA(const void* indexed8Data, int count, const voi
 	}	
 }
 
-void liqlog(const liq_attr*, const char *message, void*)
-{
-	DLOG << message;
-}
-
 static void quantize(const void* data, int colorCount, int width, int height, void* dest, void* palette)
 {
 	liq_attr *attr = liq_attr_create();
 	liq_set_max_colors(attr, colorCount);
 
-	liq_set_log_callback(attr, liqlog, NULL);
-
-
-
 	liq_image *image = liq_image_create_rgba(attr, const_cast<void*>(data), width, height, 0);
 
 	liq_result *res = liq_quantize_image(attr, image);
-	//liq_set_dithering_level(res, 1.0);
-	//liq_set_output_gamma(res, 0.45455);
 
 	liq_write_remapped_image(res, image, dest, width * height);
 	const liq_palette *pal = liq_get_palette(res);
