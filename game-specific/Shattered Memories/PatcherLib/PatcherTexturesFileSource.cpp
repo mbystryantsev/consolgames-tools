@@ -108,9 +108,6 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 
 	ASSERT(stream->opened());
 
-	// TODO: Rewrite converter and remove next line
-	stream->setByteOrder(Stream::orderBigEndian);
-	
 	const int platformSignature = stream->readUInt32();
 	const int formatSignature = stream->readUInt32();
 	const int width = stream->readUInt32();
