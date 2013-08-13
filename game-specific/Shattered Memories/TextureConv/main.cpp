@@ -23,7 +23,7 @@ struct RGBA {uint8 r, g, b, a;};
 	for (size_t y = 0; y < image.height(); y++)
 	{
 		const nv::Color32* src = image.scanline(y);
-		for (size_t x = 0; x < image.height(); x++)
+		for (size_t x = 0; x < image.width(); x++)
 		{
 			dst->r = src->r;
 			dst->g = src->g;
