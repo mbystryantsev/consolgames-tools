@@ -226,7 +226,7 @@ Arguments parseArgs(int argc, char *argv[])
 	{
 		result.action = actionEncode;
 
-		if (permanentArgs.size() != 3 && permanentArgs.size() != 4)
+		if (permanentArgs.size() != 4 && permanentArgs.size() != 5)
 		{
 			cout << "Invalid actual parameters count!" << endl;
 			return Arguments();
