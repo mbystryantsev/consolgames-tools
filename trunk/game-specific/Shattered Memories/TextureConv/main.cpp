@@ -1,8 +1,9 @@
+#include <Image.h>
+#include <Color.h>
 #include "PS2TextureCodec.h"
 #include "WiiTextureCodec.h"
-#include <core.h>
 #include <FileStream.h>
-#include <nvimage/image.h>
+#include <core.h>
 #include <pnglite.h>
 #include <iostream>
 #include <vector>
@@ -11,6 +12,28 @@ static int s_pngInitCode = png_init(0, 0);
 
 using namespace std;
 using namespace Consolgames;
+
+static void nvImageToRgba(const nv::Image& image, void* result)
+{
+#pragma pack(push, 1)
+struct RGBA {uint8 r, g, b, a;};
+#pragma pack(pop)
+
+	RGBA* dst = static_cast<RGBA*>(result);
+	for (size_t y = 0; y < image.height(); y++)
+	{
+		const nv::Color32* src = image.scanline(y);
+		for (size_t x = 0; x < image.height(); x++)
+		{
+			dst->r = src->r;
+			dst->g = src->g;
+			dst->b = src->b;
+			dst->a = src->a;
+			src++;
+			dst++;
+		}
+	}
+}
 
 bool savePNG(void* image, int width, int height, const char* filename)
 {
@@ -455,6 +478,9 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 		return false;
 	}
 
+	std::vector<uint32> rgba(image.width() * image.height());
+	nvImageToRgba(image, &rgba[0]);
+
 	TexHeader header;
 	header.platformSignature = platformToSignature(platform);
 	header.formatSignature = textureFormatToSignature(format);
@@ -472,7 +498,7 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 
 	vector<char> rasterData(header.rasterSize);
 	vector<char> paletteData(header.paletteSize);
-	codec->encode(&rasterData[0], image.pixels(), image.width(), image.height(), format, paletteData.empty() ? NULL : &paletteData[0], mipmaps);
+	codec->encode(&rasterData[0], &rgba[0], image.width(), image.height(), format, paletteData.empty() ? NULL : &paletteData[0], mipmaps);
 
 	FileStream file(destFile, Stream::modeWrite);
 	if (!file.opened())

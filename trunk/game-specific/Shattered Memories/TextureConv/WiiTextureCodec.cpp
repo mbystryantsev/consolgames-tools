@@ -1,5 +1,47 @@
+#include <Color.h>
 #include "WiiTextureCodec.h"
 #include "dxt1.h"
+#include <vector>
+
+namespace
+{
+#pragma pack(push, 1)
+	struct RGBA {uint8 r, g, b, a;};
+#pragma pack(pop)
+}
+
+static void rgbaToBgra(const void* image, void* result, int size)
+{
+
+	const RGBA* src = static_cast<const RGBA*>(image);
+	nv::Color32* dst = static_cast<nv::Color32*>(result);
+	for (int i = 0; i < size; i++)
+	{
+		dst->r = src->r;
+		dst->g = src->g;
+		dst->b = src->b;
+		dst->a = src->a;
+		src++;
+		dst++;
+	}
+}
+
+static void bgraToRgba(const void* image, void* result, int size)
+{
+	const nv::Color32* src = static_cast<const nv::Color32*>(image);
+	RGBA* dst = static_cast<RGBA*>(result);
+	for (int i = 0; i < size; i++)
+	{
+		dst->r = src->r;
+		dst->g = src->g;
+		dst->b = src->b;
+		dst->a = src->a;
+		src++;
+		dst++;
+	}
+}
+
+static const int s_defaultMipmapCount = 4;
 
 bool WiiTextureCodec::formatIsSupported(Format format) const
 {
@@ -12,6 +54,11 @@ uint32 WiiTextureCodec::encodedRasterSize(Format format, int width, int height, 
 	{
 		ASSERT(!"Unsupported format!");
 		return 0;
+	}
+
+	if (mipmaps == mipmapCountDefault)
+	{
+		mipmaps = s_defaultMipmapCount;
 	}
 
 	uint32 size = 0;
@@ -43,10 +90,12 @@ void WiiTextureCodec::decode(void* result, const void* image, int width, int hei
 
 	ASSERT(mipmapsToDecode >= 1);
 	ASSERT(palette == NULL);
-	DXTCodec::decodeDXT1(image, result, width, height, max(1, mipmapsToDecode));
-}
 
-static const int defaultMipmapCount = 4;
+	std::vector<nv::Color32> bgra(width * height);
+	DXTCodec::decodeDXT1(image, &bgra[0], width, height, max(1, mipmapsToDecode));
+
+	bgraToRgba(&bgra[0], result, bgra.size());
+}
 
 void WiiTextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
 {
@@ -57,5 +106,8 @@ void WiiTextureCodec::encode(void* result, const void* image, int width, int hei
 	}
 	ASSERT(palette == NULL);
 
-	DXTCodec::encodeDXT1(image, result, width, height, mipmaps == mipmapCountDefault ? defaultMipmapCount : mipmaps);
+	std::vector<nv::Color32> bgra(width * height);
+	rgbaToBgra(image, &bgra[0], bgra.size());
+
+	DXTCodec::encodeDXT1(&bgra[0], result, width, height, mipmaps == mipmapCountDefault ? s_defaultMipmapCount : mipmaps);
 }

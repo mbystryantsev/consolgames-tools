@@ -6,16 +6,9 @@
 namespace
 {
 #pragma pack(push, 1)
-// PS color format
 struct RGBA
 {
 	uint8 r, g, b, a;
-};
-
-// Native color format
-struct BGRA
-{
-	uint8 b, g, r, a;
 };
 #pragma pack(pop)
 }
@@ -53,10 +46,10 @@ static const uint8 s_colorEncodingTable[256] =
 	120, 121, 121, 122, 122, 123, 123, 124, 124, 125, 125, 126, 126, 127, 127, 128
 };
 
-static void decode32ColorsToBGRA(const void* colors, int count, void* dest)
+static void decode32ColorsToRGBA(const void* colors, int count, void* dest)
 {
 	const RGBA* src = static_cast<const RGBA*>(colors);
-	BGRA* dst = static_cast<BGRA*>(dest);
+	RGBA* dst = static_cast<RGBA*>(dest);
 
 	while (count-- > 0)
 	{
@@ -70,9 +63,9 @@ static void decode32ColorsToBGRA(const void* colors, int count, void* dest)
 	}
 }
 
-static void encode32ColorsFromBGRA(const void* colors, int count, void* dest)
+static void encode32ColorsFromRGBA(const void* colors, int count, void* dest)
 {
-	const BGRA* src = static_cast<const BGRA*>(colors);
+	const RGBA* src = static_cast<const RGBA*>(colors);
 	RGBA* dst = static_cast<RGBA*>(dest);
 
 	while (count-- > 0)
@@ -87,10 +80,10 @@ static void encode32ColorsFromBGRA(const void* colors, int count, void* dest)
 	}
 }
 
-static void convertIndexed4ToBGRA(const void* indexed4Data, int count, const void* palette, void* dest)
+static void convertIndexed4ToRGBA(const void* indexed4Data, int count, const void* palette, void* dest)
 {
 	uint32 pal[16];
-	decode32ColorsToBGRA(palette, 16, pal);
+	decode32ColorsToRGBA(palette, 16, pal);
 
 	const uint8* src = static_cast<const uint8*>(indexed4Data);
 	uint32* dst = static_cast<uint32*>(dest);
@@ -102,10 +95,10 @@ static void convertIndexed4ToBGRA(const void* indexed4Data, int count, const voi
 	}	
 }
 
-static void convertIndexed8ToBGRA(const void* indexed8Data, int count, const void* palette, void* dest)
+static void convertIndexed8ToRGBA(const void* indexed8Data, int count, const void* palette, void* dest)
 {
 	uint32 pal[256];
-	decode32ColorsToBGRA(palette, 256, pal);
+	decode32ColorsToRGBA(palette, 256, pal);
 
 	const uint8* src = static_cast<const uint8*>(indexed8Data);
 	uint32* dst = static_cast<uint32*>(dest);
@@ -127,7 +120,7 @@ static void quantize(const void* data, int colorCount, int width, int height, vo
 	liq_write_remapped_image(res, image, dest, width * height);
 	const liq_palette *pal = liq_get_palette(res);
 
-	BGRA* c = (BGRA*)palette;
+	RGBA* c = static_cast<RGBA*>(palette);
 	for (int i = 0; i < colorCount; i++)
 	{
 		c->r = pal->entries[i].r;
@@ -221,12 +214,12 @@ void PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 	if (format == formatIndexed4)
 	{
 		unswizzle4as8(image, &buffer[0], width, height);
-		convertIndexed4ToBGRA(&buffer[0], width * height, palette, result);
+		convertIndexed4ToRGBA(&buffer[0], width * height, palette, result);
 	}
 	else if (format == formatIndexed8)
 	{
 		unswizzle8(image, &buffer[0], width, height);
-		convertIndexed8ToBGRA(&buffer[0], width * height, palette, result);
+		convertIndexed8ToRGBA(&buffer[0], width * height, palette, result);
 	}
 	else
 	{
@@ -251,14 +244,14 @@ void PS2TextureCodec::encode(void* result, const void* image, int width, int hei
 	{
 		uint32 pal[16];
 		quantize4(image, width, height, &buffer[0], pal);
-		encode32ColorsFromBGRA(pal, 16, palette);
+		encode32ColorsFromRGBA(pal, 16, palette);
 		swizzle4as8(&buffer[0], result, width, height);
 	}
 	else if (format == formatIndexed8)
 	{
 		uint32 pal[256];
 		quantize8(image, width, height, &buffer[0], pal);
-		encode32ColorsFromBGRA(pal, 256, palette);
+		encode32ColorsFromRGBA(pal, 256, palette);
 		swizzle8(&buffer[0], result, width, height);
 	}
 	else
