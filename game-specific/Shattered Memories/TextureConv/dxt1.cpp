@@ -73,10 +73,6 @@ void DXTCodec::decodeDXT1(const void* src, void* dest, int width, int height)
 
 				nv::ColorBlock rgba;
 				blockDXT.decodeBlock(&rgba);
-				for (int n = 0; n < 16; n++)
-				{
-					rgba.color(n).u = ((rgba.colors()[n].u >> 16) & 0xFF) | ((rgba.colors()[n].u << 16) & 0xFF0000) | (rgba.colors()[n].u & 0xFF00FF00);
-				}
 				copy(&rgba.color(0),  &imageData[img_pos(0)], 4);
 				copy(&rgba.color(4),  &imageData[img_pos(1)], 4);
 				copy(&rgba.color(8),  &imageData[img_pos(2)], 4);
