@@ -2,10 +2,34 @@
 #include "OnFlyPatchStream.h"
 #include "TextureDatabase.h"
 #include <FileSource.h>
+#include <QtFileStream.h>
 #include <QList>
+#include <memory>
 
 namespace ShatteredMemories
 {
+
+enum PartType
+{
+	partRaster,
+	partPalette
+};
+
+struct PartInfoRecord
+{
+	uint32 offset() const
+	{
+		return (type == partRaster ? textureInfo.rasterOffset : textureInfo.paletteOffset);
+	}
+
+	uint32 size() const
+	{
+		return (type == partRaster ? textureInfo.rasterSize : textureInfo.paletteSize);
+	}
+
+	PartType type;
+	TextureDatabase::TextureInfo textureInfo;
+};
 
 class PatcherTexturesFileSource : public FileSource
 {
@@ -26,8 +50,8 @@ private:
 
 	private:
 		const QString m_path;
-		QList<OnFlyPatchStream::PartInfo> m_partInfo;
-		QList<TextureDatabase::TextureInfo> m_texturesInfo;
+		QList<PartInfoRecord> m_partInfo;
+		std::tr1::shared_ptr<QtFileStream> m_cachedFile;
 	};
 
 private:

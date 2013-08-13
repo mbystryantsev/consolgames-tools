@@ -54,6 +54,22 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 		info.rasterSize = values["rasterSize"].toInt(&ok, 16);
 		ASSERT(ok);
 
+		if (values.contains("palettePosition"))
+		{
+			ASSERT(values.contains("paletteSize"));
+
+			info.paletteOffset = values["palettePosition"].toInt(&ok, 16);
+			ASSERT(ok);
+
+			info.paletteSize = values["paletteSize"].toInt(&ok, 16);
+			ASSERT(ok);
+		}
+		else
+		{
+			info.paletteOffset = 0;
+			info.paletteSize = 0;
+		}
+
 		db.m_info[info.fileHash][info.textureName] = info;
 	}
 

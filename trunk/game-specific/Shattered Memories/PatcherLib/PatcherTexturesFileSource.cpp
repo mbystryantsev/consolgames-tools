@@ -1,7 +1,6 @@
 #include "PatcherTexturesFileSource.h"
 #include "FontStreamRebuilder.h"
 #include <Hash.h>
-#include <QtFileStream.h>
 #include <QDir>
 
 using namespace Consolgames;
@@ -64,53 +63,86 @@ struct TextureInfoComparator
 
 struct PartInfoComparator
 {
-	bool operator()(const OnFlyPatchStream::PartInfo& a, const OnFlyPatchStream::PartInfo& b) const
+	bool operator()(const PartInfoRecord& a, const PartInfoRecord& b) const
 	{
-		return a.offset < b.offset;
+		return a.offset() < b.offset();
 	}
 };
 
 PatcherTexturesFileSource::TextureDataSource::TextureDataSource(const QString& path, const QList<TextureDatabase::TextureInfo>& textures)
 	: m_path(path)
-	, m_texturesInfo(textures)
 {
 	foreach (const TextureDatabase::TextureInfo& info, textures)
 	{
-		OnFlyPatchStream::PartInfo partInfo;
-		partInfo.offset = info.rasterOffset;
-		partInfo.size = info.rasterSize;
+		PartInfoRecord partInfo;
+		partInfo.textureInfo = info;
+		partInfo.type = partRaster;
 		m_partInfo << partInfo;
+
+		if (info.paletteSize != 0)
+		{
+			partInfo.type = partPalette;
+			m_partInfo << partInfo;
+		}
 	}
 
 	qSort(m_partInfo.begin(), m_partInfo.end(), PartInfoComparator());
-	qSort(m_texturesInfo.begin(), m_texturesInfo.end(), TextureInfoComparator());
 }
 
 shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index)
 {
-	const QString filename = QDir(m_path).absoluteFilePath(m_texturesInfo[index].textureName + ".TXTR");
-	shared_ptr<Stream> stream(new QtFileStream(filename, QIODevice::ReadOnly));
+	const PartInfoRecord& record = m_partInfo[index];
+
+	const QString filename = QDir(m_path).absoluteFilePath(record.textureInfo.textureName + ".TXTR");
+
+	if (m_cachedFile.get() == NULL || m_cachedFile->fileName() != filename)
+	{
+		m_cachedFile.reset(new QtFileStream(filename, QIODevice::ReadOnly));
+	}
+	else
+	{
+		m_cachedFile->seek(0, Stream::seekSet);
+	}
+	
+	shared_ptr<Stream> stream = m_cachedFile;
 
 	ASSERT(stream->opened());
 
 	// TODO: Rewrite converter and remove next line
 	stream->setByteOrder(Stream::orderBigEndian);
 	
-	const int type = stream->readUInt32();
-	const int width = stream->readUInt16();
-	const int height = stream->readUInt16();
+	const int platformSignature = stream->readUInt32();
+	const int formatSignature = stream->readUInt32();
+	const int width = stream->readUInt32();
+	const int height = stream->readUInt32();
 	const int mipmapCount = stream->readUInt32();
+	const int reserved = stream->readUInt32();
+	const int rasterSize = stream->readUInt32();
+	const int paletteSize = stream->readUInt32();
 
-	ASSERT(type != 0);
-	ASSERT(width == m_texturesInfo[index].width);
-	ASSERT(height == m_texturesInfo[index].height);
-	ASSERT(mipmapCount >= m_texturesInfo[index].mipmapCount);
-	ASSERT(stream->size() - stream->position() >= m_texturesInfo[index].rasterSize);
+	ASSERT(platformSignature != 0);
+	ASSERT(formatSignature != 0);
+	ASSERT(width == record.textureInfo.width);
+	ASSERT(height == record.textureInfo.height);
+	ASSERT(mipmapCount >= record.textureInfo.mipmapCount && mipmapCount <= 16);
+	ASSERT(stream->size() - stream->position() >= record.textureInfo.rasterSize);
+	ASSERT(rasterSize > 0);
+	ASSERT(rasterSize + paletteSize + 32 == stream->size());
 
-	Q_UNUSED(type);
+	Q_UNUSED(platformSignature);
+	Q_UNUSED(formatSignature);
 	Q_UNUSED(width);
 	Q_UNUSED(height);
 	Q_UNUSED(mipmapCount);
+	Q_UNUSED(reserved);
+	Q_UNUSED(rasterSize);
+	Q_UNUSED(paletteSize);
+
+	if (m_partInfo[index].type == partPalette)
+	{
+		ASSERT(paletteSize > 0);
+		stream->skip(rasterSize);
+	}
 
 	return stream;
 }
@@ -122,7 +154,10 @@ int PatcherTexturesFileSource::TextureDataSource::partCount() const
 
 OnFlyPatchStream::PartInfo PatcherTexturesFileSource::TextureDataSource::partInfoAt(int index) const
 {
-	return m_partInfo[index];
+	OnFlyPatchStream::PartInfo info;
+	info.offset = m_partInfo[index].offset();
+	info.size = m_partInfo[index].size();
+	return info;
 }
 
 }
