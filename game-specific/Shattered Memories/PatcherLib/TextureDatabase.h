@@ -16,6 +16,8 @@ public:
 		int mipmapCount;
 		quint32 rasterOffset;
 		quint32 rasterSize;
+		quint32 paletteOffset;
+		quint32 paletteSize;
 	};
 	typedef QMap<QString, TextureInfo> FileInfo;
 
