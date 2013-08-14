@@ -128,7 +128,10 @@ void swizzle8Proc(Func func, int width, int height)
 			const int swizzledIndex = s_interlaceMatrix[(x / 4) % 4 + 4 * odd(y)] + ((x * 4) % 16) + (x / 16) * 32 + ((y - odd(y)) * width);
 			const int rasterIndex = yy * width + xx;
 
-			func(swizzledIndex, rasterIndex);
+			if (swizzledIndex < width * height)
+			{
+				func(swizzledIndex, rasterIndex);
+			}
 		}
 	}
 }
@@ -139,7 +142,6 @@ void unswizzle4as8(const void* source, void* dest, int width, int height)
 {
 	swizzle8Proc(Unswizzle4as8Func(source, dest), width, height);
 }
-
 
 void unswizzle8(const void* source, void* dest, int width, int height)
 {
@@ -170,9 +172,9 @@ void rotPal(void* palette)
 	{
 		// swap x and x + 1
 		Block block;
-		memcpy(&pal[x], &block, sizeof(Block));
-		memcpy(&pal[x + 1], &pal[x], sizeof(Block));
-		memcpy(&block, &pal[x + 1], sizeof(Block));
+		memcpy(&block, &pal[x], sizeof(Block));
+		memcpy(&pal[x], &pal[x + 1], sizeof(Block));
+		memcpy(&pal[x + 1], &block, sizeof(Block));
 	}
 }
 
