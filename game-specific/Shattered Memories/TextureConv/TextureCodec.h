@@ -9,7 +9,8 @@ public:
 		formatUndefined = -1,
 		formatDXT1,
 		formatIndexed4,
-		formatIndexed8
+		formatIndexed8,
+		formatRGBA
 	};
 
 	enum
