@@ -161,7 +161,7 @@ static void quantize4(const void* data, int width, int height, void* dest, void*
 
 bool PS2TextureCodec::formatIsSupported(Format format) const
 {
-	return (format == formatIndexed4 || format == formatIndexed8);
+	return (format == formatIndexed4 || format == formatIndexed8 || format == formatRGBA);
 }
 
 uint32 PS2TextureCodec::encodedRasterSize(Format format, int width, int height, int mipmaps) const 
@@ -175,6 +175,10 @@ uint32 PS2TextureCodec::encodedRasterSize(Format format, int width, int height, 
 	else if (format == formatIndexed8)
 	{
 		return width * height;
+	}
+	else if (format == formatRGBA)
+	{
+		return width * height * 4;
 	}
 
 	ASSERT(!"Unsupported image format!");
@@ -190,6 +194,10 @@ uint32 PS2TextureCodec::encodedPaletteSize(Format format) const
 	else if (format == formatIndexed8)
 	{
 		return 4 * 256;
+	}
+	else if (format == formatRGBA)
+	{
+		return 0;
 	}
 
 	ASSERT(!"Unsupported image format!");
@@ -223,6 +231,10 @@ void PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 		rotatePalette32(pal);
 		unswizzle8(image, &buffer[0], width, height);
 		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
+	}
+	else if (format == formatRGBA)
+	{
+		decode32ColorsToRGBA(image, width * height, result);
 	}
 	else
 	{
