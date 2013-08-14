@@ -82,8 +82,7 @@ static void encode32ColorsFromRGBA(const void* colors, int count, void* dest)
 
 static void convertIndexed4ToRGBA(const void* indexed4Data, int count, const void* palette, void* dest)
 {
-	uint32 pal[16];
-	decode32ColorsToRGBA(palette, 16, pal);
+	const uint32* pal = static_cast<const uint32*>(palette);
 
 	const uint8* src = static_cast<const uint8*>(indexed4Data);
 	uint32* dst = static_cast<uint32*>(dest);
@@ -97,8 +96,7 @@ static void convertIndexed4ToRGBA(const void* indexed4Data, int count, const voi
 
 static void convertIndexed8ToRGBA(const void* indexed8Data, int count, const void* palette, void* dest)
 {
-	uint32 pal[256];
-	decode32ColorsToRGBA(palette, 256, pal);
+	const uint32* pal = static_cast<const uint32*>(palette);
 
 	const uint8* src = static_cast<const uint8*>(indexed8Data);
 	uint32* dst = static_cast<uint32*>(dest);
@@ -209,17 +207,22 @@ void PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 		return;
 	}
 
-	ASSERT(palette != NULL);
-
 	if (format == formatIndexed4)
 	{
+		ASSERT(palette != NULL);
+		uint32 pal[16];
+		decode32ColorsToRGBA(palette, 16, pal);
 		unswizzle4as8(image, &buffer[0], width, height);
 		convertIndexed4ToRGBA(&buffer[0], width * height, palette, result);
 	}
 	else if (format == formatIndexed8)
 	{
+		ASSERT(palette != NULL);
+		uint32 pal[256];
+		decode32ColorsToRGBA(palette, 256, pal);
+		rotatePalette32(pal);
 		unswizzle8(image, &buffer[0], width, height);
-		convertIndexed8ToRGBA(&buffer[0], width * height, palette, result);
+		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
 	}
 	else
 	{
@@ -252,6 +255,7 @@ void PS2TextureCodec::encode(void* result, const void* image, int width, int hei
 		uint32 pal[256];
 		quantize8(image, width, height, &buffer[0], pal);
 		encode32ColorsFromRGBA(pal, 256, palette);
+		rotatePalette32(palette);
 		swizzle8(&buffer[0], result, width, height);
 	}
 	else
