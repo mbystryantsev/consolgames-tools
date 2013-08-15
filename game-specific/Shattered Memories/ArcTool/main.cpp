@@ -33,7 +33,6 @@ list<string> fileList(int argc, const char* argv[])
 	return names;
 }
 
-
 vector<wstring> dirList(int argc, const char* argv[])
 {
 	vector<wstring> dirs;
@@ -68,6 +67,37 @@ set<uint32> hashList(int argc, const char* argv[])
 	return hashes;
 }
 
+class ProgressNotifier: public Archive::IProgressListener
+{
+public:
+	ProgressNotifier()
+		: m_currentCount(0)
+	{
+	}
+
+private:
+	virtual void startProgress(int maxValue) override
+	{
+		m_currentCount = maxValue;
+	}
+	virtual void progress(int value, const std::string& name) override
+	{
+		std::cout << "[" << (value + 1) << "/" << m_currentCount << "] " << name << "..." << std::endl;
+	}
+	virtual void finishProgress() override
+	{	
+	}
+	virtual bool stopRequested() override
+	{
+		return false;
+	}
+
+private:
+	int m_currentCount;
+};
+
+static ProgressNotifier s_defaultNotifier;
+
 int main(int argc, const char* argv[])
 {
 	const char* cmd = argc > 1 ? argv[1] : NULL;
@@ -76,6 +106,7 @@ int main(int argc, const char* argv[])
 	{
 		const string filename = argv[2];
 		Archive arc(filename);
+		arc.addProgressListener(&s_defaultNotifier);
 		if (!arc.open())
 		{
 			cout << "Unable to open arc file!" << endl;
@@ -98,6 +129,7 @@ int main(int argc, const char* argv[])
 	{
 		const string filename = argv[2];
 		Archive arc(filename);
+		arc.addProgressListener(&s_defaultNotifier);
 		if (!arc.open())
 		{
 			cout << "Unable to open arc file!" << endl;
