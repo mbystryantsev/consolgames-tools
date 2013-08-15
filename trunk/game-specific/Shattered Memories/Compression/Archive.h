@@ -116,7 +116,7 @@ private:
 	class ProgressGuard
 	{
 	public:
-		ProgressGuard(Archive& archive);
+		ProgressGuard(Archive& archive, int size);
 		~ProgressGuard();
 
 	private:
@@ -129,7 +129,7 @@ private:
 	bool extractFile(const FileRecord& record, const std::wstring& path);
 	uint32 alignSize(uint32 size) const;
 
-	void notifyProgressStart();
+	void notifyProgressStart(int size);
 	void notifyProgress(int progress, const std::string& name);
 	void notifyProgressEnd();
 	bool stopRequested();
