@@ -110,7 +110,12 @@ private:
 		int signature;
 		int fileCount;
 		int headerSize;
-		int reserved;
+		union
+		{
+			int reserved;
+			int namesPosition;
+		};
+		int namesSize;
 	};
 
 	class ProgressGuard
@@ -144,6 +149,7 @@ private:
 	std::map<uint32, std::string> m_names;
 	uint32 m_alignment;
 	std::list<IProgressListener*> m_progressListeners;
+	bool m_originsMode;
 
 	static const uint32 s_defaultAlignment;
 };
