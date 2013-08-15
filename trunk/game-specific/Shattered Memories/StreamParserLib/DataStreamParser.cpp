@@ -182,23 +182,36 @@ DataStreamParser::MetaInfo DataStreamParser::readMetaInfo()
 	const int size = m_stream->readUInt32();
 	Q_UNUSED(size);
 
-	MetaInfo info;
+	bool ok = true;
 
-	info.unknown = readString();
+	MetaInfo info;
+	info.unknown = readString(ok);
 	info.unk1 = m_stream->readUInt64();
 	info.unk2 = m_stream->readUInt32();
 	info.unk3 = m_stream->readUInt32();
-	info.typeId = readString();
-	info.targetPath = readString();
-	info.sourcePath = readString();
+	info.typeId = readString(ok);
+	info.targetPath = readString(ok);
+	info.sourcePath = readString(ok);
 	info.unk4 = m_stream->readUInt32();
+
+	if (!ok)
+	{
+		return MetaInfo();
+	}
 
 	return info;
 }
 
-std::string DataStreamParser::readString()
+std::string DataStreamParser::readString(bool& ok)
 {
 	const int length = m_stream->readUInt32();
+
+	if (length < 0 || length > 256)
+	{
+		ok = false;
+		return std::string();
+	}
+
 	std::string result;
 	result.reserve(length);
 
