@@ -59,7 +59,7 @@ public:
 
 private:
 	MetaInfo readMetaInfo();
-	std::string readString();
+	std::string readString(bool& ok);
 	uint32 totalSegmentSize() const;
 
 private:
