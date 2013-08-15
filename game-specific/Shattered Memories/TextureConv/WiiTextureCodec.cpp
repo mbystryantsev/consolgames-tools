@@ -80,12 +80,12 @@ uint32 WiiTextureCodec::encodedPaletteSize(Format format) const
 	return 0;
 }
 
-void WiiTextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
+bool WiiTextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
 {
 	if (format != formatDXT1)
 	{
 		ASSERT(!"Unsupported format!");
-		return;
+		return false;
 	}
 
 	ASSERT(mipmapsToDecode >= 1);
@@ -95,14 +95,15 @@ void WiiTextureCodec::decode(void* result, const void* image, int width, int hei
 	DXTCodec::decodeDXT1(image, &bgra[0], width, height, max(1, mipmapsToDecode));
 
 	bgraToRgba(&bgra[0], result, bgra.size());
+	return true;
 }
 
-void WiiTextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
+bool WiiTextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
 {
 	if (format != formatDXT1)
 	{
 		ASSERT(!"Unsupported format!");
-		return;
+		return false;
 	}
 	ASSERT(palette == NULL);
 
@@ -110,4 +111,5 @@ void WiiTextureCodec::encode(void* result, const void* image, int width, int hei
 	rgbaToBgra(image, &bgra[0], bgra.size());
 
 	DXTCodec::encodeDXT1(&bgra[0], result, width, height, mipmaps == mipmapCountDefault ? s_defaultMipmapCount : mipmaps);
+	return true;
 }
