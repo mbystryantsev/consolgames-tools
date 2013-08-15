@@ -62,7 +62,7 @@ bool TextureDictionaryParserWii::fetch()
 	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt8();
 	m_currentMetaInfo.mipmapCount = m_stream->readUInt8();
 	m_currentMetaInfo.format = static_cast<TextureFormat>(m_stream->readUInt8());
-	m_currentMetaInfo.clutType = m_stream->readUInt8();
+	/*m_currentMetaInfo.clutType = */m_stream->readUInt8();
 	const uint32 unk18 = m_stream->readUInt32();
 	
 	// skip clut
@@ -121,16 +121,6 @@ bool TextureDictionaryParserWii::atEnd() const
 const TextureDictionaryParserWii::TextureMetaInfo& TextureDictionaryParserWii::metaInfo() const 
 {
 	return m_currentMetaInfo;
-}
-
-bool TextureDictionaryParserWii::open(const std::wstring& filename)
-{
-	m_streamHolder.reset(new FileStream(filename, Stream::modeRead));
-	if (!m_streamHolder->opened())
-	{
-		return false;
-	}
-	return open(m_streamHolder.get());
 }
 
 bool TextureDictionaryParserWii::open(Stream* stream)

@@ -13,19 +13,20 @@ class FileStream;
 namespace ShatteredMemories
 {
 
-class TextureDictionaryParserWii: public TextureDictionaryParser
+class TextureDictionaryParserPS2: public TextureDictionaryParser
 {
 public:
-    TextureDictionaryParserWii();
+    TextureDictionaryParserPS2();
 
 	virtual bool open(Consolgames::Stream* stream) override;
 	virtual bool initSegment() override;
 	virtual bool fetch() override;
 	virtual bool atEnd() const override;
-	virtual const TextureMetaInfo& metaInfo() const override;
-private:
-	bool readHeader();
 
+	const TextureMetaInfo& metaInfo() const;
+private:
+
+	bool readHeader();
 protected:	
 	TextureMetaInfo m_currentMetaInfo;
 	Consolgames::Stream* m_stream;
