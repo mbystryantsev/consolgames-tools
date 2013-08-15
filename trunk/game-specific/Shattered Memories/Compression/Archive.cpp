@@ -36,6 +36,7 @@ static std::wstring strToWStr(const std::string& str)
 Archive::Archive(const std::string& filename)
 	: m_opened(false)
 	, m_alignment(s_defaultAlignment)
+	, m_originsMode(false)
 {
 	m_fileStreamHolder.reset(new FileStream(strToWStr(filename), Stream::modeRead));
 	m_stream = m_fileStreamHolder.get();
@@ -66,20 +67,61 @@ bool Archive::open()
 	}
 
 	m_header.signature = m_stream->readInt();
+
+	m_originsMode = (m_header.signature == 0x302E3241); // "A2.0"
+	if (m_originsMode)
+	{
+		DLOG << "Silent Hill Origins archive detected.";
+	}
+
 	m_header.fileCount = m_stream->readInt();
 	m_header.headerSize = m_stream->readInt();
-	m_header.reserved = m_stream->readInt();
+
+	if (m_originsMode)
+	{
+		m_header.namesPosition = m_stream->readInt();
+		m_header.namesSize = m_stream->readInt();
+	}
+	else
+	{
+		m_header.reserved = m_stream->readInt();
+	}
 	
 	ASSERT(m_header.fileCount > 0);
 	m_fileRecords.resize(m_header.fileCount);
 	m_fileRecordsMap.clear();
 
+	std::vector<char> namesBuf;
+	if (m_originsMode)
+	{
+		m_names.clear();
+		namesBuf.resize(m_header.namesSize);
+
+		const offset_t pos = m_stream->position();
+		m_stream->seek(m_header.namesPosition, Stream::seekSet);
+		m_stream->read(&namesBuf[0], namesBuf.size());
+		m_stream->seek(pos, Stream::seekSet);
+	}
+
 	for (vector<FileRecord>::iterator fileRecord = m_fileRecords.begin(); fileRecord != m_fileRecords.end(); fileRecord++)
 	{
-		fileRecord->hash = m_stream->readUInt();
+		if (m_originsMode)
+		{
+			const uint32 nameOffset = m_stream->readUInt();
+
+			ASSERT(nameOffset < namesBuf.size());
+			const char* name = &namesBuf[nameOffset];
+			fileRecord->hash = Hash::calc(name);
+			m_names[fileRecord->hash] = name;
+		}
+		else
+		{
+			fileRecord->hash = m_stream->readUInt();
+		}
 		fileRecord->offset = m_stream->readUInt();
 		fileRecord->storedSize = m_stream->readUInt();
 		fileRecord->decompressedSize = m_stream->readUInt();
+
 		m_fileRecordsMap[fileRecord->hash] = &(*fileRecord);
 
 		if (fileRecord->offset % 0x800 != 0)
@@ -178,6 +220,11 @@ bool Archive::extractFile(const FileRecord& record, const std::wstring& path)
 
 void Archive::setNames(const std::list<std::string>& names)
 {
+	if (m_originsMode)
+	{
+		return;
+	}
+
 	m_names.clear();
 	for (std::list<std::string>::const_iterator name = names.begin(); name != names.end(); name++)
 	{
@@ -194,6 +241,12 @@ uint32 Archive::alignSize(uint32 size) const
 bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap)
 {
 	ProgressGuard guard(*this, m_fileRecords.size());
+
+	if (m_originsMode)
+	{
+		DLOG << "Silent Hill Origins archives rebuilding not supported yet.";
+		return false;
+	}
 
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
@@ -448,7 +501,6 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 	m_fileStream.reset(pakStream.release());
 	return m_fileStream;
 }
-
 
 Archive::ProgressGuard::ProgressGuard(Archive& archive, int size)
 	: m_archive(archive)
