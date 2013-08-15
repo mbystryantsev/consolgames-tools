@@ -204,74 +204,109 @@ uint32 PS2TextureCodec::encodedPaletteSize(Format format) const
 	return 0;
 }
 
-void PS2TextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
+bool PS2TextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
 {
 	ASSERT(mipmapsToDecode == 1);
+	if (mipmapsToDecode != 1)
+	{
+		return false;
+	}
 
 	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
 	{
-		return;
+		return false;
 	}
 
 	if (format == formatIndexed4)
 	{
 		ASSERT(palette != NULL);
+		if (palette == NULL)
+		{
+			return false;
+		}
+
 		uint32 pal[16];
 		decode32ColorsToRGBA(palette, 16, pal);
 		unswizzle4as8(image, &buffer[0], width, height);
 		convertIndexed4ToRGBA(&buffer[0], width * height, palette, result);
+		return true;
 	}
-	else if (format == formatIndexed8)
+	if (format == formatIndexed8)
 	{
 		ASSERT(palette != NULL);
+		if (palette == NULL)
+		{
+			return false;
+		}
+
 		uint32 pal[256];
 		decode32ColorsToRGBA(palette, 256, pal);
 		rotatePalette32(pal);
 		unswizzle8(image, &buffer[0], width, height);
 		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
+		return true;
 	}
-	else if (format == formatRGBA)
+	if (format == formatRGBA)
 	{
 		decode32ColorsToRGBA(image, width * height, result);
+		return true;
 	}
-	else
-	{
-		ASSERT(!"Unsupported image format!");
-	}
+
+	ASSERT(!"Unsupported image format!");
+	return false;
 }
 
-void PS2TextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
+bool PS2TextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
 {
 	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
+	if (mipmaps != 1 && mipmaps != mipmapCountDefault)
+	{
+		return false;
+	}
 
 	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
 	{
-		return;
+		return false;
 	}
-
-	ASSERT(palette != NULL);
 
 	if (format == formatIndexed4)
 	{
+		ASSERT(palette != NULL);
+		if (palette == NULL)
+		{
+			return false;
+		}
+
 		uint32 pal[16];
 		quantize4(image, width, height, &buffer[0], pal);
 		encode32ColorsFromRGBA(pal, 16, palette);
 		swizzle4as8(&buffer[0], result, width, height);
+		return true;
 	}
-	else if (format == formatIndexed8)
+	if (format == formatIndexed8)
 	{
+		ASSERT(palette != NULL);
+		if (palette == NULL)
+		{
+			return false;
+		}
+
 		uint32 pal[256];
 		quantize8(image, width, height, &buffer[0], pal);
 		encode32ColorsFromRGBA(pal, 256, palette);
 		rotatePalette32(palette);
 		swizzle8(&buffer[0], result, width, height);
+		return true;
 	}
-	else
+	if (format == formatRGBA)
 	{
-		ASSERT(!"Unsupported image format!");
+		encode32ColorsFromRGBA(image, width * height, result);
+		return true;
 	}
+	ASSERT(!"Unsupported image format!");
+	return false;
 }
