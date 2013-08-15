@@ -1,5 +1,5 @@
 #pragma once
-#include <Stream.h>
+#include <FileStream.h>
 
 namespace ShatteredMemories
 {
@@ -9,10 +9,10 @@ class TextureDictionaryParser
 public:
 	enum TextureFormat
 	{
-		Indexed16,
-		Indexed256,
-		DXT1,
-		DXT5
+		formatIndexed4,
+		formatIndexed8,
+		formatDXT1,
+		formatRGBA
 	};
 
 public:
@@ -24,18 +24,23 @@ public:
 		int mipmapCount;
 		int bitsPerPixel;
 		TextureFormat format;
-		int clutType;
-		int rasterPosition;
-		int rasterSize;
+		uint32 rasterPosition;
+		uint32 rasterSize;
+		uint32 palettePosition;
+		uint32 paletteSize;
 	};
 
 public:
+	bool open(const std::wstring& filename);
 
-	virtual bool fetch(){return true;}
-	virtual bool atEnd() const{return false;}
+	virtual bool open(Consolgames::Stream* stream) = 0;
+	virtual bool initSegment() = 0;
+	virtual bool fetch() = 0;
+	virtual bool atEnd() const = 0;
 	virtual const TextureMetaInfo& metaInfo() const = 0;
 
-	static const int s_dataStreamId;
+private:
+	std::auto_ptr<Consolgames::Stream> m_streamHolder;
 };
 
 }
