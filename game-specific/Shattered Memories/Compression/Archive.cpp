@@ -99,6 +99,8 @@ bool Archive::extractFiles(const std::string& outDir, const std::set<uint32>& fi
 
 bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32>& fileList)
 {
+	ProgressGuard guard(*this, fileList.empty() ? m_fileRecords.size() : fileList.size());
+
 	ASSERT(m_opened);
 	if (!m_opened)
 	{
@@ -111,6 +113,7 @@ bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32>& f
 		return false;
 	}
 
+	int processed = 0;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
 		if (!fileList.empty() && (fileList.find(record->hash) == fileList.end()))
@@ -120,10 +123,15 @@ bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32>& f
 
 		const std::string filename = (m_names.find(record->hash) == m_names.end() ? Hash::toString(record->hash) : m_names[record->hash]);
 		const std::wstring outFile = outDir + PATH_SEPARATOR_L + strToWStr(filename);
+
+		notifyProgress(processed, filename);
+
 		if (!extractFile(*record, outFile))
 		{
 			return false;
 		}
+
+		processed++;
 	}
 	return true;
 }
@@ -185,7 +193,7 @@ uint32 Archive::alignSize(uint32 size) const
 
 bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap)
 {
-	ProgressGuard guard(*this);
+	ProgressGuard guard(*this, m_fileRecords.size());
 
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
@@ -348,9 +356,9 @@ shared_ptr<Stream> Archive::openFile(uint32 fileHash)
 	return FileAccessor(m_stream, record).open();
 }
 
-void Archive::notifyProgressStart()
+void Archive::notifyProgressStart(int size)
 {
-	std::for_each(m_progressListeners.begin(), m_progressListeners.end(), std::bind2nd(std::mem_fun(&IProgressListener::startProgress), m_fileRecords.size()));
+	std::for_each(m_progressListeners.begin(), m_progressListeners.end(), std::bind2nd(std::mem_fun(&IProgressListener::startProgress), size));
 }
 
 void Archive::notifyProgress(int progressValue, const std::string& name)
@@ -442,10 +450,10 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 }
 
 
-Archive::ProgressGuard::ProgressGuard(Archive& archive)
+Archive::ProgressGuard::ProgressGuard(Archive& archive, int size)
 	: m_archive(archive)
 {
-	m_archive.notifyProgressStart();
+	m_archive.notifyProgressStart(size);
 }
 
 Archive::ProgressGuard::~ProgressGuard()
