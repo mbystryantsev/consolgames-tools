@@ -79,6 +79,7 @@ private:
 	quint32 m_nextSegmentPosition;
 	quint32 m_currentItemSize;
 	offset_t m_startStreamPosition;
+	bool m_isFirstSegment;
 };
 
 }

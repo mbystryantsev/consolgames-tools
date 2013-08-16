@@ -31,6 +31,7 @@ DataStreamParser::DataStreamParser(Stream::ByteOrder byteOrder)
 	, m_nextSegmentPosition(0)
 	, m_currentItemSize(0)
 	, m_byteOrder(byteOrder)
+	, m_isFirstSegment(true)
 {
 }
 
@@ -105,9 +106,10 @@ bool DataStreamParser::initSegment()
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 
 	m_nextItemPosition = 0;
-	if (m_position == 0)
+	if (m_isFirstSegment)
 	{
 		m_startStreamPosition = m_stream->position();
+		m_isFirstSegment = false;
 	}
 	else
 	{
@@ -140,9 +142,9 @@ bool DataStreamParser::initSegment()
 
 	if (signature != s_dataStreamId)
 	{
+		m_stream->seek(m_nextSegmentPosition, Stream::seekSet);
 		if (signature == 0)
 		{
-			m_stream->seek(m_nextSegmentPosition, Stream::seekSet);
 			return false;
 		}
 		else
