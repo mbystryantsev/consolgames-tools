@@ -1,7 +1,10 @@
 #include <Color.h>
 #include "WiiTextureCodec.h"
 #include "dxt1.h"
+#include <WiiFormats.h>
 #include <vector>
+
+using namespace ShatteredMemories;
 
 namespace
 {
@@ -41,16 +44,32 @@ static void bgraToRgba(const void* image, void* result, int size)
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+
 static const int s_defaultMipmapCount = 4;
 
-bool WiiTextureCodec::formatIsSupported(Format format) const
+bool WiiTextureCodec::isFormatSupported(int format) const
 {
-	return (format == formatDXT1);
+	return (format == WiiFormats::imageFormatDXT1);
 }
 
-uint32 WiiTextureCodec::encodedRasterSize(Format format, int width, int height, int mipmaps) const 
+bool WiiTextureCodec::isPaletteFormatSupported(int format) const
 {
-	if (format != formatDXT1)
+	return (format == WiiFormats::paletteFormatNone);
+}
+
+int WiiTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
+{
+	if (textureFormat == WiiFormats::imageFormatDXT1)
+	{
+		return WiiFormats::paletteFormatNone;
+	}
+	return WiiFormats::paletteFormatUndefined;
+}
+
+uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const 
+{
+	if (!isFormatSupported(format))
 	{
 		ASSERT(!"Unsupported format!");
 		return 0;
@@ -74,15 +93,15 @@ uint32 WiiTextureCodec::encodedRasterSize(Format format, int width, int height, 
 	return size;
 }
 
-uint32 WiiTextureCodec::encodedPaletteSize(Format format) const 
+uint32 WiiTextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
 {
-	ASSERT(format == formatDXT1);
+	ASSERT(format == WiiFormats::imageFormatDXT1 && paletteFormat == WiiFormats::paletteFormatNone);
 	return 0;
 }
 
-bool WiiTextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
+bool WiiTextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode)
 {
-	if (format != formatDXT1)
+	if (!isFormatSupported(format) || !isPaletteFormatSupported(paletteFormat))
 	{
 		ASSERT(!"Unsupported format!");
 		return false;
@@ -98,9 +117,9 @@ bool WiiTextureCodec::decode(void* result, const void* image, int width, int hei
 	return true;
 }
 
-bool WiiTextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
+bool WiiTextureCodec::encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps)
 {
-	if (format != formatDXT1)
+	if (!isFormatSupported(format) || !isPaletteFormatSupported(paletteFormat))
 	{
 		ASSERT(!"Unsupported format!");
 		return false;
@@ -112,4 +131,24 @@ bool WiiTextureCodec::encode(void* result, const void* image, int width, int hei
 
 	DXTCodec::encodeDXT1(&bgra[0], result, width, height, mipmaps == mipmapCountDefault ? s_defaultMipmapCount : mipmaps);
 	return true;
+}
+
+const char* WiiTextureCodec::textureFormatToString(int format) const
+{
+	return WiiFormats::imageFormatToString(static_cast<WiiFormats::ImageFormat>(format));
+}
+
+const char* WiiTextureCodec::paletteFormatToString(int format) const
+{
+	return WiiFormats::paletteFormatToString(static_cast<WiiFormats::PaletteFormat>(format));
+}
+
+int WiiTextureCodec::textureFormatFromString(const char* str) const 
+{
+	return WiiFormats::imageFormatFromString(str);
+}
+
+int WiiTextureCodec::paletteFormatFromString(const char* str) const 
+{
+	return WiiFormats::paletteFormatFromString(str);
 }

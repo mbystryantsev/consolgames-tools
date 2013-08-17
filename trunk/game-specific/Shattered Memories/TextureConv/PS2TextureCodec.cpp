@@ -1,7 +1,10 @@
 #include "PS2TextureCodec.h"
 #include "PS2Swizzling.h"
+#include <PS2Formats.h>
 #include <libimagequant.h>
 #include <vector>
+
+using namespace ShatteredMemories;
 
 namespace
 {
@@ -159,24 +162,44 @@ static void quantize4(const void* data, int width, int height, void* dest, void*
 
 //////////////////////////////////////////////////////////////////////////
 
-bool PS2TextureCodec::formatIsSupported(Format format) const
+bool PS2TextureCodec::isFormatSupported(int format) const
 {
-	return (format == formatIndexed4 || format == formatIndexed8 || format == formatRGBA);
+	return (format == PS2Formats::imageFormatIndexed4 || format == PS2Formats::imageFormatIndexed8 || format == PS2Formats::imageFormatRGBA);
 }
 
-uint32 PS2TextureCodec::encodedRasterSize(Format format, int width, int height, int mipmaps) const 
+bool PS2TextureCodec::isPaletteFormatSupported(int format) const
+{
+	return (format == PS2Formats::paletteFormatNone || format == PS2Formats::paletteFormatRGBA);
+}
+
+int PS2TextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
+{
+	if (textureFormat == PS2Formats::imageFormatRGBA)
+	{
+		return PS2Formats::paletteFormatNone;
+	}
+	if (textureFormat == PS2Formats::imageFormatIndexed4 || textureFormat == PS2Formats::imageFormatIndexed8)
+	{
+		return PS2Formats::paletteFormatRGBA;
+	}
+	return PS2Formats::paletteFormatUndefined;
+}
+
+uint32 PS2TextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const 
 {
 	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
 
-	if (format == formatIndexed4)
+	width = max(width, 32);
+
+	if (format == PS2Formats::imageFormatIndexed4)
 	{
 		return (width * height) / 2;
 	}
-	else if (format == formatIndexed8)
+	else if (format == PS2Formats::imageFormatIndexed8)
 	{
 		return width * height;
 	}
-	else if (format == formatRGBA)
+	else if (format == PS2Formats::imageFormatRGBA)
 	{
 		return width * height * 4;
 	}
@@ -185,18 +208,21 @@ uint32 PS2TextureCodec::encodedRasterSize(Format format, int width, int height, 
 	return 0;
 }
 
-uint32 PS2TextureCodec::encodedPaletteSize(Format format) const 
+uint32 PS2TextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
 {
-	if (format == formatIndexed4)
+	if (format == PS2Formats::imageFormatIndexed4)
 	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
 		return 4 * 16;
 	}
-	else if (format == formatIndexed8)
+	else if (format == PS2Formats::imageFormatIndexed8)
 	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
 		return 4 * 256;
 	}
-	else if (format == formatRGBA)
+	else if (format == PS2Formats::imageFormatRGBA)
 	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
 		return 0;
 	}
 
@@ -204,7 +230,7 @@ uint32 PS2TextureCodec::encodedPaletteSize(Format format) const
 	return 0;
 }
 
-bool PS2TextureCodec::decode(void* result, const void* image, int width, int height, Format format, const void* palette, int mipmapsToDecode)
+bool PS2TextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode)
 {
 	ASSERT(mipmapsToDecode == 1);
 	if (mipmapsToDecode != 1)
@@ -219,10 +245,11 @@ bool PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 		return false;
 	}
 
-	if (format == formatIndexed4)
+	if (format == PS2Formats::imageFormatIndexed4)
 	{
 		ASSERT(palette != NULL);
-		if (palette == NULL)
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
+		if (palette == NULL || paletteFormat != PS2Formats::paletteFormatRGBA)
 		{
 			return false;
 		}
@@ -230,13 +257,14 @@ bool PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 		uint32 pal[16];
 		decode32ColorsToRGBA(palette, 16, pal);
 		unswizzle4as8(image, &buffer[0], width, height);
-		convertIndexed4ToRGBA(&buffer[0], width * height, palette, result);
+		convertIndexed4ToRGBA(&buffer[0], width * height, pal, result);
 		return true;
 	}
-	if (format == formatIndexed8)
+	if (format == PS2Formats::imageFormatIndexed8)
 	{
 		ASSERT(palette != NULL);
-		if (palette == NULL)
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
+		if (palette == NULL || paletteFormat != PS2Formats::paletteFormatRGBA)
 		{
 			return false;
 		}
@@ -248,8 +276,14 @@ bool PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
 		return true;
 	}
-	if (format == formatRGBA)
+	if (format == PS2Formats::imageFormatRGBA)
 	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
+		if (paletteFormat != PS2Formats::paletteFormatNone)
+		{
+			return false;
+		}
+
 		decode32ColorsToRGBA(image, width * height, result);
 		return true;
 	}
@@ -258,7 +292,7 @@ bool PS2TextureCodec::decode(void* result, const void* image, int width, int hei
 	return false;
 }
 
-bool PS2TextureCodec::encode(void* result, const void* image, int width, int height, Format format, void* palette, int mipmaps)
+bool PS2TextureCodec::encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps)
 {
 	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
 	if (mipmaps != 1 && mipmaps != mipmapCountDefault)
@@ -273,10 +307,11 @@ bool PS2TextureCodec::encode(void* result, const void* image, int width, int hei
 		return false;
 	}
 
-	if (format == formatIndexed4)
+	if (format == PS2Formats::imageFormatIndexed4)
 	{
 		ASSERT(palette != NULL);
-		if (palette == NULL)
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
+		if (palette == NULL || paletteFormat != PS2Formats::paletteFormatRGBA)
 		{
 			return false;
 		}
@@ -287,10 +322,11 @@ bool PS2TextureCodec::encode(void* result, const void* image, int width, int hei
 		swizzle4as8(&buffer[0], result, width, height);
 		return true;
 	}
-	if (format == formatIndexed8)
+	if (format == PS2Formats::imageFormatIndexed8)
 	{
 		ASSERT(palette != NULL);
-		if (palette == NULL)
+		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
+		if (palette == NULL || paletteFormat != PS2Formats::paletteFormatRGBA)
 		{
 			return false;
 		}
@@ -302,11 +338,37 @@ bool PS2TextureCodec::encode(void* result, const void* image, int width, int hei
 		swizzle8(&buffer[0], result, width, height);
 		return true;
 	}
-	if (format == formatRGBA)
+	if (format == PS2Formats::imageFormatRGBA)
 	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
+		if (paletteFormat != PS2Formats::paletteFormatNone)
+		{
+			return false;
+		}
+
 		encode32ColorsFromRGBA(image, width * height, result);
 		return true;
 	}
 	ASSERT(!"Unsupported image format!");
 	return false;
+}
+
+const char* PS2TextureCodec::textureFormatToString(int format) const
+{
+	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
+}
+
+const char* PS2TextureCodec::paletteFormatToString(int format) const
+{
+	return PS2Formats::paletteFormatToString(static_cast<PS2Formats::PaletteFormat>(format));
+}
+
+int PS2TextureCodec::textureFormatFromString(const char* str) const
+{
+	return PS2Formats::imageFormatFromString(str);
+}
+
+int PS2TextureCodec::paletteFormatFromString(const char* str) const
+{
+	return PS2Formats::paletteFormatFromString(str);
 }
