@@ -7,15 +7,6 @@ namespace ShatteredMemories
 class TextureDictionaryParser
 {
 public:
-	enum TextureFormat
-	{
-		formatIndexed4,
-		formatIndexed8,
-		formatDXT1,
-		formatRGBA
-	};
-
-public:
 	struct TextureMetaInfo
 	{
 		std::string name;
@@ -23,7 +14,8 @@ public:
 		int height;
 		int mipmapCount;
 		int bitsPerPixel;
-		TextureFormat format;
+		int textureFormat;
+		int paletteFormat;
 		uint32 rasterPosition;
 		uint32 rasterSize;
 		uint32 palettePosition;
@@ -38,6 +30,9 @@ public:
 	virtual bool fetch() = 0;
 	virtual bool atEnd() const = 0;
 	virtual const TextureMetaInfo& metaInfo() const = 0;
+
+	virtual const char* textureFormatToString(int format) const = 0;
+	virtual const char* paletteFormatToString(int format) const = 0;
 
 private:
 	std::auto_ptr<Consolgames::Stream> m_streamHolder;

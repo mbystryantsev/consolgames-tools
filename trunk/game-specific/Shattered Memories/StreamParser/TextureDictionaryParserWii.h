@@ -23,6 +23,10 @@ public:
 	virtual bool fetch() override;
 	virtual bool atEnd() const override;
 	virtual const TextureMetaInfo& metaInfo() const override;
+
+	virtual const char* textureFormatToString(int format) const override;
+	virtual const char* paletteFormatToString(int format) const override;
+
 private:
 	bool readHeader();
 

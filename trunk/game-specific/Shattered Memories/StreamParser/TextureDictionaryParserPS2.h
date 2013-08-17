@@ -22,11 +22,14 @@ public:
 	virtual bool initSegment() override;
 	virtual bool fetch() override;
 	virtual bool atEnd() const override;
+	virtual const TextureMetaInfo& metaInfo() const override;
 
-	const TextureMetaInfo& metaInfo() const;
+	virtual const char* textureFormatToString(int format) const override;
+	virtual const char* paletteFormatToString(int format) const override;
+
 private:
-
 	bool readHeader();
+
 protected:	
 	TextureMetaInfo m_currentMetaInfo;
 	Consolgames::Stream* m_stream;

@@ -1,9 +1,5 @@
 #include "TextureDictionaryParserPS2.h"
-#include <Streams/FileStream.h>
-#ifdef _DEBUG
-#include <iostream>
-#include <iomanip>
-#endif
+#include <PS2Formats.h>
 
 namespace ShatteredMemories
 {
@@ -70,15 +66,18 @@ bool TextureDictionaryParserPS2::fetch()
 
 	if (m_currentMetaInfo.bitsPerPixel == 4)
 	{
-		m_currentMetaInfo.format = formatIndexed4;
+		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed4;
+		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 8)
 	{
-		m_currentMetaInfo.format = formatIndexed8;
+		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed8;
+		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
 	}
 	else
 	{
-		m_currentMetaInfo.format = formatRGBA;
+		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA;
+		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
 	}
 
 	m_currentMetaInfo.rasterPosition = m_stream->position() + 0x90;
@@ -134,6 +133,16 @@ bool TextureDictionaryParserPS2::initSegment()
 	const uint32 unk2 = m_stream->readUInt32();
 
 	return true;
+}
+
+const char* TextureDictionaryParserPS2::textureFormatToString(int format) const
+{
+	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
+}
+
+const char* TextureDictionaryParserPS2::paletteFormatToString(int format) const
+{
+	return PS2Formats::paletteFormatToString(static_cast<PS2Formats::PaletteFormat>(format));
 }
 
 }
