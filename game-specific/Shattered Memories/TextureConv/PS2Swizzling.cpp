@@ -116,7 +116,7 @@ struct Swizzle4as8Func
 };
 
 template <class Func>
-void swizzle8Proc(Func func, int width, int height)
+void swizzle8Proc(Func func, int width, int height, int encodedWidth)
 {
 	for (int y = 0; y < height; y++)
 	{
@@ -125,10 +125,10 @@ void swizzle8Proc(Func func, int width, int height)
 			const int xx = x + odd(y / 4) * s_tileMatrix[odd(x / 4)];
 			const int yy = y + s_matrix[y % 4];
 
-			const int swizzledIndex = s_interlaceMatrix[(x / 4) % 4 + 4 * odd(y)] + ((x * 4) % 16) + (x / 16) * 32 + ((y - odd(y)) * width);
+			const int swizzledIndex = s_interlaceMatrix[(x / 4) % 4 + 4 * odd(y)] + ((x * 4) % 16) + (x / 16) * 32 + ((y - odd(y)) * encodedWidth);
 			const int rasterIndex = yy * width + xx;
 
-			if (swizzledIndex < width * height)
+			if (swizzledIndex < encodedWidth * height)
 			{
 				func(swizzledIndex, rasterIndex);
 			}
@@ -140,22 +140,22 @@ void swizzle8Proc(Func func, int width, int height)
 
 void unswizzle4as8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Unswizzle4as8Func(source, dest), width, height);
+	swizzle8Proc(Unswizzle4as8Func(source, dest), width, height, max(32, width));
 }
 
 void unswizzle8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Unswizzle8Func(source, dest), width, height);
+	swizzle8Proc(Unswizzle8Func(source, dest), width, height, max(16, width));
 }
 
 void swizzle4as8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Swizzle4as8Func(source, dest), width, height);
+	swizzle8Proc(Swizzle4as8Func(source, dest), width, height, max(32, width));
 }
 
 void swizzle8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Swizzle8Func(source, dest), width, height);
+	swizzle8Proc(Swizzle8Func(source, dest), width, height, max(16, width));
 }
 
 //////////////////////////////////////////////////////////////////////////
