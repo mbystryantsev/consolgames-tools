@@ -55,39 +55,41 @@ bool TextureDictionaryParserPS2::fetch()
 
 	//DLOG << HEX << "Texture, position: " << m_stream->position() << ", name: " << name; 
 
-	const uint32 imageSize = m_stream->readUInt32();
-
-	m_stream->skip(0x24);
+	m_stream->skip(0x28);
 
 	m_currentMetaInfo.width = m_stream->readUInt32();
 	m_currentMetaInfo.height = m_stream->readUInt32();
 	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt32();
 	m_currentMetaInfo.mipmapCount = 1;
+	const uint32 unk17 = m_stream->readUInt32();
 
+	int paletteTotalSize = 0;
 	if (m_currentMetaInfo.bitsPerPixel == 4)
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed4;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		paletteTotalSize = 0x60 + 0x50;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 8)
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed8;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		paletteTotalSize = 0x400 + 0x50;
 	}
 	else
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
+		paletteTotalSize = 0;
 	}
 
-	m_currentMetaInfo.rasterPosition = m_stream->position() + 0x90;
-	m_currentMetaInfo.rasterSize = (m_currentMetaInfo.width * m_currentMetaInfo.height * m_currentMetaInfo.bitsPerPixel) / 8;
+	m_currentMetaInfo.rasterPosition = m_stream->position() + ((unk17 & 0xFF0000) == 0 ? 0x40 - 4 : 0x90 - 4);
+	m_currentMetaInfo.rasterSize = PS2Formats::encodedRasterSize(static_cast<PS2Formats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
 
 	if (m_currentMetaInfo.bitsPerPixel <= 8)
 	{
 		m_currentMetaInfo.palettePosition = m_currentMetaInfo.rasterPosition + m_currentMetaInfo.rasterSize + 0x50;
 		m_currentMetaInfo.paletteSize = (1 << m_currentMetaInfo.bitsPerPixel) * 4;
-		//m_stream->skip(m_currentMetaInfo.paletteSize + 32);
 	}
 	else
 	{
@@ -95,7 +97,22 @@ bool TextureDictionaryParserPS2::fetch()
 		m_currentMetaInfo.paletteSize = 0;
 	}
 
-	//m_stream->skip(16);
+	if (m_currentMetaInfo.width == 1 && m_currentMetaInfo.height == 1)
+	{
+		// Fake texture
+		m_currentMetaInfo.rasterSize = 0;
+		m_currentMetaInfo.rasterPosition = 0;
+		m_currentMetaInfo.paletteSize = 0;
+		m_currentMetaInfo.palettePosition = 0;
+	}
+	else
+	{
+		const uint32 expectedRasterSize = size - paletteTotalSize - stringLen - ((unk17 & 0xFF0000) == 0 ? 0xB0 : 0x100);
+		if (m_currentMetaInfo.rasterSize != expectedRasterSize)
+		{
+			DLOG << "WARNING: Unexpected raster size!";
+		}
+	}
 
 	m_stream->seek(pos + size + 0x0C, Stream::seekSet);
 
