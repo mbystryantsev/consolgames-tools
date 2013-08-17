@@ -1,0 +1,67 @@
+#include "PS2Formats.h"
+#include <cstring>
+
+namespace ShatteredMemories
+{
+
+const char* PS2Formats::imageFormatToString(ImageFormat format)
+{
+	switch (format)
+	{
+	case imageFormatIndexed4:
+		return "indexed4";
+	case imageFormatIndexed8:
+		return "indexed8";
+	case imageFormatRGBA:
+		return "rgba";
+	}
+
+	return "undefined";
+}
+
+PS2Formats::ImageFormat PS2Formats::imageFormatFromString(const char* str)
+{
+	if (strcmp(str, "indexed4") == 0)
+	{
+		return imageFormatIndexed4;
+	}
+	if (strcmp(str, "indexed8") == 0)
+	{
+		return imageFormatIndexed8;
+	}
+	if (strcmp(str, "rgba") == 0)
+	{
+		return imageFormatRGBA;
+	}
+
+	return imageFormatUndefined;
+}
+
+const char* PS2Formats::paletteFormatToString(PaletteFormat format)
+{
+	switch (format)
+	{
+	case paletteFormatNone:
+		return "none";
+	case paletteFormatRGBA:
+		return "rgba";
+	}
+
+	return "undefined";
+}
+
+PS2Formats::PaletteFormat PS2Formats::paletteFormatFromString(const char* str)
+{
+	if (strcmp(str, "none") == 0)
+	{
+		return paletteFormatNone;
+	}
+	if (strcmp(str, "rgba") == 0)
+	{
+		return paletteFormatRGBA;
+	}
+
+	return paletteFormatUndefined;
+}
+
+}
