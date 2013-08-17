@@ -2,11 +2,16 @@
 #include <Stream.h>
 #include <QFile>
 
+namespace ShatteredMemories
+{
+
 // Wrapper class for possibility to use Qt resource file system
 class QtFileStream : public Consolgames::Stream
 {
 public:
 	QtFileStream(const QString& filename, QIODevice::OpenMode mode = QIODevice::ReadOnly);
+
+	QString fileName() const;
 
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
@@ -22,3 +27,5 @@ public:
 private:
 	QFile m_file;
 };
+
+}

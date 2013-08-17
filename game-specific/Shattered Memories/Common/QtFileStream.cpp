@@ -1,8 +1,16 @@
 #include "QtFileStream.h"
 
+namespace ShatteredMemories
+{
+
 QtFileStream::QtFileStream(const QString& filename, QIODevice::OpenMode mode) : m_file(filename)
 {
 	m_file.open(mode);
+}
+
+QString QtFileStream::fileName() const
+{
+	return m_file.fileName();
 }
 
 largesize_t QtFileStream::read(void* buf, largesize_t size)
@@ -57,4 +65,6 @@ bool QtFileStream::atEnd() const
 QFile& QtFileStream::file()
 {
 	return m_file;
+}
+
 }

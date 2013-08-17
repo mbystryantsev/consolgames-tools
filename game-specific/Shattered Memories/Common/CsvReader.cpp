@@ -1,4 +1,5 @@
 #include "CsvReader.h"
+#include <core.h>
 
 namespace ShatteredMemories
 {
