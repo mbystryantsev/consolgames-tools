@@ -8,4 +8,4 @@ TEMPLATE = lib
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 
-LIBS += core.lib Common.lib
+LIBS += core.lib CommonQt.lib

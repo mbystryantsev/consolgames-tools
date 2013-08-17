@@ -15,4 +15,4 @@ PRECOMPILED_HEADER = pch.h
 	CONFIG += console
 }
 
-LIBS += core.lib PatcherLib.lib Common.lib StreamParserLib.lib
+LIBS += core.lib PatcherLib.lib Common.lib CommonQt.lib StreamParserLib.lib

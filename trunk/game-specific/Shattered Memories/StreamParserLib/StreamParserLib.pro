@@ -1,11 +1,10 @@
 include(../ShatteredMemories.pri)
 
-QT += core
-CONFIG -= flat
+CONFIG -= qt flat
 CONFIG += static
 TEMPLATE = lib
 
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 
-LIBS += core.lib Common.lib
+LIBS += core.lib

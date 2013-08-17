@@ -9,4 +9,4 @@ TEMPLATE = app
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 
-LIBS += core.lib Common.lib StreamParserLib.lib
+LIBS += core.lib Common.lib CommonQt.lib StreamParserLib.lib
