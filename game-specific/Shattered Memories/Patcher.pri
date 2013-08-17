@@ -8,6 +8,7 @@ DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
 INCLUDEPATH += \
 	$$PWD/Common \
+	$$PWD/CommonQt \
 	$$PWD/Compression \
 	$$PWD/PatcherLib \
 	$$PWD/StreamParserLib \
@@ -21,6 +22,7 @@ INCLUDEPATH += \
 
 QMAKE_LIBDIR += \
 	$$PWD/Common/$$CONFIG_NAME \
+	$$PWD/CommonQt/$$CONFIG_NAME \
 	$$PWD/Compression/$$CONFIG_NAME \
 	$$PWD/PatcherLib/$$CONFIG_NAME \
 	$$PWD/StreamParserLib/$$CONFIG_NAME \

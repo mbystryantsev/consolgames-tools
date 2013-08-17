@@ -16,6 +16,7 @@ EXTERNALS = $$PWD/../../externals/
 
 INCLUDEPATH += \
 	$$PWD/Common \
+	$$PWD/CommonQt \
 	$$PWD/Compression \
 	$$PWD/TextLib \
 	$$PWD/PatcherLib \
@@ -39,6 +40,7 @@ INCLUDEPATH += \
 
 QMAKE_LIBDIR += \
 	$$PWD/Common/$$CONFIG_NAME \
+	$$PWD/CommonQt/$$CONFIG_NAME \
 	$$PWD/Compression/$$CONFIG_NAME \
 	$$PWD/TextLib/$$CONFIG_NAME \
 	$$PWD/PatcherLib/$$CONFIG_NAME \

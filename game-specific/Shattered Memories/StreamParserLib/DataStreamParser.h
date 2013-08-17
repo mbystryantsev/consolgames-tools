@@ -1,6 +1,7 @@
 #pragma once
 #include <Stream.h>
 #include <string>
+#include <memory>
 
 namespace ShatteredMemories
 {
@@ -65,19 +66,19 @@ private:
 private:
 	const Consolgames::Stream::ByteOrder m_byteOrder;
 
-	static const quint32 s_dataStreamId;
-	static const quint32 s_segmentHeaderSize;
+	static const uint32 s_dataStreamId;
+	static const uint32 s_segmentHeaderSize;
 
 	MetaInfo m_currentMetaInfo;
 	SegmentInfo m_currentSegmentInfo;
 	Consolgames::Stream* m_stream;
 	std::auto_ptr<Consolgames::Stream> m_streamHolder;
-	quint32 m_segmentSize;
-	quint32 m_position;
-	quint32 m_nextItemPosition;
-	quint32 m_currSegmentPosition;
-	quint32 m_nextSegmentPosition;
-	quint32 m_currentItemSize;
+	uint32 m_segmentSize;
+	uint32 m_position;
+	uint32 m_nextItemPosition;
+	uint32 m_currSegmentPosition;
+	uint32 m_nextSegmentPosition;
+	uint32 m_currentItemSize;
 	offset_t m_startStreamPosition;
 	bool m_isFirstSegment;
 };

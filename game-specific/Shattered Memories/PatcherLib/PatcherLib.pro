@@ -10,4 +10,4 @@ HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 PRECOMPILED_HEADER = pch.h
 
-LIBS += core.lib Common.lib Compression.lib WiiStreams.lib
+LIBS += core.lib Common.lib Compression.lib WiiStreams.lib CommonQt.lib

@@ -8,8 +8,8 @@ using namespace Consolgames;
 namespace ShatteredMemories
 {
 
-const quint32 DataStreamParser::s_dataStreamId = 0x716;
-const quint32 DataStreamParser::s_segmentHeaderSize = 12;
+const uint32 DataStreamParser::s_dataStreamId = 0x716;
+const uint32 DataStreamParser::s_segmentHeaderSize = 12;
 
 bool DataStreamParser::MetaInfo::isNull()
 {
@@ -182,7 +182,7 @@ DataStreamParser::MetaInfo DataStreamParser::readMetaInfo()
 	m_stream->setByteOrder(m_byteOrder);
 
 	const int size = m_stream->readUInt32();
-	Q_UNUSED(size);
+	size;
 
 	bool ok = true;
 
