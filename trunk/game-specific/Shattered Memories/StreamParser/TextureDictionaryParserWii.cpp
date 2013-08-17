@@ -83,6 +83,8 @@ bool TextureDictionaryParserWii::fetch()
 		m_stream->readUInt32();
 		m_currentMetaInfo.rasterSize = 0;
 		m_currentMetaInfo.rasterPosition = 0;
+		m_currentMetaInfo.paletteSize = 0;
+		m_currentMetaInfo.palettePosition = 0;
 	}
 	else
 	{
