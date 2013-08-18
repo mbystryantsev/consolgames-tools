@@ -188,24 +188,13 @@ int PS2TextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 uint32 PS2TextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const 
 {
 	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
-
-	width = max(width, 32);
-
-	if (format == PS2Formats::imageFormatIndexed4)
+	
+	if (mipmaps != 1 && mipmaps != mipmapCountDefault)
 	{
-		return (width * height) / 2;
-	}
-	else if (format == PS2Formats::imageFormatIndexed8)
-	{
-		return width * height;
-	}
-	else if (format == PS2Formats::imageFormatRGBA)
-	{
-		return width * height * 4;
+		return 0;
 	}
 
-	ASSERT(!"Unsupported image format!");
-	return 0;
+	return PS2Formats::encodedRasterSize(static_cast<PS2Formats::ImageFormat>(format), width, height);
 }
 
 uint32 PS2TextureCodec::encodedPaletteSize(int format, int paletteFormat) const 

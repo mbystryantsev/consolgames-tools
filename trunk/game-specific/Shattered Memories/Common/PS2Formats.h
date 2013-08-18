@@ -1,4 +1,5 @@
 #pragma once
+#include <core.h>
 
 namespace ShatteredMemories
 {
@@ -21,6 +22,7 @@ public:
 		paletteFormatRGBA = 0
 	};
 
+	static const uint32 encodedRasterSize(ImageFormat format, int width, int height);
 	static const char* imageFormatToString(ImageFormat format);
 	static ImageFormat imageFormatFromString(const char* str);
 	static const char* paletteFormatToString(PaletteFormat format);
