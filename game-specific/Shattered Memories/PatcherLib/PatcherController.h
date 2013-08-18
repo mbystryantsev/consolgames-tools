@@ -23,7 +23,6 @@ public:
 	Q_SLOT void setImagePath(const QString& path);
 	Q_SLOT void addResourcesPath(const QString& path);
 	Q_SLOT void setTempPath(const QString& path);
-	Q_SLOT void setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset);
 	Q_SLOT void requestStop();
 	Q_SLOT void start();
 

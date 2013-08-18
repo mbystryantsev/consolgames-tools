@@ -28,6 +28,7 @@ public:
 	Q_SLOT void reset();
 	Q_SLOT void requestStop();
 	Q_SLOT void setCurrentNotifier(QObject* notifier, double coeff = 0);
+	Q_SLOT void unbindCurrentNotifier();
 
 private:
 	Q_SLOT void onProgressInit(int maxValue);

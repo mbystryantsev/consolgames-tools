@@ -51,6 +51,38 @@ shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& ac
 	return m_primarySource->file(hash, accessor);
 }
 
+std::tr1::shared_ptr<Consolgames::Stream> PatcherTexturesFileSource::fileByName(const std::string& name, FileAccessor& accessor)
+{
+	// TODO: Unify
+
+	if (name == s_fontFilename)
+	{
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
+		if (fontStream.get() == NULL)
+		{
+			return fontStream;
+		}
+
+		DLOG << "Replacing font...";
+		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian));
+	}
+
+	if (m_textureDB.contains(Hash::calc(name.c_str())))
+	{
+		DLOG << "Found textures for file " << name;
+		shared_ptr<Stream> stream = m_primarySource->fileByName(name, accessor);
+		if (stream.get() == NULL)
+		{
+			stream = accessor.open();
+		}
+		ASSERT(stream.get() != NULL);
+
+		return shared_ptr<Stream>(new OnFlyPatchStream(stream, shared_ptr<OnFlyPatchStream::DataSource>(new TextureDataSource(m_texturesPath, m_textureDB.textures(Hash::calc(name.c_str()))))));
+	}
+
+	return m_primarySource->fileByName(name, accessor);
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 struct TextureInfoComparator
