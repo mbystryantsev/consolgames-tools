@@ -2,6 +2,7 @@
 #include <FileSource.h>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace ShatteredMemories
 {
@@ -15,7 +16,6 @@ public:
 	virtual std::tr1::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
 
 private:
-	static std::wstring filename(const std::wstring& path, uint32 hash, const std::wstring& ext = std::wstring());
 	static std::tr1::shared_ptr<Consolgames::Stream> openFile(const std::wstring& path);
 
 private:

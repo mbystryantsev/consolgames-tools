@@ -37,6 +37,8 @@ Archive::Archive(const std::string& filename)
 	: m_opened(false)
 	, m_alignment(s_defaultAlignment)
 	, m_originsMode(false)
+	, m_magicMarker1(0)
+	, m_magicMarker2(0)
 {
 	m_fileStreamHolder.reset(new FileStream(strToWStr(filename), Stream::modeRead));
 	m_stream = m_fileStreamHolder.get();
@@ -69,16 +71,13 @@ bool Archive::open()
 	m_header.signature = m_stream->readInt();
 
 	m_originsMode = (m_header.signature == 0x302E3241); // "A2.0"
-	if (m_originsMode)
-	{
-		DLOG << "Silent Hill Origins archive detected.";
-	}
 
 	m_header.fileCount = m_stream->readInt();
 	m_header.headerSize = m_stream->readInt();
 
 	if (m_originsMode)
 	{
+		DLOG << "Silent Hill Origins archive detected.";
 		m_header.namesPosition = m_stream->readInt();
 		m_header.namesSize = m_stream->readInt();
 	}
@@ -112,6 +111,7 @@ bool Archive::open()
 			ASSERT(nameOffset < namesBuf.size());
 			const char* name = &namesBuf[nameOffset];
 			fileRecord->hash = Hash::calc(name);
+			ASSERT(m_names.find(fileRecord->hash) == m_names.end());
 			m_names[fileRecord->hash] = name;
 		}
 		else
@@ -129,6 +129,9 @@ bool Archive::open()
 			m_alignment = 0x20;
 		}
 	}
+
+	m_magicMarker1 = m_stream->readUInt();
+	m_magicMarker2 = m_stream->readUInt();
 
 	m_opened = true;
 	return true;
@@ -242,12 +245,6 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 {
 	ProgressGuard guard(*this, m_fileRecords.size());
 
-	if (m_originsMode)
-	{
-		DLOG << "Silent Hill Origins archives rebuilding not supported yet.";
-		return false;
-	}
-
 	FileStream file(outFile, FileStream::modeWrite);
 	if (!file.opened())
 	{
@@ -258,7 +255,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	entryList.reserve(m_fileRecords.size());
 
 	const int recordSize = 16;
-	const int headerSize = 16;
+	const int headerSize = m_originsMode ? 20 : 16;
 	const int magicMarkerSize = 16;
 	uint32 position = alignSize(m_fileRecords.size() * recordSize + headerSize + magicMarkerSize);
 
@@ -266,7 +263,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	std::map<uint32, FileRecord*> recordsMap;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
-		DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
+		//DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
 
 		notifyProgress(processed, Hash::toString(record->hash));
 
@@ -299,7 +296,18 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		}
 
 		file.seek(position, Stream::seekSet);
-		shared_ptr<Stream> stream = fileSource.file(record->hash, FileAccessor(m_stream, *record));
+
+		shared_ptr<Stream> stream;
+		
+		if (m_names.find(record->hash) != m_names.end())
+		{
+			stream = fileSource.fileByName(m_names.find(record->hash)->second, FileAccessor(m_stream, *record));
+		}
+		if (stream.get() == NULL)
+		{
+			stream = fileSource.file(record->hash, FileAccessor(m_stream, *record));
+		}
+
 		if (stream.get() == NULL)
 		{
 			m_stream->seek(record->offset, Stream::seekSet);
@@ -346,7 +354,24 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		processed++;
 	}
 
-	if (file.size() != file.size() % m_alignment)
+	// Write SH0 names
+	const uint32 namesPosition = position;
+	uint32 namesSize = 0;
+	if (m_originsMode)
+	{
+		file.seek(namesPosition, Stream::seekSet);
+		for (std::vector<FileRecord>::const_iterator record = entryList.begin(); record != entryList.end(); record++)
+		{
+			ASSERT(m_names.find(record->hash) != m_names.end());
+			const std::string& name = m_names.find(record->hash)->second;
+			file.write(name.c_str(), name.size() + 1);
+			namesSize += name.size() + 1;
+		}
+
+		position = alignSize(position + namesSize);
+	}
+
+	if (!m_originsMode && file.size() != file.size() % m_alignment)
 	{
 		file.seek(alignSize(static_cast<uint32>(file.size())) - 1, Stream::seekSet);
 		file.writeUInt8(0);
@@ -371,19 +396,40 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	file.writeUInt32(m_header.signature);
 	file.writeUInt32(m_header.fileCount);
 	file.writeUInt32(m_header.headerSize);
-	file.writeUInt32(m_header.reserved);
 
+	if (m_originsMode)
+	{
+		file.writeUInt32(namesPosition);
+		file.writeUInt32(namesSize);
+	}
+	else
+	{
+		file.writeUInt32(m_header.reserved);
+	}
+
+	uint32 nameOffset = 0;
 	for (std::vector<FileRecord>::const_iterator record = entryList.begin(); record != entryList.end(); record++)
 	{
-		file.writeUInt32(record->hash);
+		if (m_originsMode)
+		{
+			ASSERT(m_names.find(record->hash) != m_names.end());
+			const std::string& name = m_names.find(record->hash)->second;
+
+			file.writeUInt32(nameOffset);
+
+			nameOffset += name.size() + 1;
+		}
+		else
+		{
+			file.writeUInt32(record->hash);
+		}
 		file.writeUInt32(record->offset);
 		file.writeUInt32(record->storedSize);
 		file.writeUInt32(record->decompressedSize);
 	}
 
-	const uint32 magic = 0x340458;
-	file.writeUInt32(magic);
-	file.writeUInt32(magic);
+	file.writeUInt32(m_magicMarker1);
+	file.writeUInt32(m_magicMarker2);
 
 	return true;
 }

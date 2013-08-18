@@ -9,6 +9,16 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
+static std::wstring filename(const std::wstring& path, const std::string& name)
+{
+	return path + PATH_SEPARATOR_L + wstring(name.begin(), name.end());
+}
+
+static wstring filename(const wstring& path, uint32 hash, const std::string& ext = std::string())
+{
+	return filename(path, Hash::toString(hash) + ext);
+}
+
 DirectoriesFileSource::DirectoriesFileSource(const vector<wstring>& directories)
 	: m_directories(directories)
 {
@@ -19,7 +29,7 @@ shared_ptr<Stream> DirectoriesFileSource::file(uint32 hash, FileAccessor&)
 	for (vector<wstring>::const_iterator dir = m_directories.begin(); dir != m_directories.end(); dir++)
 	{
 		{
-			shared_ptr<Stream> stream = openFile(filename(*dir, hash, L".BIN"));
+			shared_ptr<Stream> stream = openFile(filename(*dir, hash, ".BIN"));
 			if (stream.get() != NULL)
 			{
 				return stream;
@@ -50,12 +60,6 @@ shared_ptr<Stream> DirectoriesFileSource::fileByName(const string& name, FileAcc
 		}
 	}
 	return file(Hash::calc(name.c_str()), accessor);
-}
-
-wstring DirectoriesFileSource::filename(const wstring& path, uint32 hash, const wstring& ext)
-{
-	const string hashStr = Hash::toString(hash);
-	return path + PATH_SEPARATOR_L + wstring(hashStr.begin(), hashStr.end()) + ext;
 }
 
 shared_ptr<Consolgames::Stream> DirectoriesFileSource::openFile(const std::wstring& path)
