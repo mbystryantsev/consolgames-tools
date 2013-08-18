@@ -2,16 +2,20 @@
 #include <Color.h>
 #include "PS2TextureCodec.h"
 #include "WiiTextureCodec.h"
+#include <TexHeader.h>
 #include <FileStream.h>
 #include <core.h>
 #include <pnglite.h>
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <set>
 
 static int s_pngInitCode = png_init(0, 0);
 
 using namespace std;
 using namespace Consolgames;
+using namespace ShatteredMemories;
 
 static void nvImageToRgba(const nv::Image& image, void* result)
 {
@@ -54,62 +58,13 @@ bool savePNG(void* image, int width, int height, const char* filename)
 	return result;
 }
 
-struct TexHeader
-{
-	TexHeader()
-		: platformSignature(0)
-		, formatSignature(0)
-		, width(0)
-		, height(0)
-		, mipmapCount(0)
-		, reserved(0)
-		, rasterSize(0)
-		, paletteSize(0)
-	{
-	}
-
-	static TexHeader read(Stream* stream)
-	{
-		TexHeader header;
-		header.platformSignature = stream->readUInt32();
-		header.formatSignature = stream->readUInt32();
-		header.width = stream->readInt();
-		header.height = stream->readInt();
-		header.mipmapCount = stream->readInt();
-		header.reserved = stream->readUInt32();
-		header.rasterSize = stream->readUInt32();
-		header.paletteSize = stream->readUInt32();
-		return header;
-	}
-
-	void write(Stream* stream) const
-	{
-		stream->writeUInt32(platformSignature);
-		stream->writeUInt32(formatSignature);
-		stream->writeInt(width);
-		stream->writeInt(height);
-		stream->writeInt(mipmapCount);
-		stream->writeUInt32(reserved);
-		stream->writeUInt32(rasterSize);
-		stream->writeUInt32(paletteSize);
-	}
-
-	uint32 platformSignature;
-	uint32 formatSignature;
-	int width;
-	int height;
-	int mipmapCount;
-	uint32 reserved;
-	uint32 rasterSize;
-	uint32 paletteSize;
-};
-
 void printUsage()
 {
 	cout << "Silent Hill: Shattered Memories Texture Converter by consolgames.ru\n"
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
-			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] - encode image into texture\n";
+			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] - encode image into texture\n"
+			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n";
 }
 
 enum Platform
@@ -125,6 +80,7 @@ enum Action
 	actionUndefined = -1,
 	actionEncode,
 	actionDecode,
+	actionParse,
 	actionPrintUsage
 };
 
@@ -133,7 +89,6 @@ struct Arguments
 	Arguments()
 		: action(actionUndefined)
 		, platform(platformUndefined)
-		, format(TextureCodec::formatUndefined)
 		, decodeMipmaps(false)
 		, mipmapCount(0)
 	{
@@ -153,21 +108,47 @@ struct Arguments
 		if (action == actionEncode)
 		{
 			return platform != platformUndefined
-				&& format != TextureCodec::formatUndefined
+				&& !format.empty()
 				&& !inputPath.empty()
 				&& !outputPath.empty();
+		}
+		if (action == actionParse)
+		{
+			return platform != platformUndefined
+				&& !inputPath.empty()
+				&& !outputPath.empty()
+				&& !csvPath.empty();
 		}
 		return false;
 	}
 
 	Action action;
 	Platform platform;
-	TextureCodec::Format format;
+	string format;
 	bool decodeMipmaps;
 	string inputPath;
 	string outputPath;
+	string csvPath;
 	int mipmapCount;
 };
+
+static Platform platformFromString(const char* platformStr)
+{
+	if (strcmp(platformStr, "wii") == 0)
+	{
+		return platformWii;
+	}
+	if (strcmp(platformStr, "ps2") == 0)
+	{
+		return platformPS2;
+	}
+	if (strcmp(platformStr, "psp") == 0)
+	{
+		return platformPSP;
+	}
+
+	return platformUndefined;
+}
 
 Arguments parseArgs(int argc, char *argv[])
 {
@@ -239,42 +220,15 @@ Arguments parseArgs(int argc, char *argv[])
 		}
 
 		const char* platformStr = permanentArgs[0];
-		if (strcmp(platformStr, "wii") == 0)
-		{
-			result.platform = platformWii;
-		}
-		else if (strcmp(platformStr, "ps2") == 0)
-		{
-			result.platform = platformPS2;
-		}
-		else if (strcmp(platformStr, "psp") == 0)
-		{
-			result.platform = platformPSP;
-		}
-		else
+		result.platform = platformFromString(platformStr);
+		
+		if (result.platform == platformUndefined)
 		{
 			cout << "Unknown platform: " << platformStr << endl;
 			return Arguments();
 		}
 
-		const char* formatStr = permanentArgs[1];
-		if (strcmp(formatStr, "indexed4") == 0)
-		{
-			result.format = TextureCodec::formatIndexed4;
-		}
-		else if (strcmp(formatStr, "indexed8") == 0)
-		{
-			result.format = TextureCodec::formatIndexed8;
-		}
-		else if (strcmp(formatStr, "dxt1") == 0)
-		{
-			result.format = TextureCodec::formatDXT1;
-		}
-		else
-		{
-			cout << "Unknown texture format: " << formatStr << endl;
-			return Arguments();
-		}
+		result.format = permanentArgs[1];
 
 		result.inputPath = permanentArgs[2];
 		result.outputPath = permanentArgs[3];
@@ -287,6 +241,29 @@ Arguments parseArgs(int argc, char *argv[])
 		{
 			result.mipmapCount = TextureCodec::mipmapCountDefault;
 		}
+	}
+	else if (strcmp(action, "-p") == 0 || strcmp(action, "--parse") == 0)
+	{
+		result.action = actionParse;
+
+		if (permanentArgs.size() != 4)
+		{
+			cout << "Invalid actual parameters count!" << endl;
+			return Arguments();
+		}
+
+		const char* platformStr = permanentArgs[0];
+		result.platform = platformFromString(platformStr);
+
+		if (result.platform == platformUndefined)
+		{
+			cout << "Unknown platform: " << platformStr << endl;
+			return Arguments();
+		}
+
+		result.csvPath = permanentArgs[1];
+		result.inputPath = permanentArgs[2];
+		result.outputPath = permanentArgs[3];
 	}
 	else
 	{
@@ -313,57 +290,16 @@ auto_ptr<TextureCodec> codecForPlatform(Platform platform)
 	return auto_ptr<TextureCodec>();
 }
 
-enum
-{
-	signatureDXT1     = 0x31545844, // "DXT1"
-	signatureIndexed4 = 0x34584449, // "IDX4"
-	signatureIndexed8 = 0x38584449, // "IDX8"
-
-	signatureWii = 0x00494957, // "WII\0"
-	signaturePS2 = 0x00325350, // "PS2\0"
-	signaturePSP = 0x00505350, // "PSP\0"
-};
-
-TextureCodec::Format textureFormatFromSignature(uint32 signature)
-{
-	switch (signature)
-	{
-	case signatureDXT1:
-		return TextureCodec::formatDXT1;
-	case signatureIndexed4:
-		return TextureCodec::formatIndexed4;
-	case signatureIndexed8:
-		return TextureCodec::formatIndexed8;
-	}
-
-	return TextureCodec::formatUndefined;
-}
-
-uint32 textureFormatToSignature(TextureCodec::Format format)
-{
-	switch (format)
-	{
-	case TextureCodec::formatDXT1:
-		return signatureDXT1;
-	case TextureCodec::formatIndexed4:
-		return signatureIndexed4;
-	case TextureCodec::formatIndexed8:
-		return signatureIndexed8;
-	}
-
-	ASSERT(!"Unknown texture format!");
-	return 0;
-}
 
 Platform platformFromSignature(uint32 signature)
 {
 	switch (signature)
 	{
-	case signatureWii:
+	case TexHeader::signatureWii:
 		return platformWii;
-	case signaturePS2:
+	case TexHeader::signaturePS2:
 		return platformPS2;
-	case signaturePSP:
+	case TexHeader::signaturePSP:
 		return platformPSP;
 	}
 
@@ -375,26 +311,36 @@ uint32 platformToSignature(Platform platform)
 	switch (platform)
 	{
 	case platformWii:
-		return signatureWii;
+		return TexHeader::signatureWii;
 	case platformPS2:
-		return signaturePS2;
+		return TexHeader::signaturePS2;
 	case platformPSP:
-		return signaturePSP;
+		return TexHeader::signaturePSP;
 	}
 
 	ASSERT(!"Unknown platform!");
 	return 0;
 }
 
-bool decodeTexture(const string& inputPath, const string& destPath, bool decodeMipmap)
+static bool checkFormatsAndNotify(TextureCodec* codec, int format, int paletteFormat)
 {
-	FileStream stream(inputPath, Stream::modeRead);
-	if (!stream.opened())
+	if (!codec->isFormatSupported(format))
 	{
-		cout << "Unable to open file!" << endl;
+		cout << "Unsupported texture format (" << codec->textureFormatToString(format) << ", id=" << format << "), supported only dxt1 for Wii and indexed4/indexed8/RGBA for PS2/PSP" << endl;
 		return false;
 	}
 
+	if (!codec->isPaletteFormatSupported(paletteFormat))
+	{
+		cout << "Unsupported palette format (" << codec->paletteFormatToString(paletteFormat) << ", id=" << paletteFormat << "), supported only RGBA palette for PS2/PSP" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool decodeTexture(Stream& stream, const string& destPath, bool decodeMipmap)
+{
 	const TexHeader header = TexHeader::read(&stream);
 
 	const Platform platform = platformFromSignature(header.platformSignature);
@@ -406,10 +352,8 @@ bool decodeTexture(const string& inputPath, const string& destPath, bool decodeM
 		return false;
 	}
 
-	const TextureCodec::Format format = textureFormatFromSignature(header.formatSignature);
-	if (!codec->formatIsSupported(format))
+	if (!checkFormatsAndNotify(codec.get(), header.format, header.paletteFormat))
 	{
-		cout << "Unsupported texture format (" << header.formatSignature << "), supported only dxt1 for Wii and indexed4/indexed8 for PS2/PSP" << endl;
 		return false;
 	}
 
@@ -424,11 +368,11 @@ bool decodeTexture(const string& inputPath, const string& destPath, bool decodeM
 		return false;
 	}
 
-	if (header.rasterSize != codec->encodedRasterSize(format, header.width, header.height, header.mipmapCount))
+	if (header.rasterSize != codec->encodedRasterSize(header.format, header.width, header.height, header.mipmapCount))
 	{
 		cout << "WARNING: Actual and expected raster size are different!" << endl;
 	}
-	if (header.paletteSize != codec->encodedPaletteSize(format))
+	if (header.paletteSize != codec->encodedPaletteSize(header.format, header.paletteFormat))
 	{
 		cout << "WARNING: Actual and expected palette size are different!" << endl;
 	}
@@ -442,7 +386,11 @@ bool decodeTexture(const string& inputPath, const string& destPath, bool decodeM
 		stream.read(&paletteData[0], paletteData.size());
 	}
 
-	codec->decode(&image[0], &rasterData[0], header.width, header.height, format, paletteData.empty() ? NULL : &paletteData[0], asMipmap ? header.mipmapCount : 1);
+	if (!codec->decode(&image[0], &rasterData[0], header.format, header.width, header.height, paletteData.empty() ? NULL : &paletteData[0], header.paletteFormat, asMipmap ? header.mipmapCount : 1))
+	{
+		cout << "Unable to decode image!";
+		return false;
+	}
 
 	if (!savePNG(&image[0], resultWidth, resultHeight, destPath.c_str()))
 	{
@@ -455,7 +403,19 @@ bool decodeTexture(const string& inputPath, const string& destPath, bool decodeM
 	return true;
 }
 
-bool encodeTexture(const string& filename, const string& destFile, Platform platform, TextureCodec::Format format, int mipmaps)
+bool decodeTexture(const string& inputPath, const string& destPath, bool decodeMipmap)
+{
+	FileStream stream(inputPath, Stream::modeRead);
+	if (!stream.opened())
+	{
+		cout << "Unable to open file!" << endl;
+		return false;
+	}
+
+	return decodeTexture(stream, destPath, decodeMipmap);
+}
+
+bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps)
 {
 	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -464,9 +424,16 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 		return false;
 	}
 
-	if (!codec->formatIsSupported(format))
+	const int format = codec->textureFormatFromString(formatStr);
+	const int paletteFormat = codec->bestSuitablePaletteFormatFor(format);
+
+	if (mipmaps == TextureCodec::mipmapCountDefault)
 	{
-		cout << "Unsupported texture format, supported only dxt1 for Wii and indexed4/indexed8 for PS2/PSP" << endl;
+		mipmaps = codec->defaultMipmapCount();
+	}
+
+	if (!checkFormatsAndNotify(codec.get(), format, paletteFormat))
+	{
 		return false;
 	}
 
@@ -483,12 +450,13 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 
 	TexHeader header;
 	header.platformSignature = platformToSignature(platform);
-	header.formatSignature = textureFormatToSignature(format);
+	header.format = format;
+	header.paletteFormat = format;
 	header.width = image.width();
 	header.height = image.height();
 	header.mipmapCount = mipmaps;
 	header.rasterSize = codec->encodedRasterSize(format, image.width(), image.height(), mipmaps);
-	header.paletteSize = codec->encodedPaletteSize(format);
+	header.paletteSize = codec->encodedPaletteSize(format, paletteFormat);
 
 	if (header.rasterSize == 0)
 	{
@@ -498,7 +466,12 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 
 	vector<char> rasterData(header.rasterSize);
 	vector<char> paletteData(header.paletteSize);
-	codec->encode(&rasterData[0], &rgba[0], image.width(), image.height(), format, paletteData.empty() ? NULL : &paletteData[0], mipmaps);
+
+	if (!codec->encode(&rasterData[0], &rgba[0], format, image.width(), image.height(), paletteData.empty() ? NULL : &paletteData[0], paletteFormat, mipmaps))
+	{
+		cout << "Unable to encode image!";
+		return false;
+	}
 
 	FileStream file(destFile, Stream::modeWrite);
 	if (!file.opened())
@@ -520,6 +493,225 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 	return true;
 }
 
+std::string extractPart(const std::string& str, int part)
+{
+	int offset = 0;
+	int index = 0;
+	while (true)
+	{
+		if (index++ == part)
+		{
+			const size_t endOffset = str.find(';', offset);
+			if (endOffset == std::string::npos)
+			{
+				return str.substr(offset);
+			}
+			return str.substr(offset, endOffset - offset);
+		}
+
+		offset = str.find(';', offset);
+		if (offset == std::string::npos)
+		{
+			return std::string();
+		}
+		offset++;
+	}	
+}
+
+bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, bool skipExistingTextures = false)
+{
+	std::auto_ptr<TextureCodec> codec = codecForPlatform(platform);
+	if (codec.get() == NULL)
+	{
+		std::cout << "Unsupported platform!" << std::endl;
+		return false;
+	}
+
+	std::ifstream stream(csvFile.c_str(), ios_base::in);
+	if (!stream.is_open())
+	{
+		std::cout << "Unable to open input csv" << std::endl;
+		return false;
+	}
+
+	char buf[1024];
+
+	stream.getline(buf, sizeof(buf));
+	const std::string header = buf;
+
+	int indexFileName = -1;
+	int indexTextureName = -1;
+	int indexRasterPosition = -1;
+	int indexRasterSize = -1;
+	int indexPalettePosition = -1;
+	int indexPaletteSize = -1;
+	int indexPaletteFormat = -1;
+	int indexWidth = -1;
+	int indexHeight = -1;
+	int indexFormat = -1;
+
+	int index = 0;
+	while (true)
+	{
+		const std::string item = extractPart(header, index);
+
+		if (item.empty())
+		{
+			break;
+		}
+
+		if (item == "fileHash")
+		{
+			ASSERT(indexFileName == -1);
+			indexFileName = index;
+		}
+		else if (item == "fileName")
+		{
+			ASSERT(indexFileName == -1);
+			indexFileName = index;
+		}
+		else if (item == "textureName")
+		{
+			indexTextureName = index;
+		}
+		else if (item == "rasterPosition")
+		{
+			indexRasterPosition = index;
+		}
+		else if (item == "rasterSize")
+		{
+			indexRasterSize = index;
+		}
+		else if (item == "palettePosition")
+		{
+			indexPalettePosition = index;
+		}
+		else if (item == "paletteSize")
+		{
+			indexPaletteSize = index;
+		}
+		else if (item == "paletteFormat")
+		{
+			indexPaletteFormat = index;
+		}
+		else if (item == "width")
+		{
+			indexWidth = index;
+		}
+		else if (item == "height")
+		{
+			indexHeight = index;
+		}
+		else if (item == "format")
+		{
+			indexFormat = index;
+		}
+
+		index++;
+	}
+
+	if (indexFileName == -1
+		|| indexTextureName == -1
+		|| indexRasterPosition == -1
+		|| indexRasterSize == -1
+		|| indexFormat == -1
+		|| indexWidth == -1
+		|| indexHeight == -1
+	)
+	{
+		std::cout << "Invalid csv file!" << std::endl;
+		return false;
+	}
+
+	std::auto_ptr<FileStream> textureStream;
+
+	std::set<std::string> convertedTextures;
+
+	int lineNum = 1;
+	while (!stream.eof())
+	{
+		stream.getline(buf, sizeof(buf));
+		const std::string line = buf;
+
+		const std::string fileName = extractPart(line, indexFileName);
+		const int width = atoi(extractPart(line, indexWidth).c_str());
+		const int height = atoi(extractPart(line, indexHeight).c_str());
+		const std::string name = extractPart(line, indexTextureName);
+		const int format = codec->textureFormatFromString(extractPart(line, indexFormat).c_str());
+		const int paletteFormat = (indexPaletteFormat == -1) ? TextureCodec::paletteFormatNone : codec->paletteFormatFromString(extractPart(line, indexPaletteFormat).c_str());
+		const uint32 rasterPosition = strtoul(extractPart(line, indexRasterPosition).c_str(), NULL, 16);
+		const uint32 rasterSize = strtoul(extractPart(line, indexRasterSize).c_str(), NULL, 16);
+		const uint32 palettePosition = strtoul(extractPart(line, indexPalettePosition).c_str(), NULL, 16);
+		const uint32 paletteSize = strtoul(extractPart(line, indexPaletteSize).c_str(), NULL, 16);
+
+		if (fileName.empty() || width == 0 || height == 0 || name.empty() || format == TextureCodec::textureFormatUndefined || rasterPosition == 0 || rasterSize == 0)
+		{
+			std::cout << "Invalid line " << lineNum << ": " << line << std::endl;
+			continue;
+		}
+
+		cout << "Decoding " << name << "..." << std::endl;
+
+		if (convertedTextures.find(name) != convertedTextures.end())
+		{
+			continue;
+		}
+		convertedTextures.insert(name);
+
+		const std::string outputFile = outputDir + PATH_SEPARATOR_STR + name + ".PNG";
+		if (skipExistingTextures && FileStream::fileExists(outputFile))
+		{
+			continue;
+		}
+
+		if (!checkFormatsAndNotify(codec.get(), format, paletteFormat))
+		{
+			continue;
+		}
+
+		const std::string filename = inputDir + PATH_SEPARATOR_STR + fileName;// + ".BIN";
+		if (textureStream.get() == NULL || textureStream->filename() != std::wstring(filename.begin(), filename.end()))
+		{
+			textureStream.reset(new FileStream(filename, Stream::modeRead));
+		}
+
+		if (!textureStream->opened())
+		{
+			std::cout << "Unable to open file: " << fileName << std::endl;
+			return false;
+		}
+
+		vector<uint8> rasterData(rasterSize);
+		vector<uint8> paletteData(paletteSize);
+		vector<uint8> image(width * height * 4);
+
+		textureStream->seek(rasterPosition, Stream::seekSet);
+		textureStream->read(&rasterData[0], rasterSize);
+
+		if (!paletteData.empty())
+		{
+			textureStream->seek(palettePosition, Stream::seekSet);
+			textureStream->read(&paletteData[0], paletteData.size());
+		}
+
+		if (!codec->decode(&image[0], &rasterData[0], format, width, height, paletteData.empty() ? NULL : &paletteData[0], paletteFormat, 1))
+		{
+			cout << "Unable to decode texture!" << endl;
+			return false;
+		}
+
+		if (!savePNG(&image[0], width, height, outputFile.c_str()))
+		{
+			cout << "Error saving image!" << endl;
+			return false;
+		}
+
+		lineNum++;
+	}
+	
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	const Arguments args = parseArgs(argc, argv);
@@ -535,7 +727,11 @@ int main(int argc, char *argv[])
 	}
 	else if(args.action == actionEncode)
 	{
-		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format, args.mipmapCount) ? 0 : -1;
+		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format.c_str(), args.mipmapCount) ? 0 : -1;
+	}
+	else if(args.action == actionParse)
+	{
+		return extractTextures(args.platform, args.csvPath, args.inputPath, args.outputPath) ? 0 : -1;
 	}
 	else
 	{

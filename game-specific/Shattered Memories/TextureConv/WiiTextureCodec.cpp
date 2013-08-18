@@ -133,6 +133,11 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 	return true;
 }
 
+int WiiTextureCodec::defaultMipmapCount() const 
+{
+	return s_defaultMipmapCount;
+}
+
 const char* WiiTextureCodec::textureFormatToString(int format) const
 {
 	return WiiFormats::imageFormatToString(static_cast<WiiFormats::ImageFormat>(format));

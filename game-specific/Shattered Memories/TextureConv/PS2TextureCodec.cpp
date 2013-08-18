@@ -342,6 +342,11 @@ bool PS2TextureCodec::encode(void* result, const void* image, int format, int wi
 	return false;
 }
 
+int PS2TextureCodec::defaultMipmapCount() const 
+{
+	return 1;
+}
+
 const char* PS2TextureCodec::textureFormatToString(int format) const
 {
 	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
