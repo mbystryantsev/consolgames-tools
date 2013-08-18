@@ -14,12 +14,15 @@ HEADERS = \
 	$$COREDIR/*.h \
 	$$COREDIR/classes/*.h \
 	$$COREDIR/streams/*.h \
+	$$COREDIR/streams/iso/*.h \
 
 SOURCES = \
 	$$COREDIR/classes/*.cpp \
 	$$COREDIR/streams/*.cpp \
+	$$COREDIR/streams/iso/*.cpp \
 
 INCLUDEPATH += \
 	$$COREDIR \
 	$$COREDIR/classes \
 	$$COREDIR/streams \
+	$$COREDIR/streams/iso \

@@ -18,6 +18,7 @@ INCLUDEPATH += \
 	$$PWD/externals/zlib \
 	$$PWD/externals/core \
 	$$PWD/externals/core/streams \
+	$$PWD/externals/core/streams/iso \
 	$$PWD/externals/core/classes \
 
 QMAKE_LIBDIR += \

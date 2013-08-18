@@ -23,6 +23,7 @@ INCLUDEPATH += \
 	$$PWD/StreamParserLib \
 	$$PWD/../../core \
 	$$PWD/../../core/streams \
+	$$PWD/../../core/streams/iso \
 	$$PWD/../../core/classes \
 	$$PWD/../../platform-specific/wii/streams \
 	$$PWD/../../platform-specific/wii/streams/include \
