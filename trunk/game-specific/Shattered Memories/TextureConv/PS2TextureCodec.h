@@ -11,6 +11,7 @@ public:
 	virtual uint32 encodedPaletteSize(int format, int paletteFormat) const override;
 	virtual bool decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode = 1) override;
 	virtual bool encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps = mipmapCountDefault) override;
+	virtual int defaultMipmapCount() const override;
 
 	virtual const char* textureFormatToString(int format) const override;
 	virtual const char* paletteFormatToString(int format) const override;

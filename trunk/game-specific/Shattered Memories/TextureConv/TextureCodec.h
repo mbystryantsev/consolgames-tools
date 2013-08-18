@@ -20,6 +20,7 @@ public:
 	virtual uint32 encodedPaletteSize(int format, int paletteFormat) const = 0;
 	virtual bool decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode = 1) = 0;
 	virtual bool encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps = mipmapCountDefault) = 0;
+	virtual int defaultMipmapCount() const = 0;
 
 	virtual const char* textureFormatToString(int format) const = 0;
 	virtual const char* paletteFormatToString(int format) const = 0;
