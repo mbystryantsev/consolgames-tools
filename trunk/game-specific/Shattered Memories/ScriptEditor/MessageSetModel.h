@@ -8,7 +8,7 @@ struct Category;
 class MessageSetModel : public QAbstractItemModel
 {
 public:
-	MessageSetModel(const ShatteredMemories::MessageSet& messages, QMap<quint32,QString>& authors, QObject* parent = NULL);
+	MessageSetModel(const ShatteredMemories::MessageSet& messages, const QMap<quint32,QString>& authors, QObject* parent = NULL);
 
 	// QAbstractItemModel
 	virtual int columnCount(const QModelIndex& parent) const override;
@@ -54,7 +54,7 @@ public:
 private:
 	const ShatteredMemories::MessageSet& m_messages;
 	const ShatteredMemories::MessageSet* m_sourceMessages;
-	QMap<quint32, QString>& m_authors;
+	const QMap<quint32, QString>& m_authors;
 	QList<quint32> m_categoryHashes;
 	QSet<quint32> m_categorizedHashes;
 	const QMap<quint32, QString>* m_comments;

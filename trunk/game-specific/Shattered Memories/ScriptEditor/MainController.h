@@ -66,7 +66,7 @@ private:
 	Q_SLOT void onFilterChanged(const QString& pattern);
 	Q_SLOT void onCommentChanged(const QString& text, quint32 hash);
 	Q_SLOT void onTagsChanged(const QStringList& text, quint32 hash);
-	Q_SLOT void updateTranslationStatistics(quint32 hash, const QString& changedText);
+	Q_SLOT void updateTranslationStatistics(quint32 hash, const QString& changedText, const QStringList& changedTags);
 	void decreaseTranslatedCount(quint32 hash);
 	void increaseTranslatedCount(quint32 hash);
 	void increaseTranslatedCount(quint32 hash, const Category& category, int value);

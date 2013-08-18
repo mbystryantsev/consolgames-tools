@@ -8,7 +8,7 @@ using namespace ShatteredMemories;
 
 LOG_CATEGORY("ScriptEditor.MessageSetModel");
 
-MessageSetModel::MessageSetModel(const MessageSet& messages, QMap<quint32,QString>& authors, QObject* parent)
+MessageSetModel::MessageSetModel(const MessageSet& messages, const QMap<quint32,QString>& authors, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_messages(messages)
 	, m_sourceMessages(NULL)
@@ -69,13 +69,15 @@ QVariant MessageSetModel::data(const QModelIndex& index, int role) const
 		}
 		if (m_sourceMessages != NULL)
 		{
-			if (m_sourceMessages->messages.contains(hash))
+			const bool noTrTag = (m_tags != NULL && m_tags->contains(hash) && m_tags->value(hash).contains("notr"));
+
+			if (!noTrTag && m_sourceMessages->messages.contains(hash))
 			{
 				const QString& message = m_messages.messages[hash].text;
 				const QString& sourceMessage = m_sourceMessages->messages[hash].text;
 				if (sourceMessage == message && !message.trimmed().isEmpty())
 				{
-					return QColor(QColor(255, 220, 220));
+					return QColor(255, 220, 220);
 				}
 			}
 		}
