@@ -13,14 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ISOFILE_H
-#define __ISOFILE_H
+// TODO: Remove this class
 
+#pragma once
 #include "IsoFileDescriptor.h"
 #include "SectorSource.h"
-#include "Stream.h"
+#include <Stream.h>
 
-class IsoFile: public Consolgames::IFileStream
+namespace Consolgames
+{
+
+class IsoFile
 {
 public:
 	static const int sectorLength = 2048;
@@ -33,7 +36,7 @@ protected:
 	offset_t m_maxOffset;
 
 	int m_currentSectorNumber;
-	u8	m_currentSector[sectorLength];
+	uint8	m_currentSector[sectorLength];
 	offset_t m_sectorOffset;
 
 public:
@@ -42,27 +45,24 @@ public:
 	IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry);
 	virtual ~IsoFile() throw();
 
-	offset_t seek(offset_t offset);
-	virtual offset_t seek(offset_t offset, SeekOrigin origin) override;
+	offset_t seek(offset_t absoffset);
+	offset_t seek(offset_t offset, Stream::SeekOrigin origin);
 	void reset();
 
-	virtual offset_t skip(offset_t n);
-	virtual offset_t tell() const override;
-	virtual bool eof() const override;
-
-	virtual largesize_t size() const override;
+	offset_t skip(largesize_t n);
+	offset_t position() const;
+	largesize_t size() const;
+	bool eof() const;
 
 	const IsoFileDescriptor& entry() const;
 
-	u8	 readByte();
-	virtual largesize_t read(void* dest, largesize_t len) override;
-	std::string readLine();
+	uint8 readByte();
+	largesize_t read(void* dest, largesize_t len);
 
 protected:
 	void makeDataAvailable();
-	size_t  internalRead(void* dest, offset_t off, largesize_t len);
+	largesize_t internalRead(void* dest, offset_t off, largesize_t len);
 	void init();
 };
 
-#endif /* __ISOFILE_H */
-
+}

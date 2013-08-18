@@ -64,5 +64,5 @@ public:
 
 	virtual bool readSector(unsigned char* buffer, int lba);
 
-	virtual int  sectorCount();
+	virtual int  getNumSectors();
 };

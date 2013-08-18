@@ -13,16 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SECTORSOURCE_H
-#define __SECTORSOURCE_H
+#pragma once
+#include <core.h>
+
+namespace Consolgames
+{
 
 class SectorSource
 {
 public:
-	virtual int sectorCount() const = 0;
-	virtual bool readSector(void* buffer, int lba) = 0;
-	virtual ~SectorSource() = 0;
+	virtual int  sectorCount() const = 0;
+	virtual bool readSector(uint8* buffer, int lba) = 0;
+	virtual ~SectorSource(){}
 };
 
-#endif /* __SECTORSOURCE_H */
+}
 

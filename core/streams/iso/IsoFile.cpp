@@ -12,14 +12,16 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
-#include "IsoFS.h"
+#include "IsoDirectory.h"
+#include "IsoFileDescriptor.h"
 #include "IsoFile.h"
 #include "limits.h"
 #include <memory>
 #include <algorithm>
 
+namespace Consolgames
+{
+	
 IsoFile::IsoFile(SectorSource& reader, const std::string& filename)
 	: m_internalReader(reader)
 	, m_fileEntry(IsoDirectory(reader).findFile(filename))
@@ -43,12 +45,12 @@ IsoFile::IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry)
 
 void IsoFile::init()
 {
-	//pxAssertDev( fileEntry.IsFile(), "IsoFile Error: Filename points to a directory." );
+	//ASSERT(m_fileEntry.isFile() && "IsoFile Error: Filename points to a directory.");
 
 	m_currentSectorNumber	= m_fileEntry.lba;
 	m_currentOffset		= 0;
 	m_sectorOffset		= 0;
-	m_maxOffset			= std::max<u32>( 0, m_fileEntry.size );
+	m_maxOffset			= std::max<uint32>( 0, m_fileEntry.size );
 
 	if(m_maxOffset > 0)
 		m_internalReader.readSector(m_currentSector, m_currentSectorNumber);
@@ -80,22 +82,21 @@ offset_t IsoFile::seek(offset_t offset)
 // Returns the new offset in the file.  Out-of-bounds seeks are automatically truncated at 0
 // and fileLength.
 
-offset_t IsoFile::seek(offset_t offset, SeekOrigin origin)
+offset_t IsoFile::seek(offset_t offset, Stream::SeekOrigin origin)
 {
 	switch(origin)
 	{
-		case seekSet:
-			//ASSERT(offset >= 0 && offset <= ULONG_MAX, "Invalid seek position from start.");
+	case Stream::seekSet:
+			ASSERT(offset >= 0 && offset <= ULONG_MAX && "Invalid seek position from start.");
 			return seek(offset);
 
-		case seekCur:
+	case Stream::seekCur:
 			// truncate negative values to zero, and positive values to 4gb
 			return seek(std::min<>(std::max<offset_t>(0, static_cast<offset_t>(m_currentOffset) + offset), static_cast<offset_t>(ULONG_MAX)));
 
-		case seekEnd:
+	case Stream::seekEnd:
 			// truncate negative values to zero, and positive values to 4gb
-			return seek(std::min<>(std::max<offset_t>(0, static_cast<offset_t>(m_fileEntry.size+offset)), static_cast<offset_t>(ULONG_MAX)));	
-			break;
+			return seek(std::min<>(std::max<offset_t>(0, static_cast<offset_t>(m_fileEntry.size+offset)), static_cast<offset_t>(ULONG_MAX)));
 	}
 
 	return 0;
@@ -121,7 +122,7 @@ offset_t IsoFile::skip(largesize_t n)
 	return m_currentOffset - oldOffset;
 }
 
-offset_t IsoFile::tell() const
+offset_t IsoFile::position() const
 {
 	return m_currentOffset;
 }
@@ -142,9 +143,14 @@ void IsoFile::makeDataAvailable()
 	}
 }
 
-u8 IsoFile::readByte()
+uint8 IsoFile::readByte()
 {
 	ASSERT(m_currentOffset < m_maxOffset);
+
+	if(m_currentOffset >= m_maxOffset)
+	{
+		return 0;
+	}
 
 	makeDataAvailable();
 
@@ -154,17 +160,17 @@ u8 IsoFile::readByte()
 }
 
 // Reads data from a single sector at a time.  Reads cannot cross sector boundaries.
-size_t IsoFile::internalRead(void* dest, offset_t off, largesize_t len)
+largesize_t IsoFile::internalRead(void* dest, offset_t off, largesize_t len)
 {
 	if (len > 0)
 	{
-		size_t slen = static_cast<size_t>(len);
+		largesize_t slen = len;
 		if (slen > (m_maxOffset - m_currentOffset))
 		{
 			slen = static_cast<size_t>(m_maxOffset - m_currentOffset);
 		}
 
-		memcpy((u8*)dest + off, m_currentSector + m_sectorOffset, slen);
+		memcpy((uint8*)dest + off, m_currentSector + m_sectorOffset, slen);
 
 		m_sectorOffset += slen;
 		m_currentOffset += slen;
@@ -188,7 +194,7 @@ largesize_t IsoFile::read(void* dest, largesize_t size)
 
 	int totalLength = 0;
 
-	int firstSector = internalRead(dest, off, std::min<>(size, sectorLength - m_sectorOffset));
+	largesize_t firstSector = internalRead(dest, off, std::min<int>(size, sectorLength - m_sectorOffset));
 	off += firstSector;
 	size -= firstSector;
 	totalLength += firstSector;
@@ -214,26 +220,6 @@ largesize_t IsoFile::read(void* dest, largesize_t size)
 	return totalLength;
 }
 
-std::string IsoFile::readLine()
-{
-	std::string str;
-	str.reserve(512);
-
-	while( !eof() )
-	{
-		u8 c = readByte();
-
-		if(c == '\n' || c == '\r' || c == '\0')
-		{
-			break;
-		}
-
-		str += c;
-	}
-
-	return str;
-}
-
 offset_t IsoFile::size() const
 {
 	return m_maxOffset;
@@ -242,5 +228,7 @@ offset_t IsoFile::size() const
 const IsoFileDescriptor& IsoFile::entry() const
 {
 	return m_fileEntry;
+}
+
 }
 	
