@@ -1,5 +1,4 @@
-#ifndef __FILENAME_H
-#define __FILENAME_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -17,8 +16,11 @@ public:
 	std::string dirname() const;
 	std::string basename() const;
 	std::string filename() const;
+	std::string part(int index) const;
 	bool isAbsolute() const;
 	bool isRelative() const;
+	int partCount() const;
+
 private:
 	std::string m_path;
 	std::string m_filename;
@@ -26,9 +28,6 @@ private:
 	std::string m_dirname;
 	std::string m_extension;
 	std::vector<std::string> m_parts;
-	int m_partCount;
 };
 
 }
-
-#endif /* __FILENAME_H */

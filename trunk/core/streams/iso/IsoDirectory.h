@@ -13,11 +13,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ISODIRECTORY_H
-#define __ISODIRECTORY_H
-
+#pragma once
+#include "IsoFileDescriptor.h"
 #include <vector>
 
+namespace Consolgames
+{
+
+class SectorSource;
+	
 enum IsoFSType
 {
 	fsISO9660	= 1,
@@ -27,7 +31,7 @@ enum IsoFSType
 class IsoDirectory 
 {
 public:
-	SectorSource&			m_internalReader;
+	SectorSource& m_internalReader;
 	std::vector<IsoFileDescriptor>	m_files;
 	IsoFSType			m_fstype;
 
@@ -43,10 +47,9 @@ public:
 	bool isFile(const std::string& filePath) const;
 	bool isDir(const std::string& filePath) const;
 	
-	size_t fileSize(const std::string& filePath) const;
+	uint32 fileSize(const std::string& filePath) const;
 
 	IsoFileDescriptor findFile(const std::string& filePath) const;
-    bool findFile(const std::string& filePath, IsoFileDescriptor& info) const;
 	
 protected:
 	const IsoFileDescriptor& entry(const std::string& fileName) const;
@@ -56,4 +59,4 @@ protected:
 	int indexOf(const std::string& fileName) const;
 };
 
-#endif /* __ISODIRECTORY_H */
+}

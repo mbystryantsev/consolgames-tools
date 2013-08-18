@@ -13,49 +13,50 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ISOFILEDESCRIPTOR_H
-#define __ISOFILEDESCRIPTOR_H
-
+#pragma once
+#include <core.h>
 #include <string>
 
-typedef char s8;
-typedef short s16;
-typedef int s32;
-typedef __int64 s64;
-
-
-//typedef __int64 _int64;
-typedef unsigned int u32;
-typedef unsigned short u16;
-typedef unsigned __int64 u64;
-typedef unsigned char u8;
-
+namespace Consolgames
+{
+	
 struct IsoFileDescriptor
 {
+	IsoFileDescriptor();
+	IsoFileDescriptor(const uint8* data, int length = 0);
+
+	static IsoFileDescriptor fromData(const uint8* data, int length = 0);
+	bool isFile() const { return !(flags & 2); }
+	bool isDir() const { return !isFile(); }
+	bool isNull() const {return name.empty();};
+
 	struct FileDate // not 1:1 with iso9660 date struct
 	{
-		s32	year;
-		u8	month;
-		u8	day;
-		u8	hour;
-		u8	minute;
-		u8	second;
-		u8	gmtOffset; // Offset from Greenwich Mean Time in number of 15 min intervals from -48 (West) to + 52 (East)
+		FileDate()
+			: year(0)
+			, month(0)
+			, day(0)
+			, hour(0)
+			, minute(0)
+			, second(0)
+			, gmtOffset(0)
+		{
+		}
+
+		int   year;
+		uint8 month;
+		uint8 day;
+		uint8 hour;
+		uint8 minute;
+		uint8 second;
+		uint8 gmtOffset; // Offset from Greenwich Mean Time in number of 15 min intervals from -48 (West) to + 52 (East)
 
 	} date;
 
-	u32		lba;
-	u32		size;
+	uint32	lba;
+	uint32  size;
 	int		flags;
-	std::string     name;
-
-	IsoFileDescriptor();
-	IsoFileDescriptor(const u8* data, int length);
-	
-	void load(const void* data, int length );
-	
-	bool IsFile() const { return !(flags & 2); }
-	bool IsDir() const { return !IsFile(); }
+	std::string name;
 };
 
-#endif /* __ISOFILEDESCRIPTOR_H */
+}

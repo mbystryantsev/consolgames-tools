@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if 0
 #ifndef __ISOFSCDVD_H
 #define __ISOFSCDVD_H
 
@@ -35,11 +36,10 @@ IsoFSCDVD::IsoFSCDVD()
 
 bool IsoFSCDVD::readSector(unsigned char* buffer, int lba)
 {
-	return false;
 	//return DoCDVDreadSector(buffer,lba,CDVD_MODE_2048)>=0;
 }
 
-int IsoFSCDVD::sectorCount()
+int IsoFSCDVD::getNumSectors()
 {
 /*
 	cdvdTD td;
@@ -54,3 +54,4 @@ IsoFSCDVD::~IsoFSCDVD() throw()
 }
 
 #endif /* __ISOFSCDVD_H */
+#endif

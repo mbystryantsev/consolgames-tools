@@ -1,4 +1,5 @@
 #include "PathInfo.h"
+#include <core.h>
 
 namespace Consolgames
 {
@@ -50,6 +51,11 @@ std::string PathInfo::filename() const
 	return m_filename;
 }
 
+std::string PathInfo::part(int index) const
+{
+	return m_parts[index];
+}
+
 std::string PathInfo::basename() const
 {
 	return m_basename;
@@ -73,6 +79,16 @@ bool PathInfo::isAbsolute() const
 bool PathInfo::isRelative() const
 {
 	return !isAbsolute();
+}
+
+int PathInfo::partCount() const
+{
+	return m_parts.size();
+}
+
+std::string PathInfo::path() const
+{
+	return m_path;
 }
 
 }
