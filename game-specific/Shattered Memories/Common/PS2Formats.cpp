@@ -4,6 +4,24 @@
 namespace ShatteredMemories
 {
 
+const uint32 PS2Formats::encodedRasterSize(ImageFormat format, int width, int height)
+{
+	if (format == imageFormatIndexed4)
+	{
+		return max(32, width) * height / 2;
+	}
+	if (format == imageFormatIndexed8)
+	{
+		return max(16, width) * height;
+	}
+	if (format == imageFormatRGBA)
+	{
+		return width * height * 4;
+	}
+
+	return 0;
+}
+
 const char* PS2Formats::imageFormatToString(ImageFormat format)
 {
 	switch (format)
