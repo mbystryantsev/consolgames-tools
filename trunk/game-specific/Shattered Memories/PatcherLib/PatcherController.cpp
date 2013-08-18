@@ -88,12 +88,6 @@ void PatcherController::setTempPath(const QString& path)
 	VERIFY(QMetaObject::invokeMethod(m_worker, "setTempPath", Q_ARG(const QString&, path)));
 }
 
-void PatcherController::setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset)
-{
-	ASSERT(!m_workerThread.isRunning());
-	VERIFY(QMetaObject::invokeMethod(m_worker, "setExecutableInfo", Q_ARG(const QString&, executableName), Q_ARG(quint32, bootArcOffset), Q_ARG(quint32, headersOffset)));
-}
-
 void PatcherController::setCheckArchives(bool check)
 {
 	m_checkArchivesInImage = check;

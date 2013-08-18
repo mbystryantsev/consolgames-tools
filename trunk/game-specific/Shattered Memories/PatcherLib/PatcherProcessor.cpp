@@ -3,14 +3,16 @@
 #include "PatcherTexturesFileSource.h"
 #include "EmbededResourceInfo.h"
 #include "ArchiveProgressNotifier.h"
-#include "WiiImageProgressNotifier.h"
 #include "CheckingProgressNotifier.h"
+#include "WiiDiscImage.h"
+#include "IsoDiscImage.h"
 #include <Archive.h>
 #include <PartStream.h>
 #include <QtFileStream.h>
 #include <WiiFileStream.h>
 #include <QStringList>
 #include <QDir>
+#include <QSettings>
 
 using namespace Consolgames;
 using namespace std;
@@ -19,24 +21,132 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
+static std::auto_ptr<DiscImage> imageForPlatform(PatcherProcessor::Platform platform)
+{
+	switch (platform)
+	{
+	case PatcherProcessor::platformWii:
+		return std::auto_ptr<DiscImage>(new WiiDiscImage());
+	case PatcherProcessor::platformPS2:
+	case PatcherProcessor::platformPSP:
+		return std::auto_ptr<DiscImage>(new IsoDiscImage());
+	}
+
+	ASSERT(!"Invalid platform!");
+	return std::auto_ptr<DiscImage>();
+}
+
+static QString embededArcNameForGame(PatcherProcessor::GameId game)
+{
+	return (game == PatcherProcessor::gameShatteredMemories ? "boot.arc" : "Embeded.arc");
+}
+
+static QString mainArcNameForGame(PatcherProcessor::GameId game)
+{
+	return (game == PatcherProcessor::gameShatteredMemories ? "boot.arc" : "SH.arc");
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 PatcherProcessor::PatcherProcessor()
 	: m_errorCode(NoError)
 {
 }
 
+bool PatcherProcessor::init(const QString& manifestPath)
+{
+	if (!QFileInfo(manifestPath).exists())
+	{
+		m_errorCode = Init_UnableToLoadManifest;
+		m_errorData = manifestPath;
+		return false;
+	}
+
+	QSettings manifest(manifestPath, QSettings::IniFormat);
+
+	if (!manifest.contains("platform")
+		|| !manifest.contains("game")
+		|| !manifest.contains("discId")
+		|| !manifest.contains("executablePath")
+		|| !manifest.contains("embededArcOffset"))
+	{
+		m_errorCode = Init_InvalidManifest;
+		return false;
+	}
+
+	const QString plarformName = manifest.value("platform").toString();
+	if (plarformName == "wii")
+	{
+		m_info.platform = platformWii;
+	}
+	else if (plarformName == "ps2")
+	{
+		m_info.platform = platformPS2;
+	}
+	else if (plarformName == "psp")
+	{
+		m_info.platform = platformWii;
+	}
+	else
+	{
+		m_errorCode = Init_InvalidPlatform;
+		m_errorData = plarformName;
+		return false;
+	}
+
+	const QString gameName = manifest.value("game").toString();
+	if (gameName == "memories")
+	{
+		m_info.game = gameShatteredMemories;
+	}
+	else if (gameName == "origins")
+	{
+		m_info.game = gameOrigins;
+	}
+	else
+	{
+		m_errorCode = Init_InvalidGame;
+		m_errorData = gameName;
+		return false;
+	}
+
+	m_info.discId = manifest.value("discId").toByteArray();
+	m_info.executablePath = manifest.value("executablePath").toString();
+	m_info.embededArcOffset = manifest.value("embededArcOffset").toString().toUInt(NULL, 16);
+	m_info.headersOffset = manifest.value("arcHeadersOffset").toString().toUInt(NULL, 16);
+
+	if (m_info.discId.isEmpty() || m_info.executablePath.isEmpty() || m_info.embededArcOffset == 0 || (m_info.game == gameShatteredMemories && m_info.headersOffset == 0))
+	{
+		m_errorCode = Init_InvalidManifest;
+		return false;
+	}
+
+	return true;
+}
+
 bool PatcherProcessor::openImage(const QString& path)
 {
-	if (!m_image.open(path.toStdWString(), Stream::modeReadWrite))
+	m_image = imageForPlatform(m_info.platform);
+
+	if (m_image.get() == NULL)
 	{
-		m_errorCode = Open_UnableToOpenImage;
 		return false;
 	}
-	if (m_image.discId() != "SHLPA4")
+
+	if (!m_image->open(path.toStdWString(), Stream::modeReadWrite))
+	{
+		m_errorCode = Open_UnableToCreateImageFormPlatform;
+		m_errorData = QString::number(m_info.platform);
+		return false;
+	}
+
+	if (QByteArray(m_image->discId().c_str()) != m_info.discId)
 	{
 		m_errorCode = Open_InvalidDiscId;
-		m_errorData = QString::fromStdString(m_image.discId());
+		m_errorData = QString("%1;%2").arg(QString::fromStdString(m_image->discId())).arg(QString::fromUtf8(m_info.discId.constData()));
 		return false;
 	}
+
 	return true;
 }
 
@@ -58,13 +168,16 @@ static Archive::MergeMap loadMergeMap(const QString& path)
 			const quint32 destHash = stream.readUInt();
 			map[sourceHash] = destHash;
 		}
-
+	}
+	else
+	{
+		DLOG << "NOTICE: Merge map is not present";
 	}
 
 	return map;
 }
 
-bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList& resourcesPaths, const ExecutableInfo& executableInfo)
+bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList& resourcesPaths)
 {
 	const CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	const QDir outDir(outPath);
@@ -88,12 +201,14 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 	PatcherDirectoriesFileSource arcDirectoriesFileSource(resourcesPaths);
 	PatcherTexturesFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB);
 
-	DLOG << "Rebuilding UI.arc...";
+	if (m_info.game == gameShatteredMemories)
 	{
+		DLOG << "Rebuilding UI.arc...";
+
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.04);
 
-		auto_ptr<Stream> pakStream(m_image.openFile("igc.arc", Stream::modeRead));
+		auto_ptr<Stream> pakStream(m_image->openFile("igc.arc", Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
@@ -137,70 +252,74 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		}
 	}
 
-	DLOG << "Rebuilding boot.arc...";
+	const QString embededArcName = embededArcNameForGame(m_info.game);
+
+	DLOG << "Rebuilding " << embededArcName << "...";
 	{
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.01);
 
-		auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
+		auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
-			m_errorData = executableInfo.executablePath;
+			m_errorData = m_info.executablePath;
 			return false;
 		}
 
-		if (executableStream->seek(executableInfo.bootArcOffset, Stream::seekSet) != executableInfo.bootArcOffset)
+		if (executableStream->seek(m_info.embededArcOffset, Stream::seekSet) != m_info.embededArcOffset)
 		{
 			m_errorCode = RebuildArchives_UnableToSeekInExecutable;
-			m_errorData = QString::number(executableInfo.bootArcOffset, 16);
+			m_errorData = QString::number(m_info.embededArcOffset, 16);
 			return false;
 		}
 
-		const EmbededResourceInfo bootArcInfo = EmbededResourceInfo::parse(executableStream.get());
-		if (bootArcInfo.isNull())
+		const EmbededResourceInfo embededArcInfo = EmbededResourceInfo::parse(executableStream.get());
+		if (embededArcInfo.isNull())
 		{
 			m_errorCode = RebuildArchives_UnableToParseEmbededResource;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		if (bootArcInfo.contentSize > bootArcInfo.streamSizeLeft - EmbededResourceInfo::s_headerSize)
+		if (embededArcInfo.contentSize > embededArcInfo.streamSizeLeft - EmbededResourceInfo::s_headerSize)
 		{
 			m_errorCode = RebuildArchives_InvalidBootArcSize;
-			m_errorData = QString::number(bootArcInfo.contentSize, 16);
+			m_errorData = QString::number(embededArcInfo.contentSize, 16);
 			return false;
 		}
 
-		PartStream executableSegmentStream(executableStream.get(), executableStream->position(), bootArcInfo.contentSize);
-		Archive bootArc(&executableSegmentStream);
-		if (!bootArc.open())
+		PartStream executableSegmentStream(executableStream.get(), executableStream->position(), embededArcInfo.contentSize);
+		Archive embededArc(&executableSegmentStream);
+		if (!embededArc.open())
 		{
 			m_errorCode = RebuildArchives_UnableToOpenArchive;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		bootArc.addProgressListener(&listener);
-		const QString filename = outDir.absoluteFilePath("boot.arc");
-		if (!bootArc.rebuild(filename.toStdWString(), arcTexturesFileSource, mergeMap))
+		embededArc.addProgressListener(&listener);
+		const QString filename = outDir.absoluteFilePath(embededArcName);
+		if (!embededArc.rebuild(filename.toStdWString(), arcTexturesFileSource, mergeMap))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
-			m_errorData = "ui.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 	}
 
-	DLOG << "Rebuilding data.arc...";
+	const QString mainArcName = mainArcNameForGame(m_info.game);
+
+	DLOG << "Rebuilding " << mainArcName << "...";
 	{
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener);
 
-		auto_ptr<Stream> pakStream(m_image.openFile("data.arc", Stream::modeRead));
+		auto_ptr<Stream> pakStream(m_image->openFile(mainArcName.toStdString(), Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
@@ -208,16 +327,16 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		if (!arc.open())
 		{
 			m_errorCode = RebuildArchives_UnableToOpenArchive;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
 		arc.addProgressListener(&listener);
-		const QString filename = outDir.absoluteFilePath("data.arc");
+		const QString filename = outDir.absoluteFilePath(mainArcName);
 		if (!arc.rebuild(filename.toStdWString(), arcTexturesFileSource, mergeMap))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 	}
@@ -227,75 +346,77 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 bool PatcherProcessor::checkImage()
 {
 	CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
-	WiiImageProgressNotifier listener;
-	m_image.setProgressHandler(&listener);
-	m_progressNotifier.setCurrentNotifier(&listener);
+	m_progressNotifier.setCurrentNotifier(m_image->progressNotifier());
 
-	if (!m_image.checkPartition(m_image.dataPartition()))
+	if (!m_image->checkImage())
 	{
 		m_errorCode = CheckImage_Failed;
-		m_errorData = QString::fromStdString(m_image.lastErrorData());
+		m_errorData = QString::fromStdString(m_image->lastErrorData());
 		return false;
 	}
 
 	return true;
 }
 
-bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableInfo& executableInfo)
+bool PatcherProcessor::replaceArchives(const QString& arcPath)
 {
 	const CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	const QDir dir(arcPath);
 
-	auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
+	auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 	if (executableStream.get() == NULL)
 	{
 		m_errorCode = ReplaceArchives_UnableToOpenExecutable;
-		m_errorData = executableInfo.executablePath;
+		m_errorData = m_info.executablePath;
 		return false;
 	}
 
-	DLOG << "Replacing boot.arc...";
-	{
-		m_image.setProgressHandler(NULL);
+	const QString embededArcName = embededArcNameForGame(m_info.game);
 
-		executableStream->seek(executableInfo.bootArcOffset, Stream::seekSet);
+	DLOG << "Replacing " << embededArcName << "...";
+	{
+		m_progressNotifier.unbindCurrentNotifier();
+
+		executableStream->seek(m_info.embededArcOffset, Stream::seekSet);
 		const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
 		if (info.isNull())
 		{
 			m_errorCode = ReplaceArchives_UnableToParseEmbededResource;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		QtFileStream stream(dir.absoluteFilePath("boot.arc"), QIODevice::ReadOnly);
+		QtFileStream stream(dir.absoluteFilePath(embededArcName), QIODevice::ReadOnly);
 		if (!stream.opened())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
 		if (stream.size() > info.streamSizeLeft - EmbededResourceInfo::s_headerSize)
 		{
 			m_errorCode = ReplaceArchives_InputArcFileTooBig;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
 		if (executableStream->writeStream(&stream, stream.size()) != stream.size())
 		{
 			m_errorCode = ReplaceArchives_UnableToWriteFile;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		executableStream->seek(executableInfo.bootArcOffset + EmbededResourceInfo::s_contentSizeOffset, Stream::seekSet);
+		executableStream->seek(m_info.embededArcOffset + EmbededResourceInfo::s_contentSizeOffset, Stream::seekSet);
 		executableStream->writeUInt32(stream.size());
 	}
 
-	DLOG << "Replacing ui.arc...";
+	if (m_info.game == gameShatteredMemories)
 	{
-		auto_ptr<Stream> arcStream(m_image.openFile("igc.arc", Stream::modeReadWrite));
+		DLOG << "Replacing ui.arc...";
+
+		auto_ptr<Stream> arcStream(m_image->openFile("igc.arc", Stream::modeReadWrite));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
@@ -350,121 +471,129 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath, const ExecutableI
 		}
 	}
 
-	executableStream->seek(executableInfo.headersOffset, Stream::seekSet);
+	executableStream->seek(m_info.headersOffset, Stream::seekSet);
 
-	DLOG << "Replacing data.arc...";
+	const QString mainArcName = mainArcNameForGame(m_info.game);
+
+	DLOG << "Replacing " << mainArcName << "...";
 	{
-		WiiImageProgressNotifier listener;
-		m_image.setProgressHandler(&listener);
-		m_progressNotifier.setCurrentNotifier(&listener);
+		m_progressNotifier.setCurrentNotifier(m_image->progressNotifier());
 
-		Tree<FileInfo>::Node* fileRecord = m_image.findFile("data.arc");
-		if (fileRecord == NULL)
+		const DiscImage::FileInfo fileRecord = m_image->findFile(mainArcName.toStdString());
+		if (fileRecord.isNull())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
-		QtFileStream stream(dir.absoluteFilePath("data.arc"), QIODevice::ReadOnly);
+		QtFileStream stream(dir.absoluteFilePath(mainArcName), QIODevice::ReadOnly);
 		if (!stream.opened())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
-		if (stream.size() > fileRecord->data().size)
+		if (stream.size() > fileRecord.size)
 		{
-			DLOG << "Input data.arc too big: " << stream.size() << " bytes / " << fileRecord->data().size << " bytes";
+			DLOG << "Input " << mainArcName << " too big: " << stream.size() << " bytes / " << fileRecord.size << " bytes";
 			m_errorCode = ReplaceArchives_InputArcFileTooBig;
-			m_errorData = QString("data.arc;%2;%3").arg(stream.size()).arg(fileRecord->data().size);
+			m_errorData = QString("%1;%2;%3").arg(mainArcName).arg(stream.size()).arg(fileRecord.size);
 			return false;
 		}
 
-		const bool written = m_image.wii_write_data_file(m_image.dataPartition(), fileRecord->data().offset, &stream, stream.size());
+		const bool written = m_image->writeData(fileRecord.offset, &stream, stream.size());
 		if (!written)
 		{
-			DLOG << "Unable to write data.arc!";
+			DLOG << "Unable to write " << mainArcName << "!";
 			m_errorCode = ReplaceArchives_UnableToWriteFile;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
-		const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
-		if (info.isNull())
+		if (m_info.game == gameShatteredMemories)
 		{
-			m_errorCode = ReplaceArchives_UnableToParseEmbededResource;
-			m_errorData = "data.arc";
-			return false;
-		}
+			const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
+			if (info.isNull())
+			{
+				m_errorCode = ReplaceArchives_UnableToParseEmbededResource;
+				m_errorData = mainArcName;
+				return false;
+			}
 
-		m_image.setProgressHandler(NULL);
-		stream.seek(0, Stream::seekSet);
-		if (executableStream->writeStream(&stream, info.contentSize) != info.contentSize)
-		{
-			m_errorCode = ReplaceArchives_UnableToWriteFile;
-			m_errorData = "header:data.arc";
-			return false;
+			m_progressNotifier.unbindCurrentNotifier();
+			stream.seek(0, Stream::seekSet);
+			if (executableStream->writeStream(&stream, info.contentSize) != info.contentSize)
+			{
+				m_errorCode = ReplaceArchives_UnableToWriteFile;
+				m_errorData = QString("header:%1").arg(mainArcName);
+				return false;
+			}
 		}
 	}
 
 	return true;
 }
 
-bool PatcherProcessor::checkArchives(const QString& arcPath, const ExecutableInfo& executableInfo)
+bool PatcherProcessor::checkArchives(const QString& arcPath)
 {
 	CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	const QDir dir(arcPath);
 
-	DLOG << "Checking boot.arc...";
+
+	const QString embededArcName = embededArcNameForGame(m_info.game);
+
+	DLOG << "Checking " << embededArcName << "...";
 	{
-		auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
+		auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenExecutable;
-			m_errorData = executableInfo.executablePath;
+			m_errorData = m_info.executablePath;
 			return false;
 		}
 
-		VERIFY(executableStream->seek(executableInfo.bootArcOffset, Stream::seekSet) == executableInfo.bootArcOffset);
+		VERIFY(executableStream->seek(m_info.embededArcOffset, Stream::seekSet) == m_info.embededArcOffset);
 
-		const EmbededResourceInfo bootArcInfo = EmbededResourceInfo::parse(executableStream.get());
-		if (bootArcInfo.isNull())
+		const EmbededResourceInfo embededArcInfo = EmbededResourceInfo::parse(executableStream.get());
+		if (embededArcInfo.isNull())
 		{
 			m_errorCode = CheckArchives_UnableToParseEmbededResource;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		if (bootArcInfo.contentSize > bootArcInfo.streamSizeLeft - EmbededResourceInfo::s_headerSize)
+		if (embededArcInfo.contentSize > embededArcInfo.streamSizeLeft - EmbededResourceInfo::s_headerSize)
 		{
 			m_errorCode = CheckArchives_InvalidBootArcSize;
-			m_errorData = QString::number(bootArcInfo.contentSize, 16);
+			m_errorData = QString::number(embededArcInfo.contentSize, 16);
 			return false;
 		}
 
-		PartStream bootArcStream(executableStream.get(), executableStream->position(), bootArcInfo.contentSize);
+		PartStream embededArcStream(executableStream.get(), executableStream->position(), embededArcInfo.contentSize);
 
-		QtFileStream resultArcSream(dir.absoluteFilePath("boot.arc"), QIODevice::ReadOnly);
+		QtFileStream resultArcSream(dir.absoluteFilePath(embededArcName), QIODevice::ReadOnly);
 		if (!resultArcSream.opened())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 
-		if (!compareStreams(&bootArcStream, &resultArcSream, false, 0.01))
+		if (!compareStreams(&embededArcStream, &resultArcSream, false, 0.01))
 		{
 			m_errorCode = CheckArchives_ArcsAreNotEqual;
-			m_errorData = "boot.arc";
+			m_errorData = embededArcName;
 			return false;
 		}
 	}
 
-	DLOG << "Checking ui.arc...";
+	if (m_info.game == gameShatteredMemories)
 	{
-		auto_ptr<Stream> pakStream(m_image.openFile("igc.arc", Stream::modeReadWrite));
+		DLOG << "Checking ui.arc...";
+
+		auto_ptr<Stream> pakStream(m_image->openFile("igc.arc", Stream::modeReadWrite));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;
@@ -504,56 +633,59 @@ bool PatcherProcessor::checkArchives(const QString& arcPath, const ExecutableInf
 		}
 	}
 
-	DLOG << "Checking data.arc...";
+	const QString mainArcName = mainArcNameForGame(m_info.game);
+
+	DLOG << "Checking " << mainArcName << "...";
 	{
-		QtFileStream resultArcSream(dir.absoluteFilePath("data.arc"), QIODevice::ReadOnly);
+		QtFileStream resultArcSream(dir.absoluteFilePath(mainArcName), QIODevice::ReadOnly);
 		if (!resultArcSream.opened())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
-		auto_ptr<Stream> executableStream(m_image.openFile(executableInfo.executablePath.toStdString(), Stream::modeRead));
-		if (executableStream.get() == NULL)
+		if (m_info.game == gameShatteredMemories)
 		{
-			m_errorCode = CheckArchives_UnableToOpenExecutable;
-			m_errorData = executableInfo.executablePath;
-			return false;
+			auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
+			if (executableStream.get() == NULL)
+			{
+				m_errorCode = CheckArchives_UnableToOpenExecutable;
+				m_errorData = m_info.executablePath;
+				return false;
+			}
+
+			VERIFY(executableStream->seek(m_info.headersOffset, Stream::seekSet) == m_info.headersOffset);
+
+			const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
+			if (info.isNull())
+			{
+				m_errorCode = CheckArchives_UnableToParseEmbededResource;
+				m_errorData = mainArcName;
+				return false;
+			}
+
+			PartStream header(executableStream.get(), executableStream->position(), info.contentSize);
+			if (!compareStreams(&header, &resultArcSream, true, 0.01))
+			{
+				m_errorCode = CheckData_FilesAreDifferent;
+				m_errorData = QString("header:%1").arg(mainArcName);
+				return false;
+			}
 		}
 
-		VERIFY(executableStream->seek(executableInfo.headersOffset, Stream::seekSet) == executableInfo.headersOffset);
-
-		const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
-		if (info.isNull())
-		{
-			m_errorCode = CheckArchives_UnableToParseEmbededResource;
-			m_errorData = "data.arc";
-			return false;
-		}
-
-		PartStream header(executableStream.get(), executableStream->position(), info.contentSize);
-		if (!compareStreams(&header, &resultArcSream, true, 0.01))
-		{
-			m_errorCode = CheckData_FilesAreDifferent;
-			m_errorData = "header:data.arc";
-			return false;
-		}
-
-		executableStream.reset();
-
-		auto_ptr<Stream> arcStream(m_image.openFile("data.arc", Stream::modeRead));
+		auto_ptr<Stream> arcStream(m_image->openFile(mainArcName.toStdString(), Stream::modeRead));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 
 		if (!compareStreams(arcStream.get(), &resultArcSream, true))
 		{
 			m_errorCode = CheckData_FilesAreDifferent;
-			m_errorData = "data.arc";
+			m_errorData = mainArcName;
 			return false;
 		}
 	}

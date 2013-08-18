@@ -30,25 +30,26 @@ void PatcherWorker::requestStop()
 
 void PatcherWorker::initialize()
 {
+	CHECK_CALL(m_patcher.init(m_resourcesPaths.first() + "/manifest.ini"));
 	CHECK_CALL(m_patcher.openImage(m_imagePath));
 	emit stepCompleted();
 }
 
 void PatcherWorker::rebuildArchives()
 {
-	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_resourcesPaths, m_executableInfo));
+	CHECK_CALL(m_patcher.rebuildArchives(m_tempPath, m_resourcesPaths));
 	emit stepCompleted();
 }
 
 void PatcherWorker::replaceArchives()
 {
-	CHECK_CALL(m_patcher.replaceArchives(m_tempPath, m_executableInfo));
+	CHECK_CALL(m_patcher.replaceArchives(m_tempPath));
 	emit stepCompleted();
 }
 
 void PatcherWorker::checkArchives()
 {
-	CHECK_CALL(m_patcher.checkArchives(m_tempPath, m_executableInfo));
+	CHECK_CALL(m_patcher.checkArchives(m_tempPath));
 	emit stepCompleted();
 }
 
@@ -86,13 +87,6 @@ void PatcherWorker::setTempPath(const QString& tempPath)
 void PatcherWorker::addResourcesPath(const QString& path)
 {
 	m_resourcesPaths.append(path);
-}
-
-void PatcherWorker::setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset)
-{
-	m_executableInfo.executablePath = executableName;
-	m_executableInfo.bootArcOffset = bootArcOffset;
-	m_executableInfo.headersOffset = headersOffset;
 }
 
 }

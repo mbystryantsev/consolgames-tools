@@ -26,7 +26,6 @@ public:
 	Q_SLOT void setImagePath(const QString& imagePath);
 	Q_SLOT void setTempPath(const QString& tempPath);
 	Q_SLOT void addResourcesPath(const QString& path);
-	Q_SLOT void setExecutableInfo(const QString& executableName, quint32 bootArcOffset, quint32 headersOffset);
 
 private:
 	Q_SIGNAL void stepCompleted();
@@ -44,7 +43,6 @@ private:
 	QString m_imagePath;
 	QString m_tempPath;
 	QStringList m_resourcesPaths;
-	PatcherProcessor::ExecutableInfo m_executableInfo;
 };
 
 }

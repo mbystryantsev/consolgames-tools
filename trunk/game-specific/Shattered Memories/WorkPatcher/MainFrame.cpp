@@ -55,7 +55,6 @@ void MainFrame::onStartPressed()
 	m_patcher.setImagePath(m_ui.imagePath->text());
 	m_patcher.setTempPath(m_ui.tempPath->text());
 	m_patcher.addResourcesPath(m_ui.dataPath->text());
-	m_patcher.setExecutableInfo("main.dol", 0x3FAC80, 0x41AC80);
 
 	m_patcher.setCheckArchives(m_ui.checkArchives->isChecked());
 	m_patcher.setCheckImage(m_ui.checkImage->isChecked());

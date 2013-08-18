@@ -1,5 +1,6 @@
 #pragma once
 #include "CompoundProgressNotifier.h"
+#include "DiscImage.h"
 #include <WiiImage.h>
 #include <QObject>
 
@@ -8,17 +9,39 @@ class QStringList;
 namespace ShatteredMemories
 {
 
+class DiscImage;
+
 class PatcherProcessor : public QObject
 {
 	Q_OBJECT;
 	Q_ENUMS(ErrorCode);
 
 public:
+	enum Platform
+	{
+		platformUndefined = -1,
+		platformWii,
+		platformPS2,
+		platformPSP
+	};
+
+	enum GameId
+	{
+		gameUndefined = -1,
+		gameShatteredMemories,
+		gameOrigins
+	};
+
 	enum ErrorCode
 	{
 		NoError = 0,
+		Init_UnableToLoadManifest = 0x01,
+		Init_InvalidManifest = 0x02,
+		Init_InvalidPlatform = 0x03,
+		Init_InvalidGame = 0x04,
 		Open_UnableToOpenImage = 0x10,
 		Open_InvalidDiscId = 0x11,
+		Open_UnableToCreateImageFormPlatform = 0x12,
 		RebuildArchives_UnableToOpenFileInImage = 0x20,
 		RebuildArchives_UnableToOpenArchive = 0x21,
 		RebuildArchives_UnableToRebuildArchive = 0x22,
@@ -58,25 +81,32 @@ public:
 		PatchMainDol__UnableToWriteFile = 0x76
 	};
 
-	struct ExecutableInfo
+private:
+	struct PatchInfo
 	{
-		ExecutableInfo()
-			: bootArcOffset(0)
+		PatchInfo()
+			: platform(platformUndefined)
+			, game(gameUndefined)
+			, embededArcOffset(0)
 			, headersOffset(0)
 		{
 		}
 
+		Platform platform;
+		GameId game;
+		QByteArray discId;
 		QString executablePath;
-		quint32 bootArcOffset;
+		quint32 embededArcOffset;
 		quint32 headersOffset;
 	};
 
 public:
 	PatcherProcessor();
+	bool init(const QString& manifestPath);
 	bool openImage(const QString& path);
-	bool rebuildArchives(const QString& outPath, const QStringList& resourcesPath, const ExecutableInfo& info);
-	bool replaceArchives(const QString& arcPath, const ExecutableInfo& info);
-	bool checkArchives(const QString& arcPath, const ExecutableInfo& info);
+	bool rebuildArchives(const QString& outPath, const QStringList& resourcesPath);
+	bool replaceArchives(const QString& arcPath);
+	bool checkArchives(const QString& arcPath);
 	bool checkImage();
 
 	int errorCode() const;
@@ -88,7 +118,9 @@ private:
 	bool compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize, double progressCoeff = 0);
 
 private:
-	Consolgames::WiiImage m_image;
+	
+	PatchInfo m_info;
+	std::auto_ptr<DiscImage> m_image; 
 	ErrorCode m_errorCode;
 	QString m_errorData;
 	CompoundProgressNotifier m_progressNotifier;

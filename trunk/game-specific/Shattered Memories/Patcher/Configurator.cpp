@@ -41,7 +41,6 @@ void Configurator::configure(ShatteredMemories::PatcherController& controller) c
 	controller.setCheckImage(m_isDebug);
 	controller.addResourcesPath(QString("%1%2/").arg(s_resourcesPath).arg(platformCode(m_platform)));
 	controller.addResourcesPath(s_resourcesPath);
-	controller.setExecutableInfo("main.dol", 0x3FAC80, 0x41AC80);
 }
 
 Configurator& Configurator::instanse()

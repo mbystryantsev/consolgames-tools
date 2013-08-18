@@ -56,6 +56,15 @@ void CompoundProgressNotifier::setCurrentNotifier(QObject* notifier, double coef
 	}
 }
 
+void CompoundProgressNotifier::unbindCurrentNotifier()
+{
+	if (m_currentNotifier != NULL)
+	{
+		VERIFY(m_currentNotifier->disconnect(this));
+		m_currentNotifier = NULL;
+	}
+}
+
 void CompoundProgressNotifier::onProgressInit(int maxValue)
 {
 	m_currentMax = maxValue;
@@ -79,7 +88,7 @@ void CompoundProgressNotifier::onProgressChanged(int value, const QString& messa
 
 void CompoundProgressNotifier::onProgressFinished()
 {
-	VERIFY(m_currentNotifier->disconnect(this));
+	unbindCurrentNotifier();
 
 	if (m_currentCoeff == 0)
 	{
