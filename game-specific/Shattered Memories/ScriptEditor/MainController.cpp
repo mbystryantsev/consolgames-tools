@@ -17,9 +17,9 @@ static QString contentPathFor(const QString& filename)
 	return QString("../content/common/%1").arg(filename);
 }
 
-static QString langPath(const QString& shortLangId)
+static QString langPath(const QString& shortLangId, const QString& platform)
 {
-	return QString("../content/%1/text/wii").arg(shortLangId);
+	return QString("../content/%1/text/%2").arg(shortLangId).arg(platform);
 }
 
 MainController::MainController(MainFrame* parent)
@@ -270,16 +270,17 @@ void MainController::loadLanguages()
 
 	const QString mainSourceLanguage = settings.value("mainSourceLanguage", "English").toString();
 	const QString mainTargetLanguage = settings.value("mainTargetLanguage", "Russian").toString();
+	const QString platform = settings.value("platform", "wii").toString();
 
 	if (list.isEmpty())
 	{
-		loadMainLanguage("Russian",   langPath("rus"));
-		loadSourceLanguage("English", langPath("eng"));
-		loadSourceLanguage("Japan",   langPath("jap"));
-		loadSourceLanguage("French",  langPath("fre"));
-		loadSourceLanguage("Spanish", langPath("spa"));
-		loadSourceLanguage("German",  langPath("ger"));
-		loadSourceLanguage("Italian", langPath("ita"));
+		loadMainLanguage("Russian",   langPath("rus", platform));
+		loadSourceLanguage("English", langPath("eng", platform));
+		loadSourceLanguage("Japan",   langPath("jap", platform));
+		loadSourceLanguage("French",  langPath("fre", platform));
+		loadSourceLanguage("Spanish", langPath("spa", platform));
+		loadSourceLanguage("German",  langPath("ger", platform));
+		loadSourceLanguage("Italian", langPath("ita", platform));
 		setMainSourceLanguage("English");
 	}
 	else
@@ -288,18 +289,17 @@ void MainController::loadLanguages()
 		{
 			if (lang->second == mainTargetLanguage)
 			{
-				loadMainLanguage(lang->second.toUtf8(), langPath(lang->first));
+				loadMainLanguage(lang->second.toUtf8(), langPath(lang->first, platform));
 			}
 			else
 			{
-				loadSourceLanguage(lang->second.toUtf8(), langPath(lang->first));
+				loadSourceLanguage(lang->second.toUtf8(), langPath(lang->first, platform));
 				if (lang->second == mainSourceLanguage)
 				{
-					setMainSourceLanguage(mainTargetLanguage.toUtf8());
+					setMainSourceLanguage(mainSourceLanguage.toUtf8());
 				}
 			}
 		}
-
 	}
 }
 
@@ -500,7 +500,7 @@ void MainController::onMessageChanged(const QModelIndex& index)
 	emit messageSelected(m_messagesFilterModel->mapToSource(index).internalId());
 }
 
-void MainController::updateTranslationStatistics(quint32 hash, const QString& changedText)
+void MainController::updateTranslationStatistics(quint32 hash, const QString& changedText, const QStringList& changedTags)
 {
 	if (mainSourceLanguageData().messages.contains(hash))
 	{
@@ -525,8 +525,8 @@ void MainController::updateTranslationStatistics(quint32 hash, const QString& ch
 			}
 		}
 
-		const bool prevStateTranslated = (prevText != originalText);
-		const bool currStateTranslated = (currText != originalText);
+		const bool prevStateTranslated = (m_tags.value(hash).contains("notr") || prevText != originalText);
+		const bool currStateTranslated = (changedTags.contains("notr") || currText != originalText);
 
 		if (prevStateTranslated && !currStateTranslated)
 		{
@@ -548,7 +548,7 @@ void MainController::onTextChanged(const QString& text, const QByteArray& langua
 
 	if (hash != 0 && mainLanguageData().messages[hash].text != text)
 	{
-		updateTranslationStatistics(hash, text);
+		updateTranslationStatistics(hash, text, m_tags.value(hash));
 
 		m_scripts[m_mainLanguageId].messages[hash].text = text;
 		m_messagesModel->updateString(hash);
@@ -587,6 +587,8 @@ void MainController::onTagsChanged(const QStringList& tags, quint32 hash)
 	{
 		return;
 	}
+
+	updateTranslationStatistics(hash, mainLanguageData().messages.value(hash).text, tags);
 
 	m_tags[hash] = tags;
 	m_tagsChanged = true;
@@ -679,6 +681,12 @@ int MainController::translatedCount(const QList<quint32>& hashes) const
 	int count = 0;
 	foreach (quint32 hash, hashes)
 	{
+		if (m_tags.contains(hash) && m_tags[hash].contains("notr"))
+		{
+			count++;
+			continue;
+		}
+
 		QString text = mainLanguageData().messages[hash].text;
 		if (Strings::isReference(text))
 		{

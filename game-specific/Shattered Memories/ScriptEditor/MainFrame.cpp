@@ -58,8 +58,14 @@ void MainFrame::initUI()
 	VERIFY(connect(m_ui.tagsWidget, SIGNAL(tagSelected(const QString&)), SLOT(onTagSelected(const QString&))));
 
 	openEditor(m_controller->mainLanguageId());
-	openEditor("English");
-	openEditor("Japan");
+	if (m_controller->languages().contains("English"))
+	{
+		openEditor("English");
+	}
+	if (m_controller->languages().contains("Japan"))
+	{
+		openEditor("Japan");
+	}
 }
 
 void MainFrame::initCategoriesList()
