@@ -1,7 +1,10 @@
 #include "Category.h"
 #include "Strings.h"
+#include <Hash.h>
 #include <QFile>
 #include <QTextStream>
+
+using namespace ShatteredMemories;
 
 namespace
 {
@@ -64,12 +67,20 @@ Category Category::fromFile(const QString& filename)
 	{
 		const QString line = stream.readLine();
 		const QString trimmed = line.trimmed();
-		if (trimmed.isEmpty() || trimmed.startsWith('#'))
+		if (trimmed.isEmpty())
 		{
 			continue;
 		}
 
 		Category& lastCategory = *categoryStack.last().category;
+
+		if (trimmed.startsWith('#'))
+		{
+			const quint32 hash = Hash::calc(trimmed.toStdString().c_str() + 1);
+			lastCategory.messages.append(hash);
+			continue;
+		}
+
 		const quint32 hash = ShatteredMemories::Strings::strToHash(trimmed);
 		if (hash != 0)
 		{
