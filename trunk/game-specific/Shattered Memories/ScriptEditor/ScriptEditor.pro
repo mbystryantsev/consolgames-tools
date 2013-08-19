@@ -7,7 +7,7 @@ HEADERS = $$files(*.h)
 FORMS = $$files(ui/*.ui)
 PRECOMPILED_HEADER = pch.h
 TEMPLATE = app
-LIBS += TextLib.lib
+LIBS += TextLib.lib Common.lib
 RESOURCES = ScriptEditor.qrc
 
 CONFIG(debug, debug|release){
