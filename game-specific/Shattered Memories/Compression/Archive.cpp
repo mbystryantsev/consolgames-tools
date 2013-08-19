@@ -2,7 +2,7 @@
 #include "DecompressionStream.h"
 #include "CompressionStream.h"
 #include "DirectoriesFileSource.h"
-#include "Hash.h"
+#include <Hash.h>
 #include <PartStream.h>
 #include <FileStream.h>
 #include <memory>

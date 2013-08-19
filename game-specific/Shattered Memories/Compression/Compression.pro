@@ -9,4 +9,4 @@ HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 PRECOMPILED_HEADER = pch.h
 
-LIBS += core.lib zlib.lib
+LIBS += core.lib zlib.lib Common.lib
