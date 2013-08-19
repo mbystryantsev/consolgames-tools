@@ -229,11 +229,11 @@ static LanguageList loadLanguageList()
 	return list;
 }
 
-static QVariantMap loadSettings()
+static QVariantMap loadSettings(const QString& filename, const QVariantMap& baseSettings = QVariantMap())
 {
-	QVariantMap settings;
+	QVariantMap settings = baseSettings;
 
-	QFile file("ScriptEditor.config");
+	QFile file(filename);
 
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -266,7 +266,7 @@ static QVariantMap loadSettings()
 void MainController::loadLanguages()
 {
 	const LanguageList list = loadLanguageList();
-	const QVariantMap settings = loadSettings();
+	const QVariantMap settings = loadSettings("ScriptEditor.config", loadSettings(contentPathFor("ScriptEditor.config")));
 
 	const QString mainSourceLanguage = settings.value("mainSourceLanguage", "English").toString();
 	const QString mainTargetLanguage = settings.value("mainTargetLanguage", "Russian").toString();
