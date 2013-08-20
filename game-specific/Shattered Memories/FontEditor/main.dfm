@@ -658,7 +658,7 @@ object MainForm: TMainForm
     Left = 56
     Top = 216
     Bitmap = {
-      494C010114001800140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010114001800180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1470,13 +1470,13 @@ object MainForm: TMainForm
     Top = 88
   end
   object OpenDialog: TOpenDialog
-    FileName = 'FontEUR.kft'
+    FileName = 'Font_EUR.kft'
     Filter = 'Fonts|*.kft|All files (*.*)|*'
     Left = 56
     Top = 120
   end
   object SaveDialog: TSaveDialog
-    Filter = 'Font (*.shf)|*.shf'
+    Filter = 'Fonts|*.kft|All files (*.*)|*'
     Left = 88
     Top = 120
   end
