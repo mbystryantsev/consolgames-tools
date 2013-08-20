@@ -232,12 +232,10 @@ Type
  end;
 
  TStreamHeader = Packed Record
-  Signature: LongWord;
-  Unk1:      Word;
+  Version:   Word;
   Unk2:      Word;
-  Unk3:      LongWord;
-  Family:    Array[0..31] of Char;
-  UnkBlob:   Array[0..31] of Byte;
+  Unk3:      Word;
+  Unk4:      Word;
  end;
 
  THeader  = Packed Record
@@ -279,15 +277,29 @@ Type
    Kerning: SmallInt;
  end;
 
+ Type TSectionInfo = Packed Record
+  Index:      Word;
+  HeaderType: Word;
+  Size:       LongWord;
+  Count:      Word;
+  Unk:        Word;
+ end;
+
  TCLUT = Array[0..15] of Word;
  TFontData = Packed Record
   StreamHeader: TStreamHeader;
+  Family:    Array[0..31] of Char;
+  UnkBlob:   Array[0..31] of Byte;
   RectRecords:  Array of TRectRecord;
   Palette:      Array of LongWord;
   KerningData:  Array of TKerningRecord;
   Header:       THeader;
   UnkData:      Array[0..15] of SmallInt;
   CharData:     Array of TCharHeader;
+
+  RectsSectionInfo: TSectionInfo;
+  KerningSectionInfo: TSectionInfo;
+  PaletteSectionInfo: TSectionInfo;
  end;
 
 var
@@ -319,14 +331,6 @@ end;
 function ReadUInt16(Stream: TStream): Word;
 begin
   Stream.Read(Result, SizeOf(Result));
-end;
-
-Type TSectionInfo = Packed Record
-  Index:      Word;
-  HeaderType: Word;
-  Size:       LongWord;
-  Count:      Word;
-  Unk:        Word;
 end;
 
 function ReadSectionInfo(Stream: TStream): TSectionInfo;
@@ -755,7 +759,7 @@ var Stream: TFileStream; n, i: Integer; Buf: Pointer; P, LP: PByte;
 Size: LongWord;
 begin
 
-  GetMem(Buf, 1024 * 64);
+  GetMem(Buf, 1024 * 1024);
   P := Buf;
   For n := 0 To High(FontData.CharData) do
   begin
@@ -784,26 +788,30 @@ begin
   Stream := TFileStream.Create(FileName, fmCreate);
 
   Stream.Write(FontData.StreamHeader, SizeOf(TStreamHeader));
+  if FontData.StreamHeader.Version = 6 then
+    Stream.Write(FontData.Family, SizeOf(FontData.Family));
+  Stream.Write(FontData.UnkBlob, SizeOf(FontData.UnkBlob));
 
   // Rect records
   Size := Length(FontData.RectRecords) * SizeOf(TRectRecord);
-  WriteSectionInfo(Stream, CreateSectionInfo(1, 1, Size, Length(FontData.RectRecords), 0));
+  WriteSectionInfo(Stream, CreateSectionInfo(1, 1, Size, Length(FontData.RectRecords), FontData.RectsSectionInfo.Unk));
   Stream.Write(FontData.RectRecords[0], Size);
 
   // Palette
   Size := Length(FontData.Palette) * SizeOf(LongWord);
-  WriteSectionInfo(Stream, CreateSectionInfo(2, 1, Size, Length(FontData.Palette), $12));
+  WriteSectionInfo(Stream, CreateSectionInfo(2, 1, Size, Length(FontData.Palette), FontData.PaletteSectionInfo.Unk));
   Stream.Write(FontData.Palette[0], Size);
 
   // Kerning
   SortKerningData(FontData.KerningData);
   Size := Length(FontData.KerningData) * SizeOf(TKerningRecord);
-  WriteSectionInfo(Stream, CreateSectionInfo(3, 1, Size, Length(FontData.KerningData), $12));
+  WriteSectionInfo(Stream, CreateSectionInfo(3, 1, Size, Length(FontData.KerningData), FontData.KerningSectionInfo.Unk));
   Stream.Write(FontData.KerningData[0], Size);
 
   // Main data
   Stream.Write(FontData.Header, 16);
-  Stream.Write(FontData.UnkData, 32);
+  if FontData.StreamHeader.Version = 6 then
+    Stream.Write(FontData.UnkData, 32);
   Stream.Write(FontData.CharData[0], Length(FontData.CharData) * SizeOf(TCharHeader));
   Stream.Write(Buf^, DWord(P) - DWord(Buf));
   Stream.Destroy();
@@ -811,44 +819,6 @@ begin
   FreeMem(Buf);
 
   Saved := True;
-{
-  Count := RoundBy(Length(Chars), 2) div 2;
-  n := 8;
-  Stream := TMemoryStream.Create;
-  Stream.Write(n, 4);
-  n := Count + 8;
-  Stream.Write(n, 4);
-  SetLength(Widths, Count);
-  For n := 0 To Count - 1 do
-  begin
-    Widths[n] := Chars[n*2].W and $F;
-    Widths[n] := Widths[n] or ((Chars[n*2+1].W SHL 4) AND $F0);
-  end;
-  Stream.Write(Widths[0], Length(Widths));
-  Height := RoundBy((RoundBy(Length(Chars), 21) div 21) * cFontHeight, 8);
-  Size := 128 * Height;
-  GetMem(Buf, Size);
-  ZeroMemory(Buf, Size);
-  LoadChars(Buf, True);
-
-  With FontData do
-  begin
-    Stream.Write(TimHeader, SizeOf(TimHeader));
-    Stream.Write(CLUTHeader, CLUTHeader.chSize);
-    ImageHeader.ihHeight := Height;
-    ImageHeader.ihSize := SizeOf(ImageHeader) + Size;
-    Stream.Write(ImageHeader, SizeOf(ImageHeader));
-    Stream.Write(Buf^, Size); 
-  end;
-  FreeMem(Buf);
-
-
- If FontData.Compressed Then
-  Compress(Stream);
- Stream.SaveToFile(FileName);
- Stream.Free;
- Saved:=True;
-}
 end;
 
 procedure TMainForm.FileSaveActionExecute(Sender: TObject);
@@ -1478,20 +1448,31 @@ var Info: TSectionInfo;
 begin
   Stream.Read(FontData.StreamHeader, SizeOf(TStreamHeader));
 
+  if not FontData.StreamHeader.Version in [5, 6] then
+    raise Exception.Create('Unknown version!');
+
+  if FontData.StreamHeader.Version = 6 then
+    Stream.Read(FontData.Family, SizeOf(FontData.Family));
+  Stream.Read(FontData.UnkBlob, SizeOf(FontData.UnkBlob));
+
   // Unknown rect records
   Info := ReadSectionInfo(Stream);
 
   if Info.Size <> Info.Count * SizeOf(TRectRecord) then
     raise Exception.Create('Invalid rect records size!');
 
+  FontData.RectsSectionInfo := Info;
+
   SetLength(FontData.RectRecords, Info.Count);
   Stream.Read(FontData.RectRecords[0], Info.Size);
 
   // Palette
   Info := ReadSectionInfo(Stream);
-                              
+
   if Info.Size <> Info.Count * SizeOf(LongWord) then
     raise Exception.Create('Invalid palette size!');
+
+  FontData.PaletteSectionInfo := Info;
 
   SetLength(FontData.Palette, Info.Count);
   Stream.Read(FontData.Palette[0], Info.Size);
@@ -1501,7 +1482,9 @@ begin
                           
   if Info.Size <> Info.Count * SizeOf(TKerningRecord) then
     raise Exception.Create('Invalid kerning size!');
-              
+
+  FontData.KerningSectionInfo := Info;
+
   SetLength(FontData.KerningData, Info.Count);
   Stream.Read(FontData.KerningData[0], Info.Size);
 
@@ -1522,8 +1505,10 @@ begin
    ReadInitialStream(Stream);
 
    Stream.Read(FontData.Header, SizeOf(THeader));
-   //Stream.Seek(32, soCurrent);
-   Stream.Read(FontData.UnkData, 32); // Shattered Memories
+
+   if FontData.StreamHeader.Version = 6 then
+    Stream.Read(FontData.UnkData, 32); // Shattered Memories
+
    SetLength(Chars, FontData.Header.Count);
    SetLength(FontData.CharData, FontData.Header.Count);
    Stream.Read(FontData.CharData[0], FontData.Header.Count * SizeOf(TCharHeader));
