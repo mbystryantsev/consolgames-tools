@@ -1804,7 +1804,7 @@ begin
     Saved := False;
     CurChar := FontData.Header.Count - 1;
     SetLength(Chars, FontData.Header.Count);
-    FillChar(Chars[FontData.Header.Count], SizeOf(TCharacter), 0);
+    FillChar(Chars[CurChar], SizeOf(TCharacter), 0);
     DrawChars;
     DrawChar;
   end;
