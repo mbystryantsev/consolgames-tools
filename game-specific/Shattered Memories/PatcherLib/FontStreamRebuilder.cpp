@@ -8,9 +8,19 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
-const quint32 FontStreamRebuilder::s_fontStreamSignature = 0x100000;
+const quint32 FontStreamRebuilder::s_fontStreamSignature = 0x1000;
 
-FontStreamRebuilder::FontStreamRebuilder(shared_ptr<Stream> stream, shared_ptr<Stream> fontStream, Stream::ByteOrder byteOrder)
+static QDataStream::ByteOrder qOrder(Stream::ByteOrder order)
+{
+	return (order == Stream::orderBigEndian ? QDataStream::BigEndian : QDataStream::LittleEndian);
+}
+
+static quint32 markerForVersion(FontStreamRebuilder::Version version)
+{
+	return (version == FontStreamRebuilder::versionShatteredMemories ? 0xBC614E : 0x1C020065);
+}
+
+FontStreamRebuilder::FontStreamRebuilder(shared_ptr<Stream> stream, shared_ptr<Stream> fontStream, Stream::ByteOrder byteOrder, Version version)
 	: Stream()
 	, m_stream(stream)
 	, m_fontStream(fontStream)
@@ -21,6 +31,7 @@ FontStreamRebuilder::FontStreamRebuilder(shared_ptr<Stream> stream, shared_ptr<S
 	, m_segmentSizeLeft(0)
 	, m_parser(byteOrder)
 	, m_position(0)
+	, m_version(version)
 {
 	ASSERT(m_stream.get() != NULL);
 	ASSERT(m_fontStream.get() != NULL);
@@ -71,7 +82,7 @@ void FontStreamRebuilder::cacheMetaInfo(const DataStreamParser::SegmentInfo& seg
 	stream << segmentInfo.unk1;
 	stream << segmentInfo.unk2;
 	
-	stream.setByteOrder(m_byteOrder == Stream::orderBigEndian ? QDataStream::BigEndian : QDataStream::LittleEndian);
+	stream.setByteOrder(qOrder(m_byteOrder));
 	
 	stream << metaInfoSize(metaInfo);
 	cacheString(stream, metaInfo.unknown);
@@ -117,26 +128,25 @@ largesize_t FontStreamRebuilder::read(void* buf, largesize_t size)
 		{
 			if (!m_parser.initSegment())
 			{
-				const quint32 pos = position() + 12;
-				quint32 size = 0x1000 - (pos % 0x1000);
-				if (size == 0x1000)
+				if (m_version == versionShatteredMemories)
 				{
-					size = 0;
+					// Finalize stream with stop marker (0, paddingSize, 0)
+					const quint32 pos = position() + 12;
+					const quint32 paddingSize = (0x1000 - (pos % 0x1000)) % 0x1000;
+
+					m_bufferedData.fill(0, paddingSize + 12);
+
+					QByteArray header;
+					{
+						QDataStream stream(&header, QIODevice::WriteOnly);
+						stream.setByteOrder(QDataStream::LittleEndian);
+						stream << 0;
+						stream << paddingSize;
+						stream << 0;
+					}
+
+					std::copy(header.begin(), header.end(), m_bufferedData.begin());
 				}
-
-				m_bufferedData.fill(0, size + 12);
-
-				QByteArray header;
-				{
-					QDataStream stream(&header, QIODevice::WriteOnly);
-					stream.setByteOrder(QDataStream::LittleEndian);
-					stream << 0;
-					stream << size;
-					stream << 0;
-				}
-
-				std::copy(header.begin(), header.end(), m_bufferedData.begin());
-
 
 				m_finalized = true;
 				continue;
@@ -146,19 +156,21 @@ largesize_t FontStreamRebuilder::read(void* buf, largesize_t size)
 			
 			if (metaInfo.typeId == "rwID_KFONT")
 			{
-				segmentInfo.size = metaInfoSize(metaInfo) + sizeof(quint32) + alignedSize(m_fontStream->size()) + sizeof(quint32) * 2;
+				segmentInfo.size = metaInfoSize(metaInfo) + alignedSize(m_fontStream->size()) + sizeof(quint32) * 5;
 				cacheMetaInfo(segmentInfo, metaInfo);
 				{
 					QByteArray data;
 					QDataStream stream(&data, QIODevice::WriteOnly);
 
-					const quint32 size = static_cast<quint32>(m_fontStream->size() + 8);
-					stream.setByteOrder(QDataStream::BigEndian);
-					stream << size;
-					stream << s_fontStreamSignature;
+					const quint32 fontSize = static_cast<quint32>(m_fontStream->size());
+					const quint32 streamSize = fontSize + (m_version == versionShatteredMemories ? 8 : 12);
+					stream.setByteOrder(qOrder(m_byteOrder));
+					stream << streamSize;
 
 					stream.setByteOrder(QDataStream::LittleEndian);
-					stream << size;
+					stream << s_fontStreamSignature;
+					stream << (m_version == versionShatteredMemories ? streamSize : fontSize);
+					stream << markerForVersion(m_version);
 
 					m_bufferedData.append(data);
 				}

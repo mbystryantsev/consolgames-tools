@@ -34,7 +34,8 @@ struct PartInfoRecord
 class PatcherTexturesFileSource : public FileSource
 {
 public:
-	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase);
+	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase,
+		Consolgames::Stream::ByteOrder streamsByteOrder, bool isOrigins);
 
 	virtual std::tr1::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
 	virtual std::tr1::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
@@ -56,12 +57,15 @@ private:
 	};
 
 private:
-	FileSource* m_primarySource;
-	TextureDatabase m_textureDB;
-	QString m_texturesPath;
+	FileSource* const m_primarySource;
+	const TextureDatabase m_textureDB;
+	const QString m_texturesPath;
+	const Consolgames::Stream::ByteOrder m_streamsByteOrder;
+	const bool m_isOrigins;
+	static const std::string s_fontStreamFilename;
 	static const std::string s_fontFilename;
 	static const std::string s_fontFileExt;
-	static const quint32 s_fontFilenameHash;
+	static const quint32 s_fontStreamNameHash;
 };
 
 }

@@ -199,7 +199,8 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 	}
 
 	PatcherDirectoriesFileSource arcDirectoriesFileSource(resourcesPaths);
-	PatcherTexturesFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB);
+	PatcherTexturesFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB,
+		m_info.platform == platformWii ? Stream::orderBigEndian : Stream::orderLittleEndian, m_info.game == gameOrigins);
 
 	if (m_info.game == gameShatteredMemories)
 	{
