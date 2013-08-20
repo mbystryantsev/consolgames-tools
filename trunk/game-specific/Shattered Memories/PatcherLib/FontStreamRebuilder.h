@@ -9,7 +9,14 @@ namespace ShatteredMemories
 class FontStreamRebuilder : public Consolgames::Stream
 {
 public:
-	FontStreamRebuilder(std::tr1::shared_ptr<Consolgames::Stream> stream, std::tr1::shared_ptr<Consolgames::Stream> fontStream, Consolgames::Stream::ByteOrder byteOrder);
+	enum Version
+	{
+		versionOrigins,
+		versionShatteredMemories
+	};
+
+public:
+	FontStreamRebuilder(std::tr1::shared_ptr<Consolgames::Stream> stream, std::tr1::shared_ptr<Consolgames::Stream> fontStream, Consolgames::Stream::ByteOrder byteOrder, Version version);
 
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
@@ -34,6 +41,7 @@ private:
 	DataStreamParser m_parser;
 	const Consolgames::Stream::ByteOrder m_byteOrder;
 	static const quint32 s_fontStreamSignature;
+	const Version m_version;
 };
 
 }

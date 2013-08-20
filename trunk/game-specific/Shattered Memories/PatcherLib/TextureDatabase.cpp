@@ -1,5 +1,6 @@
 #include "TextureDatabase.h"
 #include <CsvReader.h>
+#include <Hash.h>
 
 namespace ShatteredMemories
 {
@@ -15,7 +16,7 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 	CsvReader reader(filename);
 	ASSERT(reader.opened());
 
-	ASSERT(reader.header().contains("fileHash"));
+	ASSERT(reader.header().contains("fileHash") || reader.header().contains("fileName"));
 	ASSERT(reader.header().contains("textureName"));
 	ASSERT(reader.header().contains("width"));
 	ASSERT(reader.header().contains("height"));
@@ -33,12 +34,22 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 
 		TextureInfo info;
 
-		bool ok = false;
-		info.fileHash = values["fileHash"].toUInt(&ok, 16);
-		ASSERT(ok);
+		if (values.contains("fileName"))
+		{
+			const QString name = values["fileName"];
+			info.fileHash = Hash::calc(name.toStdString().c_str());
+		}
+		else
+		{
+			bool ok = false;
+			info.fileHash = values["fileHash"].toUInt(&ok, 16);
+			ASSERT(ok);
+		}
 		
 		info.textureName = values["textureName"];
 
+
+		bool ok = false;
 		info.width = values["width"].toInt(&ok);
 		ASSERT(ok);
 

@@ -10,29 +10,33 @@ using namespace tr1;
 namespace ShatteredMemories
 {
 
-const std::string PatcherTexturesFileSource::s_fontFilename = "FontEUR";
+const std::string PatcherTexturesFileSource::s_fontStreamFilename = "FontEUR";
+const std::string PatcherTexturesFileSource::s_fontFilename = "Font_EUR";
 const std::string PatcherTexturesFileSource::s_fontFileExt = ".kft";
-const quint32 PatcherTexturesFileSource::s_fontFilenameHash = Hash::calc(s_fontFilename.c_str());
+const quint32 PatcherTexturesFileSource::s_fontStreamNameHash = Hash::calc(s_fontStreamFilename.c_str());
 
-PatcherTexturesFileSource::PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase)
+PatcherTexturesFileSource::PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase,
+													 Consolgames::Stream::ByteOrder streamsByteOrder, bool isOrigins)
 	: m_primarySource(primarySource)
 	, m_textureDB(texturesDatabase)
 	, m_texturesPath(texturesPath)
+	, m_streamsByteOrder(streamsByteOrder)
+	, m_isOrigins(isOrigins)
 {
 }
 
 shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& accessor)
 {
-	if (hash == s_fontFilenameHash)
+	if (hash == s_fontStreamNameHash)
 	{
-		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontStreamFilename + s_fontFileExt, accessor);
 		if (fontStream.get() == NULL)
 		{
 			return fontStream;
 		}
 
 		DLOG << "Replacing font...";
-		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian));
+		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, m_streamsByteOrder, m_isOrigins ? FontStreamRebuilder::versionOrigins : FontStreamRebuilder::versionShatteredMemories));
 	}
 
 	if (m_textureDB.contains(hash))
@@ -55,16 +59,16 @@ std::tr1::shared_ptr<Consolgames::Stream> PatcherTexturesFileSource::fileByName(
 {
 	// TODO: Unify
 
-	if (name == s_fontFilename)
+	if (name == s_fontStreamFilename)
 	{
-		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontStreamFilename + s_fontFileExt, accessor);
 		if (fontStream.get() == NULL)
 		{
 			return fontStream;
 		}
 
 		DLOG << "Replacing font...";
-		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian));
+		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian, FontStreamRebuilder::versionShatteredMemories));
 	}
 
 	if (m_textureDB.contains(Hash::calc(name.c_str())))
@@ -141,7 +145,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	ASSERT(stream->opened());
 
 	const int platformSignature = stream->readUInt32();
-	const int formatSignature = stream->readUInt32();
+	const int formatId = stream->readUInt32();
 	const int width = stream->readUInt32();
 	const int height = stream->readUInt32();
 	const int mipmapCount = stream->readUInt32();
@@ -150,7 +154,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	const int paletteSize = stream->readUInt32();
 
 	ASSERT(platformSignature != 0);
-	ASSERT(formatSignature != 0);
+	ASSERT(formatId != -1);
 	ASSERT(width == record.textureInfo.width);
 	ASSERT(height == record.textureInfo.height);
 	ASSERT(mipmapCount >= record.textureInfo.mipmapCount && mipmapCount <= 16);
@@ -159,7 +163,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	ASSERT(rasterSize + paletteSize + 32 == stream->size());
 
 	Q_UNUSED(platformSignature);
-	Q_UNUSED(formatSignature);
+	Q_UNUSED(formatId);
 	Q_UNUSED(width);
 	Q_UNUSED(height);
 	Q_UNUSED(mipmapCount);
