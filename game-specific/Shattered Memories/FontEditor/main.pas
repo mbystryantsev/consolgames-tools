@@ -85,7 +85,6 @@ type
     ToolButton7: TToolButton;
     ToolButton18: TToolButton;
     ToolButton19: TToolButton;
-    SaveTableDialog: TSaveDialog;
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
     OpenBmpDialog: TOpenPictureDialog;
@@ -99,15 +98,11 @@ type
     ToolButton20: TToolButton;
     FileSaveTableAction: TAction;
     N4: TMenuItem;
-    SaveASCITable1: TMenuItem;
     ScrollBar: TScrollBar;
     Help1: TMenuItem;
     About1: TMenuItem;
     FileImportFromRomAction: TAction;
-    N5: TMenuItem;
-    ImportfromFF12ROM1: TMenuItem;
     FileExportToRomAction: TAction;
-    FileExportToRomAction1: TMenuItem;
     EditFontProportiesAction: TAction;
     SaveWidthsAction: TAction;
     SaveWidthsDialog: TSaveDialog;
@@ -119,6 +114,7 @@ type
     EditCharPropertiesAction: TAction;
     EditKerningAction: TAction;
     Kerning1: TMenuItem;
+    PaletteLoadDefaultAction: TAction;
     procedure PaletteSaveActionExecute(Sender: TObject);
     procedure FileOpenActionExecute(Sender: TObject);
     procedure FileSaveActionExecute(Sender: TObject);
@@ -163,11 +159,11 @@ type
     procedure EditFontProportiesActionExecute(Sender: TObject);
     procedure FileNewActionExecute(Sender: TObject);
     procedure SaveWidthsActionExecute(Sender: TObject);
-    procedure DefaultPalette1Click(Sender: TObject);
     procedure EditAddCharActionExecute(Sender: TObject);
     procedure EditCharPropertiesActionExecute(Sender: TObject);
     procedure CharsImageDblClick(Sender: TObject);
     procedure EditKerningActionExecute(Sender: TObject);
+    procedure PaletteLoadDefaultActionExecute(Sender: TObject);
   private
     FFileName: String;
     FSaved: Boolean;
@@ -369,44 +365,6 @@ end;
 Function GetB(V: Word): Byte;
 begin
  Result := ((V and $7FFF) shr 10) shl 3;
-end;
-
-Function Color2GBA(Color: DWord): Word;
-Type
- TBGRZ = Packed Record R, G, B, Z: Byte end;
-begin
- With TBGRZ(Color) do Result := (B shr 3) shl 10 + (G shr 3) shl 5 + R shr 3;
-end;
-
-Function GBA2Color(Color: Word): DWord;
-begin
- Result := GetB(Color) shl 16 + GetG(Color) shl 8 + GetR(Color);
-end;
-
-Procedure GetGBApalette(Var Source, Dest; Count: Integer);
-Var SP: PWord; DP: PCardinal;
-begin
- SP := Addr(Source);
- DP := Addr(Dest);
- While Count > 0 do
- begin
-  DP^ := GBA2Color(SP^);
-  Inc(DP); Inc(SP);
-  Dec(Count);
- end;
-end;
-
-Procedure SetGBApalette(Var Source, Dest; Count: Integer);
-Var SP: PCardinal; DP: PWord; 
-begin
- SP := Addr(Source);
- DP := Addr(Dest);
- While Count > 0 do
- begin
-  DP^ := Color2GBA(SP^);
-  Inc(DP); Inc(SP);
-  Dec(Count);
- end;
 end;
 
 Function RoundBy(Value, R: Integer): Integer;
@@ -687,28 +645,22 @@ end;
 
 
 procedure TMainForm.PaletteSaveActionExecute(Sender: TObject);
-Var F: File; I: Byte; Pal: Array[Byte] of TRGB; GBAPal: Array[0..15] of DWord;
-const cExt: Array[1..2] of String = ('.act', '.rgb');
+Var F: File; I: Byte; Pal: Array[Byte] of TRGB;
 begin
  If SaveActDialog.Execute then
  begin
-  AssignFile(F, ChangeFileExt(SaveActDialog.FileName, cExt[SaveActDialog.FilterIndex]));
+  AssignFile(F, ChangeFileExt(SaveActDialog.FileName, '.act'));
   Rewrite(F, 1);
-  If SaveActDialog.FilterIndex = 1 Then
+
+  FillChar(Pal, SizeOf(Pal), 0);
+  For I := 0 to 15 do
   begin
-    FillChar(Pal, SizeOf(Pal), 0);
-    For I := 0 to 15 do
-    begin
-      Pal[I].R := TRGBA(Palette[I]).R;
-      Pal[I].G := TRGBA(Palette[I]).G;
-      Pal[I].B := TRGBA(Palette[I]).B;
-    end;
-    BlockWrite(F, Pal, SizeOf(Pal));
-  end else
-  begin
-    SetGBAPalette(Palette, GBAPal, 16);
-    BlockWrite(F, GBAPal, 32);
+    Pal[I].R := TRGBA(Palette[I]).R;
+    Pal[I].G := TRGBA(Palette[I]).G;
+    Pal[I].B := TRGBA(Palette[I]).B;
   end;
+
+  BlockWrite(F, Pal, SizeOf(Pal));
   CloseFile(F);
  end;
 end;
@@ -866,36 +818,27 @@ Type
   LensAddress: Integer;
   CharsCount: Integer;
  end;
- TGbaTile = Array[0..7, 0..3] of Byte;
-
-
 
 procedure TMainForm.PaletteLoadActionExecute(Sender: TObject);
 Type
  TPalX = Array[0..15] of TRGB;
-Var F: File; PalX: TPalX; TX: Integer; R: DWord; Col: TRGBA;  GBAPal: Array[0..15] of DWord;
+Var F: File; PalX: TPalX; TX: Integer; R: DWord; Col: TRGBA;
 begin
  If OpenActDialog.Execute then
  begin
   AssignFile(F, OpenActDialog.FileName);
   Reset(F, 1);
-  If RightStr(OpenActDialog.FileName,3)<>'rgb' Then
+ 
+  BlockRead(F, PalX, SizeOf(TPalX), R);
+  For TX := 0 to 15 do With PalX[TX] do
   begin
-    BlockRead(F, PalX, SizeOf(TPalX), R);
-    For TX := 0 to 15 do With PalX[TX] do
-    begin
-      Col.R := R;
-      Col.G := G;
-      Col.B := B;
-      Col.A := 0;
-      Palette[TX] := TColor(Col);
-    end;
-  end else
-  begin
-    BlockRead(F, GBAPal, 32);
-    GetGBApalette(GBAPal,Palette,16);
+    Col.R := R;
+    Col.G := G;
+    Col.B := B;
+    Col.A := 0;
+    Palette[TX] := TColor(Col);
   end;
-  //Saved := False;
+
   UpdateDIBPalette;
   DrawPalette;
  end;
@@ -1122,30 +1065,9 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
-
- //ShowMessage(IntToStr(SizeOf(ShortInt)));
  FSaved := True;
  CharWidth := cCharWidth;
  CharHeight := cCharHeight;
-
- //Palette[$0] := //$448844;
- FillChar(Palette, SizeOf(Palette), 1);
- Palette[$0] := $000000;
- Palette[$1] := $111111;
- Palette[$2] := $222222;
- Palette[$3] := $333333;
- Palette[$4] := $444444;
- Palette[$5] := $555555;
- Palette[$6] := $666666;
- Palette[$7] := $777777;
- Palette[$8] := $888888;
- Palette[$9] := $999999;
- Palette[$A] := $AAAAAA;
- Palette[$B] := $BBBBBB;
- Palette[$C] := $CCCCCC;
- Palette[$D] := $DDDDDD;
- Palette[$E] := $EEEEEE;
- Palette[$F] := $FFFFFF;
 
  DIB1 := TDIB.Create;
  DIB1.PixelFormat := MakeDIBPixelFormat(8, 8, 8);
@@ -1158,8 +1080,9 @@ begin
  DIB2.BitCount := 8;
  DIB2.Width := CharWidth;
  DIB2.Height := CharHeight;
- UpdateDIBPalette;
- DrawPalette;
+
+ PaletteLoadDefaultActionExecute(Sender);
+
  If (ParamCount > 0) and FileExists(ParamStr(1)) then Open(ParamStr(1));
 end;
 
@@ -1770,19 +1693,6 @@ begin
  end;
 end;
 
-procedure TMainForm.DefaultPalette1Click(Sender: TObject);
-begin
- ZeroMemory(@Palette, SizeOf(Palette));
- Palette[0] := 0;
- Palette[1] := $FFFFFF;
- Palette[2] := $A0A0A0;
- Palette[3] := $808080;
- UpdateDIBPalette;
- DrawPalette;
- //DrawChar;
- //DrawChars;
-end;
-
 procedure TMainForm.EditAddCharActionExecute(Sender: TObject);
 begin
   Inc(FontData.Header.Count);
@@ -1823,6 +1733,31 @@ end;
 procedure TMainForm.EditKerningActionExecute(Sender: TObject);
 begin
   KerningForm.Show();
+end;
+
+procedure TMainForm.PaletteLoadDefaultActionExecute(Sender: TObject);
+begin
+ ZeroMemory(@Palette, SizeOf(Palette));
+
+ Palette[$0] := $000000;
+ Palette[$1] := $111111;
+ Palette[$2] := $222222;
+ Palette[$3] := $333333;
+ Palette[$4] := $444444;
+ Palette[$5] := $555555;
+ Palette[$6] := $666666;
+ Palette[$7] := $777777;
+ Palette[$8] := $888888;
+ Palette[$9] := $999999;
+ Palette[$A] := $AAAAAA;
+ Palette[$B] := $BBBBBB;
+ Palette[$C] := $CCCCCC;
+ Palette[$D] := $DDDDDD;
+ Palette[$E] := $EEEEEE;
+ Palette[$F] := $FFFFFF;
+
+ UpdateDIBPalette;
+ DrawPalette;
 end;
 
 end.
