@@ -92,7 +92,7 @@ begin
   If (Index < 0) or (Index >= FontData.Header.Count) Then Exit;
   DrawCharData(img, Chars[Index], x + Ker, y);
   With FontData.CharData[Index] do
-    Result := WW + ker;
+    Result := W + ker;
 end;
 
 Function GetIndex(const C: WideChar): Integer;
