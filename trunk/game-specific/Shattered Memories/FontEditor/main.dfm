@@ -330,20 +330,8 @@ object MainForm: TMainForm
       object FileSaveAsMenuItem: TMenuItem
         Action = FileSaveAsAction
       end
-      object N5: TMenuItem
-        Caption = '-'
-      end
-      object ImportfromFF12ROM1: TMenuItem
-        Action = FileImportFromRomAction
-      end
-      object FileExportToRomAction1: TMenuItem
-        Action = FileExportToRomAction
-      end
       object N4: TMenuItem
         Caption = '-'
-      end
-      object SaveASCITable1: TMenuItem
-        Action = FileSaveTableAction
       end
       object SaveWidths1: TMenuItem
         Action = SaveWidthsAction
@@ -436,8 +424,7 @@ object MainForm: TMainForm
         Action = PaletteSaveAction
       end
       object DefaultPalette1: TMenuItem
-        Caption = 'Default Palette'
-        OnClick = DefaultPalette1Click
+        Action = PaletteLoadDefaultAction
       end
     end
     object Help1: TMenuItem
@@ -653,12 +640,17 @@ object MainForm: TMainForm
       Caption = 'Kerning...'
       OnExecute = EditKerningActionExecute
     end
+    object PaletteLoadDefaultAction: TAction
+      Category = 'Palette'
+      Caption = 'Default Palette'
+      OnExecute = PaletteLoadDefaultActionExecute
+    end
   end
   object ImageList: TImageList
     Left = 56
     Top = 216
     Bitmap = {
-      494C010114001800180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101140018001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000006000000001002000000000000060
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1462,13 +1454,6 @@ object MainForm: TMainForm
     Left = 88
     Top = 216
   end
-  object SaveTableDialog: TSaveDialog
-    DefaultExt = '.tbl'
-    Filter = 'Table (*.tbl)|*.tbl'
-    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 88
-    Top = 88
-  end
   object OpenDialog: TOpenDialog
     FileName = 'Font_EUR.kft'
     Filter = 'Fonts|*.kft|All files (*.*)|*'
@@ -1496,14 +1481,14 @@ object MainForm: TMainForm
   end
   object OpenActDialog: TOpenDialog
     DefaultExt = '.act'
-    Filter = 'Photoshop Palette / GBA Palette (*.act, *.rgb)|*.act;*.rgb'
+    Filter = 'Photoshop Palette (*.act)|*.act'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 56
     Top = 184
   end
   object SaveActDialog: TSaveDialog
     DefaultExt = '.act'
-    Filter = 'Photoshop Palette (*.act)|*.act|GBA Palette (*.rgb)|*.rgb'
+    Filter = 'Photoshop Palette (*.act)|*.act'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofEnableSizing]
     Left = 88
     Top = 184
