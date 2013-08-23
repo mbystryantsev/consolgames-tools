@@ -291,7 +291,7 @@ Type
   Family:    Array[0..31] of Char;
   UnkBlob:   Array[0..31] of Byte;
   RectRecords:  Array of TRectRecord;
-  Palette:      Array of LongWord;
+  Colors:      Array of LongWord;
   KerningData:  Array of TKerningRecord;
   Header:       THeader;
   UnkData:      Array[0..15] of SmallInt;
@@ -299,7 +299,7 @@ Type
 
   RectsSectionInfo: TSectionInfo;
   KerningSectionInfo: TSectionInfo;
-  PaletteSectionInfo: TSectionInfo;
+  ColorsSectionInfo: TSectionInfo;
  end;
 
 var
@@ -469,7 +469,7 @@ begin
       Pic.ColorTable[n].rgbRed   :=  Palette[n]         AND $FF;
     end;
     For n := 16 To 255 do
-      Integer(Pic.ColorTable[n]) := 1;
+      Integer(Pic.ColorTable[n]) := 0;
     Pic.UpdatePalette;
   end;
   For l:=0 To High(Chars) do
@@ -797,10 +797,10 @@ begin
   WriteSectionInfo(Stream, CreateSectionInfo(1, 1, Size, Length(FontData.RectRecords), FontData.RectsSectionInfo.Unk));
   Stream.Write(FontData.RectRecords[0], Size);
 
-  // Palette
-  Size := Length(FontData.Palette) * SizeOf(LongWord);
-  WriteSectionInfo(Stream, CreateSectionInfo(2, 1, Size, Length(FontData.Palette), FontData.PaletteSectionInfo.Unk));
-  Stream.Write(FontData.Palette[0], Size);
+  // Font colors
+  Size := Length(FontData.Colors) * SizeOf(LongWord);
+  WriteSectionInfo(Stream, CreateSectionInfo(2, 1, Size, Length(FontData.Colors), FontData.ColorsSectionInfo.Unk));
+  Stream.Write(FontData.Colors[0], Size);
 
   // Kerning
   SortKerningData(FontData.KerningData);
@@ -1466,16 +1466,16 @@ begin
   SetLength(FontData.RectRecords, Info.Count);
   Stream.Read(FontData.RectRecords[0], Info.Size);
 
-  // Palette
+  // Font colors
   Info := ReadSectionInfo(Stream);
 
   if Info.Size <> Info.Count * SizeOf(LongWord) then
-    raise Exception.Create('Invalid palette size!');
+    raise Exception.Create('Invalid colors section size!');
 
-  FontData.PaletteSectionInfo := Info;
+  FontData.ColorsSectionInfo := Info;
 
-  SetLength(FontData.Palette, Info.Count);
-  Stream.Read(FontData.Palette[0], Info.Size);
+  SetLength(FontData.Colors, Info.Count);
+  Stream.Read(FontData.Colors[0], Info.Size);
 
   // Kerning
   Info := ReadSectionInfo(Stream);
@@ -1665,10 +1665,8 @@ begin
 end;
 
 procedure TMainForm.FontInit;
-var WH, i: Integer;
+var WH: Integer;
 begin
-  For i := 0 to Length(FontData.Palette) - 1 do
-    Palette[i] := FontData.Palette[i];
 
   WH := 32;
    Case FontData.Header.Height  of
