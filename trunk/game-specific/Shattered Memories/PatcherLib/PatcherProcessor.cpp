@@ -121,6 +121,34 @@ bool PatcherProcessor::init(const QString& manifestPath)
 		return false;
 	}
 
+
+	m_exePatcher.reset();
+
+	const QString executablePatchFilename = manifest.value("executablePatch").toString();
+	if (!executablePatchFilename.isEmpty())
+	{
+		QString path = executablePatchFilename;
+		if (QFileInfo(executablePatchFilename).isRelative())
+		{
+			path = QFileInfo(manifestPath).absoluteDir().absoluteFilePath(executablePatchFilename);
+		}
+
+		if (!QFileInfo(path).exists())
+		{
+			m_errorCode = Init_UnableToLoadExecutablePatch;
+			m_errorData = executablePatchFilename;
+			return false;
+		}
+
+		m_exePatcher.reset(new ExecutablePatcher(path));
+		if (!m_exePatcher->loaded())
+		{
+			m_errorCode = Init_UnableToLoadExecutablePatch;
+			m_errorData = executablePatchFilename;
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -529,6 +557,19 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 			{
 				m_errorCode = ReplaceArchives_UnableToWriteFile;
 				m_errorData = QString("header:%1").arg(mainArcName);
+				return false;
+			}
+		}
+	}
+
+	DLOG << "Patching executable...";
+	{
+		if (m_exePatcher.get() != NULL && m_exePatcher->loaded())
+		{
+			if (!m_exePatcher->apply(executableStream.get()))
+			{
+				m_errorCode = PatchExecutable_UnableToPatchMainDol;
+				m_errorData = QString();
 				return false;
 			}
 		}
