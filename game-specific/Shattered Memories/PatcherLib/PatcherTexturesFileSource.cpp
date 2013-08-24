@@ -29,7 +29,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& ac
 {
 	if (hash == s_fontStreamNameHash)
 	{
-		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontStreamFilename + s_fontFileExt, accessor);
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
 		if (fontStream.get() == NULL)
 		{
 			return fontStream;
@@ -61,14 +61,14 @@ std::tr1::shared_ptr<Consolgames::Stream> PatcherTexturesFileSource::fileByName(
 
 	if (name == s_fontStreamFilename)
 	{
-		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontStreamFilename + s_fontFileExt, accessor);
+		shared_ptr<Stream> fontStream = m_primarySource->fileByName(s_fontFilename + s_fontFileExt, accessor);
 		if (fontStream.get() == NULL)
 		{
 			return fontStream;
 		}
 
 		DLOG << "Replacing font...";
-		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, Stream::orderBigEndian, FontStreamRebuilder::versionShatteredMemories));
+		return shared_ptr<Stream>(new FontStreamRebuilder(accessor.open(), fontStream, m_streamsByteOrder, m_isOrigins ? FontStreamRebuilder::versionOrigins : FontStreamRebuilder::versionShatteredMemories));
 	}
 
 	if (m_textureDB.contains(Hash::calc(name.c_str())))
