@@ -1702,7 +1702,10 @@ begin
   begin
     Code := WideChar('?');
     W := 0;
-    Unk2 := $41;
+    If FontData.StreamHeader.Version = 6 Then
+      Unk2 := $41
+    else
+      Unk2 := $FF64;
   end;
   If not CharPropForm.Show(FontData.CharData[FontData.Header.Count - 1]) Then
   begin
