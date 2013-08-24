@@ -1,4 +1,5 @@
 #include "Strings.h"
+#include <Hash.h>
 #include <QtFileStream.h>
 #include <QTextStream>
 
@@ -61,7 +62,7 @@ static QString decodeTag(const ushort*& data)
 	return QString();
 }
 
-MessageSet ShatteredMemories::Strings::importMessages(const QString& filename)
+MessageSet Strings::importMessages(const QString& filename)
 {
 	QtFileStream stream(filename, QIODevice::ReadOnly);
 	if (!stream.opened())
@@ -167,7 +168,18 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages, 
 		if (isHeader)
 		{
 			const QString hashStr = line.mid(1, line.length() - 2);
-			const quint32 hash = Strings::strToHash(hashStr);
+			quint32 hash = Strings::strToHash(hashStr);
+
+			if (hash == 0)
+			{
+				hash = Hash::calc(hashStr.toUtf8().constData());
+			}
+
+			if (hash == 0)
+			{
+				DLOG << "WARNING! Hash is null for id " << hashStr;
+			}
+
 			if (!messages.hashes.contains(hash))
 			{
 				messages.hashes << hash;
@@ -190,7 +202,7 @@ static bool loadMessagesFromFile(const QString& filename, MessageSet& messages, 
 	return true;
 }
 
-ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QString& path, QMap<QString, QList<quint32>>* filesMap)
+MessageSet Strings::loadMessages(const QString& path, QMap<QString, QList<quint32>>* filesMap)
 {
 	MessageSet messages;
 	if (QFileInfo(path).isDir())
@@ -209,7 +221,7 @@ ShatteredMemories::MessageSet ShatteredMemories::Strings::loadMessages(const QSt
 	return messages;
 }
 
-bool ShatteredMemories::Strings::saveMessages(const QString& filename, const MessageSet& messages)
+bool Strings::saveMessages(const QString& filename, const MessageSet& messages)
 {
 	return saveMessages(filename, messages.messages, messages.hashes);
 }
@@ -347,10 +359,6 @@ quint32 Strings::strToHash(const QString& hashStr)
 {
 	bool ok = false;
 	const quint32 hash = hashStr.toUInt(&ok, 16);
-	if (hash == 0x3634053C)
-	{
-		ok = true;
-	}
 	return ok ? hash : 0;	
 }
 
