@@ -1,6 +1,7 @@
 #pragma once
 #include "CompoundProgressNotifier.h"
 #include "DiscImage.h"
+#include "ExecutablePatcher.h"
 #include <WiiImage.h>
 #include <QObject>
 
@@ -39,6 +40,7 @@ public:
 		Init_InvalidManifest = 0x02,
 		Init_InvalidPlatform = 0x03,
 		Init_InvalidGame = 0x04,
+		Init_UnableToLoadExecutablePatch = 0x05,
 		Open_UnableToOpenImage = 0x10,
 		Open_InvalidDiscId = 0x11,
 		Open_UnableToCreateImageFormPlatform = 0x12,
@@ -72,13 +74,13 @@ public:
 		CheckArchives_UnableToParseArchive = 0x56,
 		CheckArchives_UnableToOpenExecutable = 0x57,
 		CheckImage_Failed = 0x60,
-		PatchMainDol_UnableToOpenFileInImage = 0x70,
-		PatchMainDol_UnableToOpenTempFile = 0x71,
-		PatchMainDol_UnableToExtractFileFromImage = 0x72,
-		PatchMainDol_UnableToOpenFileToPatch = 0x73,
-		PatchMainDol_UnableToPatchMainDol = 0x74,
-		PatchMainDol_UnableToFindMainDolInImage = 0x75,
-		PatchMainDol__UnableToWriteFile = 0x76
+		PatchExecutable_UnableToOpenFileInImage = 0x70,
+		PatchExecutable_UnableToOpenTempFile = 0x71,
+		PatchExecutable_UnableToExtractFileFromImage = 0x72,
+		PatchExecutable_UnableToOpenFileToPatch = 0x73,
+		PatchExecutable_UnableToPatchMainDol = 0x74,
+		PatchExecutable_UnableToFindMainDolInImage = 0x75,
+		PatchExecutable__UnableToWriteFile = 0x76
 	};
 
 private:
@@ -123,6 +125,7 @@ private:
 	std::auto_ptr<DiscImage> m_image; 
 	ErrorCode m_errorCode;
 	QString m_errorData;
+	std::auto_ptr<ExecutablePatcher> m_exePatcher;
 	CompoundProgressNotifier m_progressNotifier;
 };
 
