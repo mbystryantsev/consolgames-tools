@@ -933,17 +933,18 @@ begin
   With DIB2 do
   begin
    B := Addr(Chars[CurChar].Ch);
-   H := CharHeight; If H > Height then H := Height;
-   W := CharWidth;  If W > Width then W := Width;
-   If H > 16 then H := 16;
-   If W > 16 then W := 16;
+   H := CharHeight;
+   If H > Height then H := Height;
+   W := CharWidth;
+   If W > Width then W := Width;
+
    For Y := 0 to H - 1 do
    begin
     Move(ScanLine[Y]^, B^, W);
-    Inc(B, 16);
+    Inc(B, W);
    end;
   end;
-  FontData.CharData[CurChar].W := CharWidth;
+ 
   DrawChars;
   DrawChar;
   Saved := False;
