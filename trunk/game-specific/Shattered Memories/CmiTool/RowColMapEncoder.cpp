@@ -68,8 +68,9 @@ static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, 
 	{
 		const int rc = rcOffset / c_tileWidthHeight;
 
+		const int minLookupX = max(rcOffset, fillInfo.rows[rc] - c_tileWidthHeight);
 		const int maxLookupX = max(rcOffset, min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.rows[rc]));
-		for (int x = rcOffset; x <= maxLookupX; x++)
+		for (int x = minLookupX; x <= maxLookupX; x++)
 		{
 			const int weight = min(c_tileWidthHeight, max(0, fillInfo.rows[rc] - x));
 			if (compareTile(weight, c_tileWidthHeight, canvas, x, rcOffset, image, width, height, tileX, tileY))
@@ -87,8 +88,9 @@ static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, 
 			}
 		}
 
+		const int minLookupY = max(rcOffset, fillInfo.cols[rc] - c_tileWidthHeight);
 		const int maxLookupY = max(rcOffset, min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.cols[rc]));
-		for (int y = rcOffset; y <= maxLookupY; y++)
+		for (int y = minLookupY; y <= maxLookupY; y++)
 		{
 			const int weight = min(c_tileWidthHeight, max(0, fillInfo.cols[rc] - y));
 			if (compareTile(c_tileWidthHeight, weight, canvas, rcOffset, y, image, width, height, tileX, tileY))
