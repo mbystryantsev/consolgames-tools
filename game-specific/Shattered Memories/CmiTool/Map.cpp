@@ -10,34 +10,29 @@ using namespace Consolgames;
 namespace Origins
 {
 
-Map::Map()
-{
-}
-
-Map::Map(const std::wstring& filename)
+bool Map::open(const std::wstring& filename)
 {
 	FileStream stream(filename, Stream::modeRead);
 	if (stream.opened())
 	{
-		open(&stream);
+		return open(&stream);
 	}
+
+	return false;
 }
 
-Map::Map(const std::string& filename)
+bool Map::open(const std::string& filename)
 {
 	FileStream stream(filename, Stream::modeRead);
 	if (stream.opened())
 	{
-		open(&stream);
+		return open(&stream);
 	}
+
+	return false;
 }
 
-Map::Map(Stream* stream)
-{
-	open(stream);
-}
-
-void Map::open(Stream* stream)
+bool Map::open(Stream* stream)
 {
 	Header header;
 
@@ -79,6 +74,8 @@ void Map::open(Stream* stream)
 
 	m_bgRaster.resize(c_bgWidthHeight * c_bgWidthHeight);
 	MapDecoder::decodeBG(&m_bgRaster[0], &bgData[0], palBG);
+
+	return true;
 }
 
 bool Map::saveLayer1(const std::string& filename)

@@ -124,8 +124,6 @@ static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillIn
 	TilePlaceInfo bestPlace;
 	int bestTileIndex = -1;
 
-	std::cout << tiles.size() << std::endl;
-
 	for (size_t i = 0; i < tiles.size(); i++)
 	{
 		const TilePlaceInfo place = findBestTilePlace(fillInfo, canvas, image, width, height, tiles[i].x, tiles[i].y);

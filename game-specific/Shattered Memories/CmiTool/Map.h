@@ -14,12 +14,9 @@ namespace Origins
 class Map
 {
 public:
-	Map();
-	Map(const std::wstring& filename);
-	Map(const std::string& filename);
-	Map(Consolgames::Stream* stream);
-
-	bool isNull() const;
+	bool open(const std::wstring& filename);
+	bool open(const std::string& filename);
+	bool open(Consolgames::Stream* stream);
 
 	bool saveLayer1(const std::string& filename);
 	bool saveLayer0(const std::string& filename);
@@ -43,9 +40,6 @@ private:
 		uint32 bgLayerWH;
 		uint32 tilesCanvasWH;
 	};
-
-private:
-	void open(Consolgames::Stream* stream);
 
 private:
 	std::vector<uint32> m_layer1Raster;
