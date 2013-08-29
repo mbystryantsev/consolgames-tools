@@ -26,7 +26,6 @@ static void copyTile(const uint32* canvas, int tileX, int tileY, uint32* dest, i
 			*dst++ = *src++;
 		}
 	}
-
 }
 
 static bool decodeLayer(void* result, const void* tilesCanvas, const uint32* indexes, const uint32* palette, int width, int height)

@@ -14,6 +14,7 @@ namespace Origins
 class Map
 {
 public:
+	Map();
 	Map(const std::wstring& filename);
 	Map(const std::string& filename);
 	Map(Consolgames::Stream* stream);
@@ -23,6 +24,10 @@ public:
 	bool saveLayer1(const std::string& filename);
 	bool saveLayer0(const std::string& filename);
 	bool saveBG(const std::string& filename);
+
+	bool loadLayer1(const std::string& filename);
+	bool loadLayer0(const std::string& filename);
+	bool loadBG(const std::string& filename);
 
 	bool save(const std::string& filename);
 

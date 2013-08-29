@@ -25,5 +25,6 @@ void indexed4ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, in
 void indexed8ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, int count);
 void indexed8ToIndexed4(const void* indexed8, void* indexed4, int count);
 void indexed4ToIndexed8(const void* indexed4, void* indexed8, int count);
+bool loadImage(const char* filename, void* data, int width, int height);
 
 }

@@ -1,8 +1,20 @@
+#include <Color.h>
 #include "MapCommon.h"
 #include <pnglite.h>
+#include <Image.h>
 
 namespace Origins
 {
+
+namespace
+{
+#pragma pack(push, 1)
+struct RGBA
+{
+	uint8 r, g, b, a;
+};
+#pragma pack(pop)
+}
 
 void deswizzle8(const void* src, void* dest, int width, int height)
 {
@@ -118,6 +130,39 @@ void indexed4ToIndexed8(const void* indexed4, void* indexed8, int count)
 		*dst++ = *src >> 4;
 		src++;
 	}
+}
+
+static void abgrToRgba(const void* abgr, void* rgba, int count)
+{
+	const nv::Color32* src = static_cast<const nv::Color32*>(abgr);
+	RGBA* dst = static_cast<RGBA*>(rgba);
+
+	for (int i = 0; i < count; i++)
+	{
+		dst->r = src->r;
+		dst->g = src->g;
+		dst->b = src->b;
+		dst->a = src->a;
+		dst++;
+		src++;
+	}
+}
+
+bool loadImage(const char* filename, void* data, int width, int height)
+{
+	nv::Image image;
+	if (!image.load(filename))
+	{
+		return false;
+	}
+
+	if (image.width() != width || image.height() != height)
+	{
+		return false;
+	}
+
+	abgrToRgba(image.pixels(), data, width * height);
+	return true;
 }
 
 }
