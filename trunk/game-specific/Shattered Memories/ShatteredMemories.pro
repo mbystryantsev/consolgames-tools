@@ -17,6 +17,7 @@ SUBDIRS = \
 	StreamParser \
 	TextureConv \
 	Patcher \
+	CmiTool \
 	externals/core \
 	externals/WiiStreams \
 	externals/pnglite \
