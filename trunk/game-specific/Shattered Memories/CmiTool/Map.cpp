@@ -3,11 +3,16 @@
 #include "RowColMapEncoder.h"
 #include "MapCommon.h"
 #include <FileStream.h>
+#include <Image.h>
 
 using namespace Consolgames;
 
 namespace Origins
 {
+
+Map::Map()
+{
+}
 
 Map::Map(const std::wstring& filename)
 {
@@ -108,6 +113,11 @@ bool Map::saveBG(const std::string& filename)
 
 bool Map::save(const std::string& filename)
 {
+	if (m_bgRaster.empty() || m_layer1Raster.empty() || m_layer0Raster.empty())
+	{
+		return false;
+	}
+
 	std::vector<uint8> tilesCanvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
 
 	RowColMapEncoder encoder;
@@ -156,6 +166,33 @@ bool Map::save(const std::string& filename)
 	mapFile.write(&tilesCanvas[0], tilesCanvas.size());
 
 	return true;
+}
+
+bool Map::loadLayer1(const std::string& filename)
+{
+	if (m_layer1Raster.empty())
+	{
+		m_layer1Raster.resize(c_layer1Width * c_layer1Height * 4);
+	}
+	return loadImage(filename.c_str(), &m_layer1Raster[0], c_layer1Width, c_layer1Height);
+}
+
+bool Map::loadLayer0(const std::string& filename)
+{
+	if (m_layer0Raster.empty())
+	{
+		m_layer0Raster.resize(c_layer0Width * c_layer0Height * 4);
+	}
+	return loadImage(filename.c_str(), &m_layer0Raster[0], c_layer0Width, c_layer0Height);
+}
+
+bool Map::loadBG(const std::string& filename)
+{
+	if (m_bgRaster.empty())
+	{
+		m_bgRaster.resize(c_bgWidthHeight * c_bgWidthHeight * 4);
+	}
+	return loadImage(filename.c_str(), &m_bgRaster[0], c_bgWidthHeight, c_bgWidthHeight);
 }
 
 }
