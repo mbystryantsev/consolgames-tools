@@ -41,10 +41,28 @@ static void copyRect(const uint8* image, int width, int, int tileX, int tileY, u
 	}
 }
 
-static uint32 placeTile(FillInfo& fillInfo, uint8* canvas, uint8* image, int width, int height, int tileX, int tileY)
+struct TilePlaceInfo
 {
-	uint32 bestPos = c_nullTileIndex;
-	int bestMatch = -1;
+	TilePlaceInfo(int x = -1, int y = -1, int weight = -1)
+		: x(x)
+		, y(y)
+		, weight(weight)
+	{
+	}
+
+	bool isNull() const
+	{
+		return (weight == -1);
+	}
+
+	int x;
+	int y;
+	int weight;
+};
+
+static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, uint8* image, int width, int height, int tileX, int tileY)
+{
+	TilePlaceInfo result;
 
 	for (int rcOffset = 0; rcOffset < c_tilesCanvasWidthHeight; rcOffset += c_tileWidthHeight)
 	{
@@ -56,13 +74,14 @@ static uint32 placeTile(FillInfo& fillInfo, uint8* canvas, uint8* image, int wid
 			const int weight = min(c_tileWidthHeight, max(0, fillInfo.rows[rc] - x));
 			if (compareTile(weight, c_tileWidthHeight, canvas, x, rcOffset, image, width, height, tileX, tileY))
 			{
-				if (weight > bestMatch)
+				if (weight > result.weight)
 				{
-					bestMatch = weight;
-					bestPos = tileIndex(x, rcOffset);
-					if (bestMatch == c_tileWidthHeight)
+					result.weight = weight;
+					result.x = x;
+					result.y = rcOffset;
+					if (result.weight == c_tileWidthHeight)
 					{
-						break;
+						return result;
 					}
 				}
 			}
@@ -74,35 +93,72 @@ static uint32 placeTile(FillInfo& fillInfo, uint8* canvas, uint8* image, int wid
 			const int weight = min(c_tileWidthHeight, max(0, fillInfo.cols[rc] - y));
 			if (compareTile(c_tileWidthHeight, weight, canvas, rcOffset, y, image, width, height, tileX, tileY))
 			{
-				if (weight > bestMatch)
+				if (weight > result.weight)
 				{
-					bestMatch = weight;
-					bestPos = tileIndex(rcOffset, y);
-					if (bestMatch == c_tileWidthHeight)
+					result.weight = weight;
+					result.x = rcOffset;
+					result.y = y;
+					if (result.weight == c_tileWidthHeight)
 					{
-						break;
+						return result;
 					}
 				}
 			}
 		}
 	}
 
-	if (bestPos == c_nullTileIndex)
+	return result;
+}
+
+struct TileInfo
+{
+	uint32* index;
+	int x;
+	int y;
+};
+
+static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillInfo, uint8* canvas, uint8* image, int width, int height)
+{
+	TilePlaceInfo bestPlace;
+	int bestTileIndex = -1;
+
+	std::cout << tiles.size() << std::endl;
+
+	for (size_t i = 0; i < tiles.size(); i++)
 	{
-		return c_nullTileIndex;
+		const TilePlaceInfo place = findBestTilePlace(fillInfo, canvas, image, width, height, tiles[i].x, tiles[i].y);
+		
+		if (place.weight > bestPlace.weight)
+		{
+			bestPlace = place;
+			bestTileIndex = i;
+
+			if (bestPlace.weight == c_tileWidthHeight)
+			{
+				break;
+			}
+		}
 	}
 
-	const int x = bestPos % c_tilesCanvasWidthHeight;
-	const int y = bestPos / c_tilesCanvasWidthHeight;
-	const int row = x / c_tileWidthHeight;
-	const int col = y / c_tileWidthHeight;
+	if (!bestPlace.isNull())
+	{
+		ASSERT(bestTileIndex >= 0);
 
-	fillInfo.rows[col] = max(fillInfo.rows[col], x + c_tileWidthHeight);
-	fillInfo.cols[row] = max(fillInfo.cols[row], y + c_tileWidthHeight);
+		const int row = bestPlace.x / c_tileWidthHeight;
+		const int col = bestPlace.y / c_tileWidthHeight;
+		fillInfo.rows[col] = max(fillInfo.rows[col], bestPlace.x + c_tileWidthHeight);
+		fillInfo.cols[row] = max(fillInfo.cols[row], bestPlace.y + c_tileWidthHeight);
 
-	copyRect(image, width, height, tileX, tileY, canvas, x, y);
+		copyRect(image, width, height, tiles[bestTileIndex].x, tiles[bestTileIndex].y, canvas, bestPlace.x, bestPlace.y);
 
-	return bestPos;
+		*tiles[bestTileIndex].index = tileIndex(bestPlace.x, bestPlace.y);
+		std::swap(tiles[bestTileIndex], tiles.back());
+		tiles.pop_back();	
+
+		return true;
+	}
+
+	return false;
 }
 
 static bool isEmptyTile(uint8* image, int width, int, int tileX, int tileY)
@@ -124,7 +180,9 @@ static bool isEmptyTile(uint8* image, int width, int, int tileX, int tileY)
 
 bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int width, int height, uint8* canvas, uint32* palette, uint32* indices)
 {
-	std::fill_n(indices, (width * height) / (c_tileWidthHeight * c_tileWidthHeight), c_nullTileIndex);
+	const int tileCount = (width * height) / (c_tileWidthHeight * c_tileWidthHeight);
+
+	std::fill_n(indices, tileCount, c_nullTileIndex);
 
 	std::vector<uint8> indexedImage(width * height);
 	
@@ -133,15 +191,12 @@ bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int w
 		return false;
 	}
 
-	bool fail = false;
+	std::vector<TileInfo> tiles;
+	tiles.reserve(tileCount);
 
 	uint32* tileIndex = indices;
 	for (int y = 0; y < height; y += c_tileWidthHeight)
 	{
-		if (fail)
-		{
-			break;
-		}
 		for (int x = 0; x < width; x += c_tileWidthHeight)
 		{
 			if (isEmptyTile(&indexedImage[0], width, height, x, y))
@@ -150,18 +205,24 @@ bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int w
 				continue;
 			}
 
-			const uint32 index = placeTile(fillInfo, &canvas[0], &indexedImage[0], width, height, x, y);
-			if (index == c_nullTileIndex)
-			{
-				fail = true;
-				break;
-			}
-
-			*tileIndex++ = index;
+			TileInfo info;
+			info.index = tileIndex++;
+			info.x = x;
+			info.y = y;
+			tiles.push_back(info);
 		}
 	}
 
-	return !fail;
+	while (!tiles.empty())
+	{
+		if (!placeBestSuitableTile(tiles, fillInfo, canvas, &indexedImage[0], width, height))
+		{
+			return false;
+		}
+	}
+
+
+	return true;
 }
 
 bool RowColMapEncoder::encodeLayers(void* tilesCanvas, const void* layer1Pixels, const void* layer0Pixels, uint32* layer1Palette, uint32* layer0Palette, uint32* layer1Indices, uint32* layer0Indices)
