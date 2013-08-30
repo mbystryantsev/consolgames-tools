@@ -3,6 +3,7 @@
 #include "DiscImage.h"
 #include "ExecutablePatcher.h"
 #include <WiiImage.h>
+#include <QStringList>
 #include <QObject>
 
 class QStringList;
@@ -41,6 +42,7 @@ public:
 		Init_InvalidPlatform = 0x03,
 		Init_InvalidGame = 0x04,
 		Init_UnableToLoadExecutablePatch = 0x05,
+		Init_UnableToLoadFileList = 0x06,
 		Open_UnableToOpenImage = 0x10,
 		Open_InvalidDiscId = 0x11,
 		Open_UnableToCreateImageFormPlatform = 0x12,
@@ -59,6 +61,9 @@ public:
 		ReplaceArchives_UnableToOpenExecutable = 0x34,
 		ReplaceArchives_UnableToParseEmbededResource = 0x35,
 		ReplaceArchives_UnableToParseArc = 0x36,
+		ReplaceArchives_UnableToOpenInputFileToReplace = 0x37,
+		ReplaceArchives_UnableToOpenFileToReplace = 0x38,
+		ReplaceArchives_InputFileTooBig = 0x39,
 		CheckData_UnableToParseResultArc = 0x40,
 		CheckData_UnableToOpenFile = 0x41,
 		CheckData_UnableToExtractTemporaryFile = 0x42,
@@ -100,15 +105,17 @@ private:
 		QString executablePath;
 		quint32 embededArcOffset;
 		quint32 headersOffset;
+		QStringList files;
 	};
 
 public:
 	PatcherProcessor();
 	bool init(const QString& manifestPath);
 	bool openImage(const QString& path);
-	bool rebuildArchives(const QString& outPath, const QStringList& resourcesPath);
+	bool rebuildArchives(const QString& outPath, const QStringList& resourcesPaths);
 	bool replaceArchives(const QString& arcPath);
 	bool checkArchives(const QString& arcPath);
+	bool replaceFiles(const QStringList& resourcesPaths);
 	bool checkImage();
 
 	int errorCode() const;

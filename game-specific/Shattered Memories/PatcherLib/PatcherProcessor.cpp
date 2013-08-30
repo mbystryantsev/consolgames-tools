@@ -10,7 +10,7 @@
 #include <PartStream.h>
 #include <QtFileStream.h>
 #include <WiiFileStream.h>
-#include <QStringList>
+#include <QTextStream>
 #include <QDir>
 #include <QSettings>
 
@@ -146,6 +146,33 @@ bool PatcherProcessor::init(const QString& manifestPath)
 			m_errorCode = Init_UnableToLoadExecutablePatch;
 			m_errorData = executablePatchFilename;
 			return false;
+		}
+	}
+
+	m_info.files.clear();
+
+	const QString fileListPath = manifest.value("files").toString();
+	if (!fileListPath.isEmpty())
+	{
+		QString path = fileListPath;
+		if (QFileInfo(fileListPath).isRelative())
+		{
+			path = QFileInfo(manifestPath).absoluteDir().absoluteFilePath(fileListPath);
+		}
+
+		QFile file(path);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		{
+			m_errorCode = Init_UnableToLoadFileList;
+			m_errorData = fileListPath;
+			return false;
+		}
+
+		QTextStream stream(&file);
+		while (!stream.atEnd())
+		{
+			const QString filename = stream.readLine().trimmed();
+			m_info.files << filename;
 		}
 	}
 
@@ -572,6 +599,63 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 				m_errorData = QString();
 				return false;
 			}
+		}
+	}
+
+	return true;
+}
+
+
+bool PatcherProcessor::replaceFiles(const QStringList& resourcesPaths)
+{
+	if (m_info.files.isEmpty())
+	{
+		return true;
+	}
+
+	class DummyFileAccessor : public FileSource::FileAccessor
+	{
+		virtual std::tr1::shared_ptr<Stream> open() override
+		{
+			return std::tr1::shared_ptr<Stream>();
+		}
+	};
+
+	DLOG << "Replacing files...";
+
+	PatcherDirectoriesFileSource fileSource(resourcesPaths);
+
+	foreach (const QString& filename, m_info.files)
+	{
+		const QString baseName = QFileInfo(filename).fileName();
+		std::tr1::shared_ptr<Stream> stream = fileSource.fileByName(baseName.toStdString(), DummyFileAccessor());
+		if (stream.get() == NULL || stream->size() <= 0)
+		{
+			m_errorCode = ReplaceArchives_UnableToOpenInputFileToReplace;
+			m_errorData = baseName;
+			return false;
+		}
+
+		std::auto_ptr<Stream> imageFileStream(m_image->openFile(filename.toStdString(), Stream::modeWrite));
+		if (imageFileStream.get() == NULL)
+		{
+			m_errorCode = ReplaceArchives_UnableToOpenFileToReplace;
+			m_errorData = filename;
+			return false;
+		}
+
+		if (imageFileStream->size() < stream->size())
+		{
+			m_errorCode = ReplaceArchives_InputFileTooBig;
+			m_errorData = QString("%1;%2;%3").arg(filename).arg(stream->size()).arg(imageFileStream->size());
+			return false;
+		}
+
+		if (imageFileStream->writeStream(stream.get(), stream->size()) != stream->size())
+		{
+			m_errorCode = ReplaceArchives_UnableToWriteFile;
+			m_errorData = filename;
+			return false;
 		}
 	}
 

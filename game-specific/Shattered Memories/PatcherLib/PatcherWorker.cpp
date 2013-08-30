@@ -44,6 +44,7 @@ void PatcherWorker::rebuildArchives()
 void PatcherWorker::replaceArchives()
 {
 	CHECK_CALL(m_patcher.replaceArchives(m_tempPath));
+	CHECK_CALL(m_patcher.replaceFiles(m_resourcesPaths));
 	emit stepCompleted();
 }
 
