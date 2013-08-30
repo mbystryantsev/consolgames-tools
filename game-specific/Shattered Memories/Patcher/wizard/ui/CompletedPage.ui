@@ -18,11 +18,11 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="infoLabel">
      <property name="text">
       <string>Патч успешно применён!
 &lt;br/&gt;&lt;br/&gt;
-Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;http://consolgames.ru/forum/&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;http://consolgames.ru/translations/Silent_Hill:_Shattered_Memories&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».
+Вы можете оставить вопросы, отзывы или предложения &lt;a href=&quot;{TOPIC_URL}&quot;&gt;в теме&lt;/a&gt; на нашем форуме, на &lt;a href=&quot;{PROJECT_URL}&quot;&gt;странице перевода&lt;/a&gt; или в &lt;a href=&quot;http://vk.com/club18909038&quot;&gt;нашей группе&lt;/a&gt; в социальной сети «В Контакте».
 &lt;br/&gt;&lt;br/&gt;
 Также Вы можете помочь улучшить качество перевода, сообщив на форуме об обнаруженных ошибках и недочётах.
 &lt;br/&gt;&lt;br/&gt;

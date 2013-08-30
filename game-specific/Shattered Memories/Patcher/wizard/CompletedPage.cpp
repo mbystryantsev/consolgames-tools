@@ -5,6 +5,9 @@
 CompletedPage::CompletedPage() : Page<Ui_CompletedPage>()
 {
 	setFinalPage(true);
+
+	m_ui.infoLabel->setText(m_ui.infoLabel->text().replace("{TOPIC_URL}", TOPIC_URL));
+	m_ui.infoLabel->setText(m_ui.infoLabel->text().replace("{PROJECT_URL}", PROJECT_URL));
 }
 
 void CompletedPage::initializePage()
@@ -17,11 +20,11 @@ void CompletedPage::operURLs()
 {
 	if (m_ui.openProjectPage->isChecked())
 	{
-		QDesktopServices::openUrl(QUrl("http://consolgames.ru/translations/Silent_Hill:_Shattered_Memories"));
+		QDesktopServices::openUrl(QUrl(PROJECT_URL));
 	}
 	if (m_ui.openForumThread->isChecked())
 	{
-		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/index.php?showtopic=204"));
+		QDesktopServices::openUrl(QUrl(TOPIC_URL));
 	}
 	if (m_ui.openVKGroup->isChecked())
 	{
