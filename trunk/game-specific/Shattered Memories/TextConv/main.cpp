@@ -1,5 +1,7 @@
 #include <Strings.h>
 #include <QCoreApplication>
+#include <QFile>
+#include <QTextStream>
 #include <iostream>
 
 using namespace ShatteredMemories;
@@ -14,10 +16,163 @@ void printUsage()
 		"     Extract text from Strings.XXX file\n"
 		"  -es <Strings.XXX> <BaseStrings.txt> <Strings.txt>\n"
 		"     Extract text from Strings.XXX file with some order and messages as in BaseStrings.txt\n"
+		"  -el <Strings.XXX> <List.txt>\n"
+		"     Extract message name (hash) list from Strings.XXX\n"
 		"  -b <Strings.txt> <Strings.XXX>\n"
 		"     Build Strings.XXX file from source text file\n";
 		"  -bs <Strings.txt> <BaseStrings.txt> <Strings.XXX>\n"
-		"     Build Strings.XXX file from source text file with some order and messages as in BaseStrings.txt\n";
+		"     Build Strings.XXX file from source text file with some order and messages as in BaseStrings.txt\n"
+		"  -bl <Strings.txt> <List.txt> <Strings.XXX>\n"
+		"     Build Strings.XXX file with order from List.txt\n";
+}
+
+QList<quint32> loadHashesFromList(const QString& filename)
+{
+	QList<quint32> result;
+
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		cout << "Unable to open list file!" << endl;
+		return result;
+	}
+	
+	QTextStream stream(&file);
+	while (!stream.atEnd())
+	{
+		const QString line = stream.readLine().trimmed();
+		if (line.isEmpty())
+		{
+			continue;
+		}
+
+		const quint32 hash = Strings::strToHash(line);
+		if (hash == 0)
+		{
+			cout << "Invalid hash: " << line.toStdString() << endl;
+			return QList<quint32>();
+		}
+
+		result << hash;
+	}
+
+	return result;
+}
+
+
+MessageSet messagesByList(const MessageSet& messages, const QList<quint32>& list)
+{
+	foreach (quint32 hash, list)
+	{
+		if (!messages.messages.contains(hash))
+		{
+			cout << "Hash " << Strings::hashToStr(hash).toStdString() << " not found in input messages!" << endl;
+			return MessageSet();
+		}
+	}
+
+	const QSet<quint32> listHashes = list.toSet();
+
+	MessageSet newMessages = messages;
+
+	if (!Strings::expandReferences(newMessages))
+	{
+		cout << "Unable to expand references!" << endl;
+		return MessageSet();
+	}
+
+	foreach (quint32 hash, messages.hashes)
+	{
+		if (!listHashes.contains(hash))
+		{
+			newMessages.messages.remove(hash);
+		}
+	}
+
+	newMessages.hashes = list;
+	return newMessages;
+}
+
+bool extractMessagesByList(const QString& filename, const QList<quint32>& list, const QString& destFilename)
+{
+	const MessageSet messages = Strings::importMessages(filename);
+	if (messages.isEmpty())
+	{
+		cout << "Invalid strings file!" << endl;
+		return false;
+	}
+
+	MessageSet newMessages = messagesByList(messages, list);
+	if (newMessages.isEmpty())
+	{
+		cout << "Unable to extract messages!" << endl;
+		return false;
+	}
+
+	Strings::collapseDuplicates(newMessages);
+	if (!Strings::saveMessages(destFilename, newMessages))
+	{
+		cout << "Unable to save target file!" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool extractMessagesByListFile(const QString& filename, const QString& listFilename, const QString& destFilename)
+{
+	const QList<quint32> list = loadHashesFromList(listFilename);
+	if (list.isEmpty())
+	{
+		cout << "Unable to load list!" << endl;
+		return false;
+	}
+
+	return extractMessagesByList(filename, list, destFilename);
+}
+
+bool extractMessagesByBaseStrings(const QString& filename, const QString& baseFilename, const QString& destFilename)
+{
+	const MessageSet baseMessages = Strings::importMessages(baseFilename);
+	if (baseMessages.isEmpty())
+	{
+		cout << "Unable to load base strings file!" << endl;
+		return false;
+	}
+
+	return extractMessagesByList(filename, baseMessages.hashes, destFilename);
+}
+
+bool buildMessagesByList(const MessageSet& messages, const QList<quint32>& list, const QString& destFilename)
+{
+	MessageSet newMessages = messagesByList(messages, list);
+
+	if (!Strings::exportMessages(messages, destFilename))
+	{
+		cout << "Unable to build strings file!" << endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool buildMessagesByBaseStrings(const QString& filename, const QString& baseFilename, const QString& destFilename)
+{
+	const MessageSet baseMessages = Strings::importMessages(baseFilename);
+	if (baseMessages.isEmpty())
+	{
+		cout << "Unable to load base strings file!" << endl;
+		return false;
+	}
+
+	const MessageSet messages = Strings::importMessages(filename);
+	if (baseMessages.isEmpty())
+	{
+		cout << "Unable to load strings file!" << endl;
+		return false;
+	}
+
+	return buildMessagesByList(messages, baseMessages.hashes, destFilename);
 }
 
 int main(int argc, char **argv)
@@ -54,13 +209,22 @@ int main(int argc, char **argv)
 	}
 	else if (act == "-es" && args.size() == 5)
 	{
-		cout << "Not implemented yet." << endl;
-		return -1;
+		const QString& inputFile = args[2];
+		const QString& baseFile = args[3];
+		const QString& outFile = args[4];
+
+		if (!extractMessagesByBaseStrings(inputFile, baseFile, outFile))
+		{
+			return -1;
+		}
+
+		cout << "Strings extracted sucessfully!" << endl;
 	}
 	else if (act == "-b" && args.size() == 4)
 	{
 		const QString& inputFile = args[2];
 		const QString& outFile = args[3];
+
 		MessageSet messages = Strings::loadMessages(inputFile);
 		if (messages.isEmpty())
 		{
@@ -88,46 +252,9 @@ int main(int argc, char **argv)
 		const QString& baseFile = args[3];
 		const QString& outFile = args[4];
 
-		MessageSet messages = Strings::loadMessages(inputFile);
-		if (messages.isEmpty())
+		if (!buildMessagesByBaseStrings(inputFile, baseFile, outFile))
 		{
-			cout << "Unable to load messages!" << endl;
-			return -1;
-		}
-
-		const MessageSet baseMessages = Strings::loadMessages(baseFile);
-		if (messages.isEmpty())
-		{
-			cout << "Unable to load base messages!" << endl;
-			return -1;
-		}
-
-		if (!Strings::expandReferences(messages))
-		{
-			cout << "Unable to expand references!" << endl;
-			return -1;
-		}
-
-		foreach (quint32 hash, messages.hashes)
-		{
-			if (!baseMessages.messages.contains(hash))
-			{
-				messages.messages.remove(hash);
-			}
-		}
-		foreach (quint32 hash, baseMessages.hashes)
-		{
-			if (!messages.messages.contains(hash))
-			{
-				cout << "Text contains no string from base file: " << QByteArray::number(hash, 16).toUpper().rightJustified(8, '0').constData() << endl;
-				return -1;
-			}
-		}
-		messages.hashes = baseMessages.hashes;
-
-		if (!Strings::exportMessages(messages, outFile))
-		{
-			cout << "Unable to bild strings file!" << endl;
+			cout << "Unable to build strings" << endl;
 			return -1;
 		}
 
