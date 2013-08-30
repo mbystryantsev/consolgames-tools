@@ -162,7 +162,7 @@ IsoFileDescriptor IsoDirectory::findFile(const std::string& filePath) const
 
 	for (int i = 0; i < pathInfo.partCount() - 1; i++)
 	{
-		const int index = indexOf(pathInfo.part(i));
+		const int index = directory->indexOf(pathInfo.part(i));
 		if (index == -1)
 		{
 			return IsoFileDescriptor();
