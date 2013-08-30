@@ -18,7 +18,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	, m_patchType(ImagePatch)
 	, m_errorCode(0)
 {
-	setWindowTitle(tr("Патч-перевод Silent Hill: Shattered Memories"));
+	setWindowTitle(tr("Патч-перевод " GAME_TITLE));
 
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);

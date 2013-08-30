@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
 	application.setStyleSheet(loadTextFile(":/Patcher.css"));
 	application.setWindowIcon(QIcon(":/icon.png"));
-	application.setApplicationName("Silent Hill: Shattered Memories Translation Patch");
+	application.setApplicationName(GAME_TITLE " Translation Patch");
 	application.setApplicationVersion(loadTextFile(":/version", "1.0"));
 	application.setOrganizationName("Consolgames");
 	application.setOrganizationDomain("consolgames.ru");

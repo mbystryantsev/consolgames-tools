@@ -6,6 +6,8 @@
 FailedPage::FailedPage() : Page<Ui_FailedPage>()
 {
 	setFinalPage(true);
+
+	m_ui.infoLabel->setText(m_ui.infoLabel->text().replace("{TOPIC_URL}", TOPIC_URL));
 }
 
 static QString wrapped(const QString& str, const QFont& font, int width)
@@ -51,6 +53,6 @@ void FailedPage::openForumThread()
 {
 	if (m_ui.openThread->isChecked())
 	{
-		QDesktopServices::openUrl(QUrl("http://consolgames.ru/forum/index.php?showtopic=204"));
+		QDesktopServices::openUrl(QUrl(TOPIC_URL));
 	}
 }

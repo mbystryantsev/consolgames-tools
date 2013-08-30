@@ -11,16 +11,16 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Патч-перевод Silent Hill: Shattered Memories</string>
+   <string>Патч-перевод {GAME_TITLE}</string>
   </property>
   <property name="title" stdset="0">
-   <string>Патч-перевод Silent Hill: Shattered Memories</string>
+   <string>Патч-перевод {GAME_TITLE}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="introLabel">
      <property name="text">
-      <string>Вас приветствует программа применения патча-перевода Silent Hill: Shattered Memories.
+      <string>Вас приветствует программа применения патча-перевода {GAME_TITLE}.
 
 При необходимости убедитесь, что перед началом процесса сделали копию бэкап-образа.
 
