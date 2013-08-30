@@ -38,6 +38,7 @@ shared_ptr<Stream> PatcherDirectoriesFileSource::fileByName(const string& name, 
 		shared_ptr<Stream> stream(new QtFileStream(dir.absoluteFilePath(filename), QIODevice::ReadOnly));
 		if (stream.get() != NULL)
 		{
+			DLOG << "Found file for replacing: " << name;
 			return stream;
 		}
 	}
