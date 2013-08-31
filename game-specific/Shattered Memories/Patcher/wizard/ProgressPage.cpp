@@ -1,5 +1,6 @@
 #include "ProgressPage.h"
 #include "PatchWizard.h"
+#include "ErrorInfo.h"
 #include "Configurator.h"
 #include <QAbstractButton>
 #include <QMessageBox>
@@ -67,6 +68,12 @@ void ProgressPage::startPatching()
 	const Configurator& configurator = Configurator::instanse();
 	configurator.configure(m_patcherController);
 
+	foreach (const QByteArray& action, m_patcherController.actionList())
+	{
+		ASSERT(s_locInfo.contains(action));
+		m_ui.actionList->addAction(action, s_locInfo[action]);
+	}
+
 	m_patcherController.start();
 
 	m_ui.staff->start();
@@ -80,12 +87,6 @@ void ProgressPage::finalizePatching()
 void ProgressPage::initializePage()
 {
 	m_ui.stackedWidget->setCurrentIndex(IndexProgress);
-
-	foreach (const QByteArray& action, m_patcherController.actionList())
-	{
-		ASSERT(s_locInfo.contains(action));
-		m_ui.actionList->addAction(action, s_locInfo[action]);
-	}
 
 	VERIFY(disconnect(wizard()->button(QWizard::CancelButton), SIGNAL(clicked()), wizard(), SLOT(reject())));
 	VERIFY(connect(wizard()->button(QWizard::CancelButton ), SIGNAL(clicked()), SLOT(onCancelPressed())));
@@ -122,8 +123,10 @@ void ProgressPage::onPatchingFailed(const QByteArray& step, int errorCode, const
 	MessageBeep(MB_ICONERROR);
 
 	m_ui.actionList->setActionState(QString::fromLatin1(step), ActionListWidget::Failed);
-	m_ui.errorMessage->setText(m_patcherController.errorMessage());
-	m_ui.errorDescription->setText(m_patcherController.errorDescription());
+
+	const ErrorInfo errorInfo = ErrorInfo::fromCode(errorCode);	
+	m_ui.errorMessage->setText(errorInfo.message);
+	m_ui.errorDescription->setText(errorInfo.description);
 
 	Configurator& configurator = Configurator::instanse();
 	configurator.setErrorCode(errorCode);
