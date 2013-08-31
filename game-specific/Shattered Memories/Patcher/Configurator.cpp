@@ -1,4 +1,5 @@
 #include "Configurator.h"
+#include "version.h"
 #include <PatcherController.h>
 #include <QDir>
 
@@ -10,6 +11,7 @@ Configurator::Configurator()
 	: m_platform(platformWii)
 	, m_isDebug(false)
 	, m_tempPath(QDir::tempPath())
+	, m_errorCode(0)
 {
 }
 
@@ -53,6 +55,11 @@ Configurator& Configurator::instanse()
 	return *s_instance;
 }
 
+void Configurator::setDebug(bool debug)
+{
+	m_isDebug = debug;
+}
+
 void Configurator::setImagePath(const QString& path)
 {
 	m_imagePath = path;
@@ -68,7 +75,22 @@ void Configurator::setErrorCode(int code)
 	m_errorCode = code;
 }
 
-void Configurator::setErrorData(const QByteArray& data)
+void Configurator::setErrorData(const QString& data)
 {
 	m_errorData = data;
+}
+
+int Configurator::errorCode() const
+{
+	return m_errorCode;
+}
+
+QString Configurator::errorData() const
+{
+	return m_errorData;
+}
+
+QString Configurator::version()
+{
+	return VER_PRODUCTVERSION_STR;
 }

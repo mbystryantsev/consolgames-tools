@@ -1,4 +1,5 @@
 #include "CanceledPage.h"
+#include "PatchSpec.h"
 
 CanceledPage::CanceledPage() : Page<Ui_CanceledPage>()
 {

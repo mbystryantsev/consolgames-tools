@@ -28,7 +28,11 @@ public:
 	void setImagePath(const QString& path);
 	void setTempPath(const QString& path);
 	void setErrorCode(int code);
-	void setErrorData(const QByteArray& data);
+	void setErrorData(const QString& data);
+	int errorCode() const;
+	QString errorData() const;
+
+	static QString version();
 	
 private:
 	static std::auto_ptr<Configurator> s_instance;
@@ -39,5 +43,5 @@ private:
 	QString m_imagePath;
 	QStringList m_resourceDirectories;
 	int m_errorCode;
-	QByteArray m_errorData;
+	QString m_errorData;
 };

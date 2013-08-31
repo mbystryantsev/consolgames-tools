@@ -1,5 +1,6 @@
 #include "FailedPage.h"
-#include "PatchWizard.h"
+#include "PatchSpec.h"
+#include "Configurator.h"
 #include <QDesktopServices>
 #include <QUrl>
 
@@ -40,10 +41,9 @@ void FailedPage::initializePage()
 {
 	wizard()->setButtonLayout(QList<QWizard::WizardButton>() << QWizard::Stretch << QWizard::FinishButton);
 
-	const PatchWizard* wiz = reinterpret_cast<PatchWizard*>(wizard());
-	ASSERT(wiz != NULL);
+	const Configurator& configurator = Configurator::instanse();
 
-	const QString errorText = m_ui.errorInfo->text().arg(wiz->errorCode()).arg(wrapped(wiz->errorData(), m_ui.errorInfo->font(), 230));
+	const QString errorText = m_ui.errorInfo->text().arg(configurator.errorCode()).arg(wrapped(configurator.errorData(), m_ui.errorInfo->font(), 230));
 	m_ui.errorInfo->setText(errorText);
 
 	VERIFY(connect(wizard()->button(QWizard::FinishButton), SIGNAL(clicked()), SLOT(openForumThread())));
