@@ -1,5 +1,7 @@
-#include <QApplication>
 #include "PatchWizard.h"
+#include "PatchSpec.h"
+#include "Configurator.h"
+#include <QApplication>
 #include <QIcon>
 #include <QLocale>
 #include <QFile>
@@ -42,8 +44,10 @@ int main(int argc, char* argv[])
 	const bool checkingEnabled = application.arguments().contains("--check");
 #endif
 
+	Configurator& configurator = Configurator::instanse();
+	configurator.setDebug(checkingEnabled);
+
 	PatchWizard wizard;
-	wizard.setCheckingEnabled(checkingEnabled);
 	wizard.show();
 
 	return application.exec();

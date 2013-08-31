@@ -127,7 +127,7 @@ void ProgressPage::onPatchingFailed(const QByteArray& step, int errorCode, const
 
 	Configurator& configurator = Configurator::instanse();
 	configurator.setErrorCode(errorCode);
-	configurator.setErrorData(QString("%1;%2").arg(errorCode).arg(errorData).toLatin1().toBase64());
+	configurator.setErrorData(QString("%1;%2;%3").arg(errorCode).arg(m_patcherController.errorName(errorCode)).arg(errorData).toLatin1().toBase64());
 
 	emit completeChanged();
 	wizard()->button(QWizard::CancelButton)->setEnabled(false);

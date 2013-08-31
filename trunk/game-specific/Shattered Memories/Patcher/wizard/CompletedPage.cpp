@@ -1,4 +1,5 @@
 #include "CompletedPage.h"
+#include "PatchSpec.h"
 #include <QDesktopServices>
 #include <QUrl>
 

@@ -25,20 +25,6 @@ public:
 public:
 	PatchWizard(QWidget* parent = NULL);
 
-	void setCheckingEnabled(bool enabled);
-	bool checkingEnabled() const;
-
-	void setPatchType(PatchType type);
-	PatchType patchType() const;
-
-	void setErrorCode(int code);
-	int errorCode() const;
-
-	void setErrorData(const QString& errorData);
-	QString errorData() const;
-
-	QString version() const;
-
 private:
 	PatchType m_patchType;
 	bool m_checkingEnabled;

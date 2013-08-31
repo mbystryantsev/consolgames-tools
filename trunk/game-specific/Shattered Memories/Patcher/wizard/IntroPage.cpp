@@ -1,5 +1,6 @@
 #include "IntroPage.h"
 #include "PatchWizard.h"
+#include "PatchSpec.h"
 
 IntroPage::IntroPage() : Page()
 {
