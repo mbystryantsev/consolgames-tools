@@ -34,6 +34,19 @@ public:
 		gameOrigins
 	};
 
+	enum ErrorCategory
+	{
+		category_Undefined = -1,
+		category_Init = 0x0,
+		category_Open = 0x1,
+		category_RebuildArchives = 0x2,
+		category_ReplaceArchives = 0x3,
+		category_CheckData = 0x4,
+		category_CheckArchives = 0x5,
+		category_CheckImage = 0x6,
+		category_PatchExecutable = 0x7
+	};
+
 	enum ErrorCode
 	{
 		NoError = 0,
@@ -120,6 +133,7 @@ public:
 
 	int errorCode() const;
 	QString errorData() const;
+	static ErrorCategory errorCategory(ErrorCode error);
 
 	QObject* progressNotifier();
 

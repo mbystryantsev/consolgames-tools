@@ -888,4 +888,14 @@ QObject* PatcherProcessor::progressNotifier()
 	return &m_progressNotifier;
 }
 
+PatcherProcessor::ErrorCategory PatcherProcessor::errorCategory(ErrorCode error)
+{
+	if (error == NoError)
+	{
+		return category_Undefined;
+	}
+
+	return static_cast<ErrorCategory>(error >> 4);
+}
+
 }

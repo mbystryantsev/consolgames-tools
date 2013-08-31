@@ -41,8 +41,6 @@ public:
 
 	int errorCode() const;
 	QString errorData() const;
-	QString errorMessage() const;
-	QString errorDescription() const;
 	void waitForWorker();
 
 private:
@@ -73,8 +71,6 @@ private:
 
 	int m_errorCode;
 	QString m_errorData;
-	QString m_errorMessage;
-	QString m_errorDescription;
 
 public:
 	static QString errorName(int code);

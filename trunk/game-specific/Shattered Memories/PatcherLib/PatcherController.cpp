@@ -170,16 +170,6 @@ QString PatcherController::errorData() const
 	return m_errorData;
 }
 
-QString PatcherController::errorMessage() const
-{
-	return m_errorMessage;
-}
-
-QString PatcherController::errorDescription() const
-{
-	return m_errorDescription;
-}
-
 void PatcherController::waitForWorker()
 {
 	m_workerThread.wait(5000);
