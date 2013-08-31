@@ -1,4 +1,5 @@
 #include "PatcherWorker.h"
+#include <QDir>
 
 namespace ShatteredMemories
 {
@@ -30,7 +31,7 @@ void PatcherWorker::requestStop()
 
 void PatcherWorker::initialize()
 {
-	CHECK_CALL(m_patcher.init(m_resourcesPaths.first() + "/manifest.ini"));
+	CHECK_CALL(m_patcher.init(QDir(m_resourcesPaths.first()).filePath("manifest.ini")));
 	CHECK_CALL(m_patcher.openImage(m_imagePath));
 	emit stepCompleted();
 }
