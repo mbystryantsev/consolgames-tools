@@ -47,6 +47,8 @@ int main(int argc, char* argv[])
 	Configurator& configurator = Configurator::instanse();
 	configurator.setDebug(checkingEnabled);
 
+	configurator.setAvailablePlatforms(Configurator::parsePlatforms(PLATFORMS));
+
 	PatchWizard wizard;
 	wizard.show();
 

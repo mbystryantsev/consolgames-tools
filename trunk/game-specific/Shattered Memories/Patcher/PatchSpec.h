@@ -1,5 +1,6 @@
 #pragma once
 
+#define GAME_CODE   "shsm"
 #define GAME_TITLE  "Silent Hill: Shattered Memories"
 #define GAME_ABBR   "SHSM"
 #define TOPIC_URL   "http://consolgames.ru/forum/"

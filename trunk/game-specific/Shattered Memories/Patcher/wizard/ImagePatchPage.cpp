@@ -76,16 +76,7 @@ void ImagePatchPage::processEuristic()
 		return;
 	}
 
-	const QStringList entries = QDir().entryList(QStringList()
-		<< "*silent*.iso"
-		<< "*hill*.iso"
-		<< "*shattered*.iso"
-		<< "*memories*.iso"
-		<< "*SHLPA4*.iso"
-		<< "*shsm*.iso"
-		<< "*sh*.iso"
-		<< "*silent*.iso"
-		<< "*.iso",
+	const QStringList entries = QDir().entryList(Configurator::instanse().imageNameEuristicMasks(),
 			QDir::Files | QDir::Writable);
 	
 	if (!entries.isEmpty())
