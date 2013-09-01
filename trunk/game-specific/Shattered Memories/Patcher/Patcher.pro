@@ -31,6 +31,7 @@ CONFIG(debug, debug|release){
 }
 
 LIBS += \
+	CommonQt.lib \
 	WiiStreams.lib \
 	StreamParserLib.lib \
 	PatcherLib.lib \
