@@ -4,6 +4,7 @@ TEMPLATE = subdirs
 CONFIG += release
 
 SUBDIRS = \
+	CommonQt \
 	Common \
 	Compression \
 	PatcherLib \
