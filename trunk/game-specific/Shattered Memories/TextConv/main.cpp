@@ -147,7 +147,7 @@ bool buildMessagesByList(const MessageSet& messages, const QList<quint32>& list,
 {
 	MessageSet newMessages = messagesByList(messages, list);
 
-	if (!Strings::exportMessages(messages, destFilename))
+	if (!Strings::exportMessages(newMessages, destFilename))
 	{
 		cout << "Unable to build strings file!" << endl;
 		return false;
@@ -158,14 +158,14 @@ bool buildMessagesByList(const MessageSet& messages, const QList<quint32>& list,
 
 bool buildMessagesByBaseStrings(const QString& filename, const QString& baseFilename, const QString& destFilename)
 {
-	const MessageSet baseMessages = Strings::importMessages(baseFilename);
+	const MessageSet baseMessages = Strings::loadMessages(baseFilename);
 	if (baseMessages.isEmpty())
 	{
 		cout << "Unable to load base strings file!" << endl;
 		return false;
 	}
 
-	const MessageSet messages = Strings::importMessages(filename);
+	const MessageSet messages = Strings::loadMessages(filename);
 	if (baseMessages.isEmpty())
 	{
 		cout << "Unable to load strings file!" << endl;
