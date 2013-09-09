@@ -1291,6 +1291,11 @@ Tree<FileInfo>::Node* WiiImage::findFile(const std::string& path, Tree<FileInfo>
 	std::string name;	
 	while (std::getline(f, name, '/'))
 	{
+		if (name.empty())
+		{
+			continue;
+		}
+
 		Tree<FileInfo>::Node* node = folder->firstChild();
 		while (node != NULL)
 		{
