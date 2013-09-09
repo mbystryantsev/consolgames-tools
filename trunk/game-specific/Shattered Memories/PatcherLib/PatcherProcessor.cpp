@@ -43,7 +43,7 @@ static QString embededArcNameForGame(PatcherProcessor::GameId game)
 
 static QString mainArcNameForGame(PatcherProcessor::GameId game)
 {
-	return (game == PatcherProcessor::gameShatteredMemories ? "boot.arc" : "SH.arc");
+	return (game == PatcherProcessor::gameShatteredMemories ? "data.arc" : "SH.arc");
 }
 
 //////////////////////////////////////////////////////////////////////////
