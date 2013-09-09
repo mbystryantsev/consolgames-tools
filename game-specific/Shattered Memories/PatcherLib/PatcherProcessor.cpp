@@ -593,6 +593,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 	{
 		if (m_exePatcher.get() != NULL && m_exePatcher->loaded())
 		{
+			executableStream->setByteOrder(m_info.platform == platformWii ? Stream::orderBigEndian : Stream::orderLittleEndian);
 			if (!m_exePatcher->apply(executableStream.get()))
 			{
 				m_errorCode = PatchExecutable_UnableToPatchMainDol;
