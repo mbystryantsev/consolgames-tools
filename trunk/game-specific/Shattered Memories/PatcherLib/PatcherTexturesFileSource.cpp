@@ -160,7 +160,8 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	ASSERT(mipmapCount >= record.textureInfo.mipmapCount && mipmapCount <= 16);
 	ASSERT(stream->size() - stream->position() >= record.textureInfo.rasterSize);
 	ASSERT(rasterSize > 0);
-	ASSERT(rasterSize + paletteSize + 32 == stream->size());
+	ASSERT(rasterSize + paletteSize + 32 == stream->size()
+		|| (mipmapCount == 1 && stream->size() >= rasterSize + paletteSize + 32));
 
 	Q_UNUSED(platformSignature);
 	Q_UNUSED(formatId);
