@@ -451,7 +451,7 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 	TexHeader header;
 	header.platformSignature = platformToSignature(platform);
 	header.format = format;
-	header.paletteFormat = format;
+	header.paletteFormat = paletteFormat;
 	header.width = image.width();
 	header.height = image.height();
 	header.mipmapCount = mipmaps;
