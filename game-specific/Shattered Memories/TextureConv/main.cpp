@@ -1,7 +1,8 @@
 #include <Image.h>
 #include <Color.h>
-#include "PS2TextureCodec.h"
 #include "WiiTextureCodec.h"
+#include "PS2TextureCodec.h"
+#include "PSPTextureCodec.h"
 #include <TexHeader.h>
 #include <FileStream.h>
 #include <core.h>
@@ -283,7 +284,7 @@ auto_ptr<TextureCodec> codecForPlatform(Platform platform)
 	case platformPS2:
 		return auto_ptr<TextureCodec>(new PS2TextureCodec());
 	case  platformPSP:
-		return auto_ptr<TextureCodec>();
+		return auto_ptr<TextureCodec>(new PSPTextureCodec());
 	}
 
 	ASSERT(!"Unknown platform!");
