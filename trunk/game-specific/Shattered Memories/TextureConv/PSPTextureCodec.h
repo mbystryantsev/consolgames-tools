@@ -1,7 +1,7 @@
 #pragma once
 #include "PSTextureCodec.h"
 
-class PS2TextureCodec : public PSTextureCodec
+class PSPTextureCodec : public PSTextureCodec
 {
 protected:
 	virtual void rotatePalette32(void* palette) const override;

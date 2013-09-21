@@ -160,6 +160,58 @@ void swizzle8(const void* source, void* dest, int width, int height)
 
 //////////////////////////////////////////////////////////////////////////
 
+namespace
+{
+
+template <class Func>
+void pspSwizzle8Proc(Func func, int width, int height, int encodedWidth)
+{
+	int swizzledIndex = 0;
+
+	for (int ty = 0; ty < height; ty+=8)
+	{
+		for (int tx = 0; tx < width; tx+=16)
+		{
+			for (int y = ty; y < ty + 8; y++)
+			{
+				int deswizzledIndex = y * width + tx;
+				for (int x = tx; x < tx + 16; x++)
+				{
+					if (swizzledIndex >= encodedWidth * height)
+					{
+						break;
+					}
+					func(swizzledIndex++, deswizzledIndex++);
+				}
+			}
+		}
+	}
+}
+
+}
+
+void pspUnswizzle4(const void* source, void* dest, int width, int height)
+{
+	pspSwizzle8Proc(Unswizzle8Func(source, dest), width / 2, height, max(16, width / 2));
+}
+
+void pspUnswizzle8(const void* source, void* dest, int width, int height)
+{
+	pspSwizzle8Proc(Unswizzle8Func(source, dest), width, height, max(16, width));
+}
+
+void pspSwizzle4(const void* source, void* dest, int width, int height)
+{
+	pspSwizzle8Proc(Swizzle8Func(source, dest), width / 2, height, max(16, width / 2));
+}
+
+void pspSwizzle8(const void* source, void* dest, int width, int height)
+{
+	pspSwizzle8Proc(Swizzle8Func(source, dest), width, height, max(16, width));
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 template <typename Color>
 void rotPal(void* palette)
 {
