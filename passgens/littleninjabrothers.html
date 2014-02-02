@@ -174,6 +174,9 @@
 					}
 				}
 				
+				// Due the bug in the game this password will be recognized incorrectly
+				var warning = (!(quadMask & s_groupsMasks[1]) && (quadMask & s_groupsMasks[2]));
+
 				var checksum  = calcChecksum([increment].concat(stack.toByteArray()));
 				
 				var header = new BitStack();
@@ -181,7 +184,10 @@
 				header.pushBits(checksum >> 8, 8);
 				header.pushBits(checksum, 8);
 				
-				return passwordDataToString(header, stack, increment);
+				return {
+					password: passwordDataToString(header, stack, increment),
+					warning: warning
+				};
 			} 
 
 			function setPasswordText(password)
@@ -193,6 +199,24 @@
 				for (var i = password.length; i < 54; i++)
 				{
 					document.getElementById('p' + i).innerHTML = '';
+				}
+			}
+
+			function setWarning(warn)
+			{
+				var styleDiv = warn ? 'block' : 'none';
+				var styleText = warn ? 'inline' : 'none';
+			
+				document.getElementById('warn').style.display = styleDiv;
+				
+				var g = document.getElementsByTagName('sup');
+				
+				for (var i = 0; i < g.length; i++)
+				{
+					if (g[i].className == 'g1' || g[i].className == 'g2')
+					{
+						g[i].style.display = styleText;
+					}
 				}
 			}
 
@@ -365,9 +389,11 @@
 
 			function updatePassword()
 			{
+				var warn = false;
 				var data = getData();
 				var pass = generatePassword(data, -1);
-				setPasswordText(pass);
+				setPasswordText(pass.password);
+				setWarning(pass.warning);
 			}
 
 			window.onload = function()
@@ -405,13 +431,22 @@
 			{
 				width: 80px;
 			}
+			#warn
+			{
+				display: none;
+				color: red;
+				padding: 4px;
+			}
+			#warn, #password
+			{
+				border: 3px double black;
+				width: 100%;
+			}
 			#password
 			{
 				font-family: tahoma, verdana, arial, sans-serif, Lucida Sans;
 				font-weight: bold;
 				font-size: 20px;
-				border: 3px double black;
-				width: 100%;
 				padding: 0px 60px;
 			}
 			#passlabel
@@ -435,6 +470,18 @@
 			{
 				text-align: center;
 			}
+			.g1, .g2
+			{
+				display: none;
+			}
+			.g1
+			{
+				color: red;
+			}
+			.g2
+			{
+				color: blue;
+			}
 		</style>
 	</head>
 	<body>
@@ -451,7 +498,7 @@
 							  <table>
 								<tbody>
 								  <tr>
-									<td class="label">Punch:</td>
+									<td class="label">Punch:<sup class="g1">*</sup></td>
 									<td>
 									  <select name="punch" onchange="updatePassword();">
 										<option value="0">Nothing</option>
@@ -467,7 +514,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Sword:</td>
+									<td class="label">Sword:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="sword" onchange="updatePassword();">
 										<option value="0">Nothing</option>
@@ -480,7 +527,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Shield:</td>
+									<td class="label">Shield:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="shield" onchange="updatePassword();">
 										<option value="0">Nothing</option>
@@ -492,7 +539,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Robe:</td>
+									<td class="label">Robe:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="robe" onchange="updatePassword();">
 										<option value="0">Nothing</option>
@@ -504,7 +551,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Talisman:</td>
+									<td class="label">Talisman:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="talisman" onchange="updatePassword();">
 										<option value="0">Nothing</option>
@@ -545,7 +592,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label" valign="top">T-Stars:</td>
+									<td class="label" valign="top">T-Stars:<sup class="g1">*</sup></td>
 									<td>
 										<input type="checkbox" name="stars" onclick="updatePassword();"/> Single<br/>
 										<input type="checkbox" name="stars" onclick="updatePassword();"/> Volley<br/>
@@ -577,7 +624,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Meat Bun:</td>
+									<td class="label">Meat Bun:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="meatbun" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -611,7 +658,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Sk-Board:</td>
+									<td class="label">Sk-Board:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="skboard" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -627,7 +674,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Boo Bomb:</td>
+									<td class="label">Boo Bomb:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="boobomb" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -643,7 +690,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">Dragstar:</td>
+									<td class="label">Dragstar:<sup class="g2">*</sup></td>
 									<td>
 									  <select name="dragstar" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -668,7 +715,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">T-Stars:</td>
+									<td class="label">T-Stars:<sup class="g1">*</sup></td>
 									<td>
 									  <select name="tstars" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -795,16 +842,16 @@
 							</td>
 							<td valign="top">
 							  <p class="listlabel">Visited Cities:</p>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Okay <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Cilly City <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Shorin <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Ling-Rang <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Yokan <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Ling-Rang, B <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Deli-Chous <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Hynen <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Chatzy <br/>
-							  <input type="checkbox" name="cities" onclick="updatePassword();"/> unknown <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Okay<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Cilly City<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Shorin<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Ling-Rang<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Yokan<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Ling-Rang, B<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Deli-Chous<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Hynen<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> Chatzy<sup class="g1">*</sup> <br/>
+							  <input type="checkbox" name="cities" onclick="updatePassword();"/> unknown<sup class="g1">*</sup> <br/>
 							</td>
 							<td valign="top">
 							  <p class="listlabel">Bells and Treasures:</p>
@@ -815,10 +862,10 @@
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Cyan Bell <br/>                                                                           
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Blue Bell <br/>                                                                           
 							  <input type="checkbox" name="bells" onclick="updatePassword();"/> Violet Bell <br/>                                                                           
-							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Mind <br/>                                                                           
-							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Antidote <br/>                                                                           
-							  <input type="checkbox" name="used" onclick="updatePassword();"/> Antidote used <br/>                                                                           
-							  <input type="checkbox" name="used" onclick="updatePassword();"/> Pop <br/>
+							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Mind<sup class="g1">*</sup> <br/>                                                                           
+							  <input type="checkbox" name="treasures" onclick="updatePassword();"/> Antidote<sup class="g1">*</sup> <br/>                                                                           
+							  <input type="checkbox" name="used" onclick="updatePassword();"/> Antidote used<sup class="g1">*</sup> <br/>                                                                           
+							  <input type="checkbox" name="used" onclick="updatePassword();"/> Pop<sup class="g1">*</sup> <br/>
 							</td>
 							</tr>
 						  <tr>
@@ -948,7 +995,7 @@
 									</td>
 								  </tr>
 								  <tr>
-									<td class="label">M's:</td>
+									<td class="label">M's:<sup class="g1">*</sup></td>
 									<td>
 									  <select name="ms" onchange="updatePassword();">
 										<option value="0">0</option>
@@ -1155,6 +1202,16 @@
 				</tr>
 				<tr>
 					<td>
+						<div id="warn">
+							<div style="text-align:center"><b>WARNING</b></div>
+							Due the bug in the game this password will be recognized incorrectly.<br/>
+							There is two ways to avoid this bug:<br/>
+							1<sup style="color:red">*</sup>. Check or select at least one following item: Punch, City, T-Stars count or type, Treasure or used Treasure.<br/>
+							2<sup style="color:blue">*</sup>. Clear all following items: Sword, Shield, Robe, Talisman, Meat Bun, Sk-Board, Boo Bomb, Dragstar.</br>
+							</br>
+							The bug clears all items from second clause and can affects following items: Light, Sweet Bun, Whirly Bird, Medicine, Battery.<br/>
+							Each item can be affected if it is not set.
+						</div>
 						<p id="passlabel">PASSWORD</p>
 						<table id="password">
 							<tbody>
