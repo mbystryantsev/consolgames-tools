@@ -5,7 +5,7 @@ CONFIG -= flat
 isEmpty(NO_PRECOMPILED_HEADER){
 	CONFIG += precompile_header
 	PRECOMPILED_HEADER = pch.h
-} 
+}
 
 HEADERS = \
 	$$files(*.h) \
@@ -35,6 +35,7 @@ CONFIG(debug, debug|release){
 LIBS += \
 	WiiStreams.lib \
 	PasterLib.lib \
+	ExtractorLib.lib \
 	core.lib \
 
 TRANSLATIONS += qt_ru.ts
