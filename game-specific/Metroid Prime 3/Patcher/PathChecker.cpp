@@ -1,4 +1,5 @@
 #include "PathChecker.h"
+#include <core.h>
 #include <QLineEdit>
 
 PathChecker::PathChecker(QLineEdit* pathEdit, QObject* parent)

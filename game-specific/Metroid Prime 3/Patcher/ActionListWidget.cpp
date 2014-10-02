@@ -1,4 +1,5 @@
 #include "ActionListWidget.h"
+#include <core.h>
 #include <QLabel>
 #include <QGridLayout>
 
