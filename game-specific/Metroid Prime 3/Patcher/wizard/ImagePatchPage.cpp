@@ -2,6 +2,7 @@
 #include "PatchWizard.h"
 #include "FreeSpaceChecker.h"
 #include "ImageFileChecker.h"
+#include <core.h>
 #include <QToolTip>
 #include <QFileDialog>
 #include <QMessageBox>
