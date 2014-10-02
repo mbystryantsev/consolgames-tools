@@ -1,5 +1,5 @@
 QT += core gui
-LIBS += PasterLib.lib
+LIBS += core.lib ExtractorLib.lib PasterLib.lib WiiStreams.lib
 
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
