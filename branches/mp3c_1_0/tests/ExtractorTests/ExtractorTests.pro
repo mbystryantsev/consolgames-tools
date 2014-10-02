@@ -8,4 +8,4 @@ HEADERS = *.h
 
 include(../../Corruption.pri)
 
-LIBS += core.h ExtractorLib.lib
+LIBS += core.lib ExtractorLib.lib
