@@ -1,5 +1,6 @@
 #include "ScriptEditor.h"
 #include "ScriptHighlighter.h"
+#include <core.h>
 
 ScriptEditor::ScriptEditor(const QByteArray& languageId, QWidget* parent)
 	: QPlainTextEdit(parent)

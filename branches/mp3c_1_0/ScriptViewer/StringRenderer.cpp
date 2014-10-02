@@ -1,4 +1,5 @@
 #include "StringRenderer.h"
+#include <core.h>
 #include <ValueHolder.h>
 #include <qgl.h>
 

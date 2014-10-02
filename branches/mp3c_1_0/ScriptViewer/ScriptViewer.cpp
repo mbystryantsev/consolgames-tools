@@ -2,6 +2,7 @@
 #include "EditorDockWidget.h"
 #include "ScriptViewWidget.h"
 #include "ScriptEditor.h"
+#include <core.h>
 #include <QHBoxLayout>
 #include <QDir>
 #include <QListWidget>
