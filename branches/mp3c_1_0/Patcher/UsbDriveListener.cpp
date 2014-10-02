@@ -1,4 +1,5 @@
 #include "UsbDriveListener.h"
+#include <core.h>
 #include <dbt.h>
 
 UsbDriveListener::UsbDriveListener(QWidget* parent)
