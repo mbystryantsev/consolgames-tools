@@ -1,5 +1,6 @@
 #include "FailedPage.h"
 #include "PatchWizard.h"
+#include <core.h>
 #include <QDesktopServices>
 #include <QUrl>
 
