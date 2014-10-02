@@ -1,4 +1,5 @@
 #include "CompoundProgressHandler.h"
+#include <core.h>
 
 QHash<QString, int> CompoundProgressHandler::s_paksFileCount;
 QHash<QString, int> CompoundProgressHandler::s_paksClusterCount;

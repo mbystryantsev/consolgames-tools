@@ -1,5 +1,6 @@
 #include "StaffWidget.h"
 #include "TransparentLabel.h"
+#include <core.h>
 #include <QTextStream>
 #include <QFile>
 #include <QVBoxLayout>
