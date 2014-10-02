@@ -6,7 +6,7 @@
 void ExtractorTests::initTestCase()
 {
 	loadHashDatabase("testdata/Worlds.hashdb", m_hashes);
-	QVERIFY(m_pakArchive.open("testdata/Worlds.pak"));
+	QVERIFY(m_pakArchive.open(L"testdata/Worlds.pak"));
 }
 
 void ExtractorTests::extractTest()
@@ -16,14 +16,14 @@ void ExtractorTests::extractTest()
 
 void ExtractorTests::rebuildSimplyTest()
 {
-	testRebuild(m_pakArchive, m_hashes, std::vector<std::string>());
+	testRebuild(m_pakArchive, m_hashes, std::vector<std::wstring>());
 }
 
 void ExtractorTests::rebuildTest()
 {
 	QMap<Hash, QByteArray> hashes = m_hashes;
 	loadHashDatabase("testdata/Worlds_rebuilded.hashdb", hashes);
-	std::vector<std::string> dirs(1, "testdata");
+	std::vector<std::wstring> dirs(1, L"testdata");
 	testRebuild(m_pakArchive, hashes, dirs);
 }
 
@@ -32,7 +32,7 @@ void ExtractorTests::rebuildTestMerged()
 	QMap<Hash, QByteArray> hashes = m_hashes;
 	loadHashDatabase("testdata/Worlds_rebuilded.hashdb", hashes);
 	loadHashDatabase("testdata/Worlds_rebuilded_merged.hashdb", hashes);
-	std::vector<std::string> dirs(1, "testdata");
+	std::vector<std::wstring> dirs(1, L"testdata");
 
 	std::map<Hash,Hash> mergeMap;
 	mergeMap[0x0129F5BFB15311E3] = 0x009A7BEE0B63A3B8;
@@ -94,13 +94,13 @@ void ExtractorTests::compareHashes(PakArchive& pak, const QMap<Hash, QByteArray>
 }
 
 void ExtractorTests::testRebuild(PakArchive& pak, const QMap<Hash, QByteArray>& hashes,
-								 const std::vector<std::string>& inputDirs, const std::map<Hash,Hash>& mergeMap)
+								 const std::vector<std::wstring>& inputDirs, const std::map<Hash,Hash>& mergeMap)
 {
 	const QString rebuildedFile = "pak.rebuilded";
-	pak.rebuild(rebuildedFile.toStdString(), inputDirs, std::set<ResType>(), mergeMap);
+	pak.rebuild(rebuildedFile.toStdWString(), inputDirs, std::set<ResType>(), mergeMap);
 	{
 		PakArchive rebuildedPak;
-		QVERIFY(rebuildedPak.open(rebuildedFile.toStdString()));
+		QVERIFY(rebuildedPak.open(rebuildedFile.toStdWString()));
 		compareHashes(rebuildedPak, hashes);
 	}
 	//QVERIFY(QFile::remove(rebuildedFile));
