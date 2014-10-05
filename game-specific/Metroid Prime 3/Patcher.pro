@@ -4,8 +4,17 @@ TEMPLATE = subdirs
 CONFIG += release
 
 SUBDIRS = \
-	externals/core \
-	externals/WiiStreams \
+	core \
+	WiiStreams \
 	ExtractorLib \
 	PasterLib \
 	Patcher \
+	
+core.subdir = externals/core
+WiiStreams.subdir = externals/WiiStreams
+
+Patcher.depends = \
+	core \
+	WiiStreams \
+	ExtractorLib \
+	PasterLib \
