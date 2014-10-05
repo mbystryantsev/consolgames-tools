@@ -4,8 +4,8 @@ TEMPLATE = subdirs
 CONFIG += release
 
 SUBDIRS = \
+	externals/core \
+	externals/WiiStreams \
 	ExtractorLib \
 	PasterLib \
 	Patcher \
-	externals/core \
-	externals/WiiStreams \
