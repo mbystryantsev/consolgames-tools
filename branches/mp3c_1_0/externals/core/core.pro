@@ -7,13 +7,13 @@ DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 COREDIR = $$PWD
 
 HEADERS = \
-	$$COREDIR/*.h \
-	$$COREDIR/classes/*.h \
-	$$COREDIR/streams/*.h \
+	$$files($$COREDIR/*.h) \
+	$$files($$COREDIR/classes/*.h) \
+	$$files($$COREDIR/streams/*.h) \
 
 SOURCES = \
-	$$COREDIR/classes/*.cpp \
-	$$COREDIR/streams/*.cpp \
+	$$files($$COREDIR/classes/*.cpp) \
+	$$files($$COREDIR/streams/*.cpp) \
 
 INCLUDEPATH += \
 	$$COREDIR \
