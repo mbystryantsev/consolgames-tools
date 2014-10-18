@@ -18,6 +18,7 @@
 #ifdef _MSC_VER
 #define snprintf _snprintf
 #define mkdir _mkdir
+#define access _access
 #endif
 
 using namespace std;
