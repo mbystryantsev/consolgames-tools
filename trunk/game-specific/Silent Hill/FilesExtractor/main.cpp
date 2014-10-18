@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     if (argc < 4)
     {
         printf(
-			"Silent Hill Files Extractor by HoRRoR_X\n"
+			"Silent Hill Files Extractor by horror_x\n"
 			"http://consolgames.ru/\n"
 			"Usage:\n"
 			"    SHExtract.exe <Executable> <SILENT> <OutDir>\n\n"
