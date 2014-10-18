@@ -22,7 +22,7 @@
 
 using namespace std;
 
-static const int c_versionCount = 3;
+static const int c_versionCount = 4;
 
 static const char* c_extensions[16] =
     {
@@ -77,6 +77,13 @@ static const VersionInfo c_versionInfo[c_versionCount] =
 			c_defaultDirectoryStruct,
 			0xB91C,
 			2074
+		},
+		{
+			"SLUS-00707 (beta)",
+			0x3FC9668A,
+			c_defaultDirectoryStruct,
+			0xB850,
+			2072
 		},
 		{
 			"SLPM-86192",
