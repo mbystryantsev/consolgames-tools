@@ -1,17 +1,17 @@
 ////////////////////////////////////////////////////////////
 //
-//      Silent Hill Files Extractor by HoRRoR
-//      Version 0.1a, 07/10/2010
+//      Silent Hill Files Extractor by horror_x
+//      Version 0.8, 10/18/2014
 //      http://consolgames.ru/
 //
 ////////////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <Silent.h>
+#include "Silent.h"
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
-    if(argc < 4)
+    if (argc < 4)
     {
         printf(
         "Silent Hill Files Extractor by HoRRoR_X\n"
@@ -19,11 +19,11 @@ int main(int argc, char *argv[])
         "Usage:\n"
         "    SHExtract.exe <Executable> <SILENT> <OutDir>\n"
         );
-        return 0;
+        return -2;
     }
 
     printf("Extracting...\n");
-    int ret = ExtractFiles(argv[1], argv[2], argv[3]);
-    printf(ret ? "Error!\n" : "Done!\n");
-    return ret;
+    const bool result = extractFiles(argv[1], argv[2], argv[3]);
+    printf(result ? "Error!\n" : "Done!\n");
+    return result ? 0 : -1;
 }

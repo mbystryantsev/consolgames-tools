@@ -1,205 +1,287 @@
-#include <cstdio>
-#include <windows.h>
-#include <WinBase.h>
-#include <io.h>
-
 #include "Silent.h"
+#include "crc.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <iomanip>
+#include <io.h>
+#include <direct.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <limits.h>
+#define MAX_PATH PATH_MAX
+#endif
+
+#ifdef _MSC_VER
+#define snprintf _snprintf
+#define mkdir _mkdir
+#endif
 
 using namespace std;
 
-char* decodeName(unsigned int v1, unsigned int v2, char* name)
-{
-    v1 >>= 4;
-    int i;
-    for(i = 0; i < 4 && v1 != 0; i++)
-    {
-        name[i] = (v1 & 0x3F) + 0x20;
-        v1 >>= 6;
-    }
-    v2 &= 0xFFFFFF;
-    int l = i + 4;
-    for(; i < l && v2 != 0; i++)
-    {
-        name[i] = (v2 & 0x3F) + 0x20;
-        v2 >>= 6;
-    }
-    name[i] = 0;
-    return name;
-}
+static const int c_versionCount = 3;
 
-
-
-
-const char* exts[16] =
+static const char* c_extensions[16] =
     {
         ".TIM", ".VAB", ".BIN", ".DMS",
         ".ANM", ".PLM", ".IPD", ".ILM",
         ".TMD", ".DAT", ".KDT", ".CMP",
         ".TXT", "",     "",     ""
     };
-
-const char* dirs[2][16] = {
-    {   // SLES_015.14
-        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
-        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
-        "\\TIM\\",   "\\VIN\\",   "\\VIN2\\",  "\\VIN3\\",
-        "\\VIN4\\",  "\\VIN5\\",  "\\XA\\",    "\\"
-    },
-    {   // SLUS_007.07
+	
+static const char* c_defaultDirectoryStruct[16] =
+	{
         "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
         "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
         "\\TIM\\",   "\\VIN\\",   "\\XA\\",    "\\",
         "\\",        "\\",        "\\",        "\\"
-    }
+    };
+	
+static const char* c_extendedDirectoryStruct[16] =
+	{
+        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
+        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
+        "\\TIM\\",   "\\VIN\\",   "\\VIN2\\",  "\\VIN3\\",
+        "\\VIN4\\",  "\\VIN5\\",  "\\XA\\",    "\\"
+    };
+
+namespace
+{
+
+struct VersionInfo
+{
+	const char* id;
+	unsigned int headerHash;
+	const char* const* directories;
+	unsigned int fileInfoOffset;
+	int fileCount;
 };
 
-const int FileCount[2] = {2310, 2072};
-const int TableOffset[2] = {0xB8FC, 0xB850};
-
-const unsigned char ExeBegin[2][128] =
-{
-    {   // SLES_015.14
-        0x50, 0x53, 0x2D, 0x58, 0x20, 0x45, 0x58, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x5C, 0x2F, 0x01, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x00, 0x40, 0x01, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xF0, 0xFF, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x53, 0x6F, 0x6E, 0x79,
-        0x20, 0x43, 0x6F, 0x6D, 0x70, 0x75, 0x74, 0x65, 0x72, 0x20, 0x45, 0x6E, 0x74, 0x65, 0x72, 0x74,
-        0x61, 0x69, 0x6E, 0x6D, 0x65, 0x6E, 0x74, 0x20, 0x49, 0x6E, 0x63, 0x2E, 0x20, 0x66, 0x6F, 0x72,
-        0x20, 0x45, 0x75, 0x72, 0x6F, 0x70, 0x65, 0x20, 0x61, 0x72, 0x65, 0x61, 0x00, 0x00, 0x00, 0x00
-    },
-    {   // SLUS_007.07
-        0x50, 0x53, 0x2D, 0x58, 0x20, 0x45, 0x58, 0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xB0, 0x2E, 0x01, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x00, 0x38, 0x01, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0xF0, 0xFF, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x53, 0x6F, 0x6E, 0x79,
-        0x20, 0x43, 0x6F, 0x6D, 0x70, 0x75, 0x74, 0x65, 0x72, 0x20, 0x45, 0x6E, 0x74, 0x65, 0x72, 0x74,
-        0x61, 0x69, 0x6E, 0x6D, 0x65, 0x6E, 0x74, 0x20, 0x49, 0x6E, 0x63, 0x2E, 0x20, 0x66, 0x6F, 0x72,
-        0x20, 0x4E, 0x6F, 0x72, 0x74, 0x68, 0x20, 0x41, 0x6D, 0x65, 0x72, 0x69, 0x63, 0x61, 0x20, 0x61
-    }
-};
-
-int DetectRegion(void* data)
-{
-    if(memcmp(data, &ExeBegin[0][0], 128) == 0)
-        return 0;
-    else if(memcmp(data, &ExeBegin[1][0], 128) == 0)
-        return 1;
-    else
-        return -1;
 }
 
-void ForceDirectories(const char *dir)
+static const VersionInfo c_versionInfo[c_versionCount] =
+	{
+		{
+			"SLES-01514",
+			0xA8ECA2C7,
+			c_extendedDirectoryStruct,
+			0xB8FC,
+			2310
+		},
+		{
+			"SLUS-00707",
+			0x6C5D2E16,
+			c_defaultDirectoryStruct,
+			0xB91C,
+			2074
+		},
+		{
+			"SLPM-86192",
+			0xBA003D30,
+			c_defaultDirectoryStruct,
+			0xB91C,
+			2074
+		}
+	};
+
+namespace
+{
+
+#pragma pack(push, 1)
+struct FileRecord
+{
+	// word 0
+	unsigned int startSector    : 19;  // CD start sector number
+	unsigned int chunkCount     : 13;  // Size in chunks of size 0x100
+	
+	// word 1
+    unsigned int directoryIndex : 4;
+	unsigned int name0          : 24;
+	unsigned int dummy          : 4;
+
+	// word 3
+    unsigned int name1          : 24;
+    unsigned int extensionIndex : 8;
+	
+	int size() const
+	{
+		return chunkCount * 0x100;
+	}
+	
+	const char* extension() const
+	{
+		return c_extensions[extensionIndex];
+	}
+	
+	const char* directory(int version) const
+	{
+		return c_versionInfo[version].directories[directoryIndex];
+	}
+	
+	std::string basename() const
+	{
+		std::string name;
+		unsigned int values[] = {name0, name1};
+		
+		for (int j = 0; j < 2; j++)
+		{
+			int v = values[j];
+			for (int i = 0; i < 4 && v != 0; i++)
+			{
+				const char c = (v & 0x3F) + 0x20;
+				name.push_back(c);
+				v >>= 6;
+			}
+		}
+		
+		return name;
+	}
+};
+#pragma pack(pop)
+
+}
+
+static int detectRegion(const void* data)
+{
+	const uint32_t hash = crc32(data, 256);
+	for (int i = 0; i < c_versionCount; i++)
+	{
+		if (c_versionInfo[i].headerHash == hash)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+static void forceDirectories(const char *dir)
 {
     char tmp[MAX_PATH];
-    char *p = NULL;
-    size_t len;
+    snprintf(tmp, sizeof(tmp), "%s" ,dir);
+    const size_t len = strlen(tmp);
+    if (tmp[len - 1] == '\\')
+	{
+		tmp[len - 1] = 0;
+	}
 
-    snprintf(tmp, sizeof(tmp), "%s",dir);
-    len = strlen(tmp);
-    if(tmp[len - 1] == '\\')
-    tmp[len - 1] = 0;
-    for(p = tmp + 1; *p; p++)
-    if(*p == '\\') {
-        *p = 0;
-        CreateDirectory(tmp, NULL);
-        *p = '\\';
+    for (char* p = tmp + 1; *p != '\0'; p++)
+	{
+		if (*p == '\\')
+		{
+			*p = 0;
+			mkdir(tmp);
+			*p = '\\';
+		}
     }
-    CreateDirectory(tmp, NULL);
+    mkdir(tmp);
 }
 
-bool DirectoryExists(const char *dir)
+static bool directoryExists(const char *dir)
 {
     return (access(dir, 0) == 0);
 }
 
-int ExtractFiles(FileRec* rec, int count, const char *in_file, const char *out_dir, int ver)
+static bool extractFiles(const std::vector<FileRecord>& records, const char* inputFile, const char *out_dir, int ver)
 {
     char path[MAX_PATH];
-    char name[16];
-    unsigned int offset = 0, size;
+    unsigned int offset = 0;
 
     strcpy(path, out_dir);
-    if(!DirectoryExists(path))
+    if (!directoryExists(path))
     {
-        ForceDirectories(path);
+        forceDirectories(path);
     }
     strcat(path, "\\list.txt");
-    FILE* list = fopen(path, "w");
-    if(!list) return 1;
 
-    FILE *f = fopen(in_file, "rb"), *wf;
-    if(!f)
+    std::ofstream list(path, std::ios_base::out);
+    if (!list.is_open())
+	{
+		return false;
+	}
+
+	std::ifstream file(inputFile, std::ios_base::in | std::ios_base::binary);
+	if (!file.is_open())
     {
-        fclose(list);
-        return 2;
+        return false;
     }
 
-    void* buf = malloc(1024*1024*2); // PSX RAM size xD
-    while(count > 0)
-    {
+	std::vector<char> buf;
+	buf.resize(0x100000);
+
+	list << "# offset size     sector   filename" << std::endl;
+	list << std::setfill('0') << std::uppercase << std::hex;
+	list.width(10);
+	
+    for (std::vector<FileRecord>::const_iterator rec = records.begin(); rec != records.end(); rec++)
+	{		
         strcpy(path, out_dir);
-        strcat(path, dirs[ver][rec->b & 0x0F]);
-        if(!DirectoryExists(path))
+        strcat(path, rec->directory(ver));
+        if(!directoryExists(path))
         {
-           ForceDirectories(path);
+           forceDirectories(path);
         }
-        decodeName(rec->b, rec->c, name);
-        printf("%s%s%s\n", dirs[ver][rec->b & 0x0F], name, exts[rec->c >> 24]);
-        strcat(path, name);
-        strcat(path, exts[rec->c >> 24]);
+        
+		const std::string name = rec->basename();
+        
+		std::cout << rec->directory(ver) << name.c_str() << rec->extension() << std::endl;
 
-        size = decodeSize(rec->a);
-        fseek(f, offset, SEEK_SET);
-        if(size > 0) fread(buf, size, 1, f);
+		
+        strcat(path, name.c_str());
+        strcat(path, rec->extension());
 
-        wf = fopen(path, "wb");
-        if(size > 0) fwrite(buf, size, 1, wf);
-        fclose(wf);
+        const uint32_t size = rec->size();
+        file.seekg(offset);
+        
+		if (size > 0)
+		{
+			if (size > buf.size())
+			{
+				buf.resize(size);
+			}
+			file.read(&buf[0], size);
+		}
 
-        fprintf(list, "%8.8X %8.8X %s%s%s\n", offset, size, dirs[ver][rec->b & 0x0F], name, exts[rec->c >> 24]);
-
-        count--;
-        rec++;
+		std::ofstream outFile(path, std::ios_base::out | std::ios_base::binary);
+        if (size > 0)
+		{
+			outFile.write(&buf[0], size);
+		}
+		list << std::setw(8) << offset << ' ' << std::setw(8) << size << ' ' << std::setw(8) << rec->startSector << ' ' << rec->directory(ver) << name << rec->extension() << std::endl;
         offset += ((size + 0x7FF) / 0x800) * 0x800;
     }
-    fclose(f);
-    fclose(list);
-    free(buf);
     return 0;
 }
 
-int ExtractFiles(const char* exe_file, const char *in_file, const char *out_dir)
+bool extractFiles(const char* executablePath, const char* silentPath, const char* outputDirectory)
 {
-    unsigned char buf[0x8000];
-    FILE *f = fopen(exe_file, "rb");
-    if(!f)
+	std::ifstream file(executablePath, ios_base::in | ios_base::binary);
+    if(!file.is_open())
     {
         printf("Unable to open executable file!\n");
-        return 1;
+        return false;
     }
-    fread(buf, 128, 1, f);
-    int ver = DetectRegion(buf);
-    switch(ver)
+
+	char header[256];
+	file.read(header, sizeof(header));
+    const int ver = detectRegion(header);
+	
+	if (ver == -1)
     {
-        case 0:
-            printf("Executable detected: SLES_015.14\n");
-            break;
-        case 1:
-            printf("Executable detected: SLUS_007.07\n");
-            break;
-        default:
-            printf("Unknown version of game!\n");
-            fclose(f);
-            return 2;
-    }
+		std::cout << "Unknown version of game!" << std::endl;
+		return false;
+	}
 
-    fseek(f, TableOffset[ver], SEEK_SET);
-    fread(buf, FileCount[ver], sizeof(FileRec), f);
-    int ret = ExtractFiles((FileRec*)buf, FileCount[ver], in_file, out_dir, ver);
-    return ret ? ret + 2 : 0;
+	const VersionInfo& info = c_versionInfo[ver];
+	std::cout << "Executable detected: " << info.id << std::endl;
+
+	std::vector<FileRecord> fileRecords;
+	fileRecords.resize(info.fileCount);
+	file.seekg(info.fileInfoOffset);
+    file.read(reinterpret_cast<char*>(&fileRecords[0]), info.fileCount * sizeof(FileRecord));
+
+    return extractFiles(fileRecords, silentPath, outputDirectory, ver);
 }
-
-
-
