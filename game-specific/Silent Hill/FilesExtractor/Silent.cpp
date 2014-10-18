@@ -299,3 +299,13 @@ bool extractFiles(const char* executablePath, const char* silentPath, const char
 
     return extractFiles(fileRecords, silentPath, outputDirectory, ver);
 }
+
+void printSupportedVersions()
+{
+	std::cout << "Supported versions:" << std::endl;
+	for (int i = 0; i < c_versionCount; i++)
+	{
+		std::cout << "    " << c_versionInfo[i].id << std::endl;
+	}
+}
+

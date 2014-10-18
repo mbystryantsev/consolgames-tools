@@ -14,11 +14,12 @@ int main(int argc, char *argv[])
     if (argc < 4)
     {
         printf(
-        "Silent Hill Files Extractor by HoRRoR_X\n"
-        "http://consolgames.ru/\n"
-        "Usage:\n"
-        "    SHExtract.exe <Executable> <SILENT> <OutDir>\n"
+			"Silent Hill Files Extractor by HoRRoR_X\n"
+			"http://consolgames.ru/\n"
+			"Usage:\n"
+			"    SHExtract.exe <Executable> <SILENT> <OutDir>\n\n"
         );
+		printSupportedVersions();
         return -2;
     }
 
