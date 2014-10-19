@@ -23,7 +23,7 @@
 
 using namespace std;
 
-static const int c_versionCount = 8;
+static const int c_versionCount = 9;
 
 static const char* c_defaultExtensions[16] =
     {
@@ -164,6 +164,16 @@ static const VersionInfo c_versionInfo[c_versionCount] =
 			0xAA90,
 			886,
 			true
+		},
+		{
+			"Best Horror Games Ever Demo",
+			"SCED-02420",
+			0x47D6B153,
+			c_extendedDirectoryStruct,
+			c_demoExtensions,
+			0xC8FC,
+			1015,
+			false
 		}
 	};
 
@@ -353,12 +363,14 @@ static bool extractFiles(const std::vector<FileRecord>& records, const char* inp
     std::ofstream list(path, std::ios_base::out);
     if (!list.is_open())
 	{
+		std::cout << "Unable to open list file!" << std::endl;
 		return false;
 	}
 
 	std::ifstream file(inputFile, std::ios_base::in | std::ios_base::binary);
 	if (!file.is_open())
     {
+		std::cout << "Unable to open archive file!" << std::endl;
         return false;
     }
 
