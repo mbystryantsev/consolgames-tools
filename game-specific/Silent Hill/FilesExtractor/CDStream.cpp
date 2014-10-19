@@ -80,6 +80,8 @@ bool CDStream::read(void* data, uint32_t size)
 		size -= chunkSize;
 		d += chunkSize;
 	}
+
+	return true;
 }
 
 int CDStream::sectorCount() const
