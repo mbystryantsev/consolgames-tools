@@ -188,6 +188,8 @@ static ISO9660FS::FileInfo find(const ISO9660FS::DirectoryInfo* dir, const char*
 			return ISO9660FS::FileInfo();
 		}
 	}
+
+	return ISO9660FS::FileInfo();
 }
 
 const ISO9660FS::FileInfo ISO9660FS::findFile(const char* path) const
