@@ -74,12 +74,13 @@ struct VersionInfo
 	const char* desc;
 	const char* id;
 	const char* executablePath;
-	unsigned int headerHash;
+	uint32_t headerHash;
 	const char* const* directories;
 	const char* const* extensions;
-	unsigned int fileInfoOffset;
+	uint32_t fileInfoOffset;
 	int fileCount;
 	bool altRecordFormat;
+	uint32_t baseLba;
 };
 
 }
@@ -95,7 +96,8 @@ static const VersionInfo c_versionInfo[] =
 			c_defaultExtensions,
 			0xB8FC,
 			2310,
-			false
+			false,
+			0
 		},
 		{
 			"US, Full Game (v1.1)",
@@ -106,7 +108,8 @@ static const VersionInfo c_versionInfo[] =
 			c_defaultExtensions,
 			0xB91C,
 			2074,
-			false
+			false,
+			0
 		},
 		{
 			"US, Full Game Beta (v1.0)",
@@ -117,7 +120,8 @@ static const VersionInfo c_versionInfo[] =
 			c_defaultExtensions,
 			0xB850,
 			2072,
-			false
+			false,
+			0
 		},
 		{
 			"JP, Full Game",
@@ -128,7 +132,8 @@ static const VersionInfo c_versionInfo[] =
 			c_defaultExtensions,
 			0xB91C,
 			2074,
-			false
+			false,
+			0
 		},
 		{
 			"EU, Trial (Demo) Game",
@@ -139,7 +144,8 @@ static const VersionInfo c_versionInfo[] =
 			c_demoExtensions,
 			0xB648,
 			850,
-			false
+			false,
+			0
 		},
 		{
 			"US, Trial (Demo) Game",
@@ -150,7 +156,8 @@ static const VersionInfo c_versionInfo[] =
 			c_demoExtensions,
 			0xB648,
 			849,
-			false
+			false,
+			0
 		},
 		{
 			"JP, Trial (Demo) Game",
@@ -161,7 +168,8 @@ static const VersionInfo c_versionInfo[] =
 			c_demoExtensions,
 			0xB780,
 			843,
-			true
+			true,
+			0
 		},
 		{
 			"Official U.S. PlayStation Magazine Demo Disc #16",
@@ -172,7 +180,8 @@ static const VersionInfo c_versionInfo[] =
 			c_demoExtensions,
 			0xAA90,
 			886,
-			true
+			true,
+			72656
 		},
 		{
 			"Best Horror Games Ever Demo",
@@ -183,7 +192,8 @@ static const VersionInfo c_versionInfo[] =
 			c_defaultExtensions,
 			0xC8FC,
 			1015,
-			false
+			false,
+			31075
 		}
 	};
 
@@ -421,7 +431,7 @@ static bool extractFiles(const std::vector<FileRecord>& records, CDStream& cd, c
         strcat(path, rec->extension(versionInfo));
 
         const uint32_t size = rec->size(versionInfo);
-		cd.seekToSector(rec->startSector);
+		cd.seekToSector(rec->startSector + versionInfo.baseLba);
 
 		if (size > 0)
 		{
