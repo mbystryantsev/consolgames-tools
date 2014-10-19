@@ -1,4 +1,4 @@
 #pragma once
 
-bool extractFiles(const char* executablePath, const char *silentPath, const char *outputDirectory);
+bool extractFiles(const char* isoPath, const char *outputDirectory);
 void printSupportedVersions();
