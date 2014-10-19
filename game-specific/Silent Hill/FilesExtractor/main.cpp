@@ -1,10 +1,12 @@
 ////////////////////////////////////////////////////////////
 //
 //      Silent Hill Files Extractor by horror_x
-//      Version 0.8, 10/18/2014
+//      Version 0.9, 10/19/2014
 //      http://consolgames.ru/
 //
 ////////////////////////////////////////////////////////////
+
+// TODO: Extract from image file directly
 
 #include "Silent.h"
 #include <iostream>
