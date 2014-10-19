@@ -122,7 +122,7 @@ static const VersionInfo c_versionInfo[] =
 		{
 			"JP, Full Game",
 			"SLPM-86192",
-			"/SLPM_803.63",
+			"/SLPM_861.92",
 			0xBA003D30,
 			c_defaultDirectoryStruct,
 			c_defaultExtensions,
@@ -155,7 +155,7 @@ static const VersionInfo c_versionInfo[] =
 		{
 			"JP, Trial (Demo) Game",
 			"SLPM-80363",
-			"/SLPM_861.92",
+			"/SLPM_803.63",
 			0xCD9AF51E,
 			c_demoDirectoryStruct,
 			c_demoExtensions,
@@ -180,7 +180,7 @@ static const VersionInfo c_versionInfo[] =
 			"/SH/SH.EXE",
 			0x47D6B153,
 			c_extendedDirectoryStruct,
-			c_demoExtensions,
+			c_defaultExtensions,
 			0xC8FC,
 			1015,
 			false
