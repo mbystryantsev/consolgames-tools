@@ -23,9 +23,9 @@
 
 using namespace std;
 
-static const int c_versionCount = 5;
+static const int c_versionCount = 8;
 
-static const char* c_extensions[16] =
+static const char* c_defaultExtensions[16] =
     {
         ".TIM", ".VAB", ".BIN", ".DMS",
         ".ANM", ".PLM", ".IPD", ".ILM",
@@ -33,11 +33,28 @@ static const char* c_extensions[16] =
         ".TXT", "",     "",     ""
     };
 	
+static const char* c_demoExtensions[16] =
+    {
+        ".TIM", ".VAB", ".BIN", ".ANM",
+        ".DMS", ".PLM", ".IPD", ".ILM",
+        ".TMD", ".DAT", ".KDT", ".CMP",
+        ".TXT", "",     "",     ""
+    };
+
+
 static const char* c_defaultDirectoryStruct[16] =
 	{
         "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
         "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
         "\\TIM\\",   "\\VIN\\",   "\\XA\\",    "\\",
+        "\\",        "\\",        "\\",        "\\"
+    };
+
+static const char* c_demoDirectoryStruct[16] =
+	{
+        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
+        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TIM\\",
+        "\\VIN\\",   "\\XA\\",   "\\",    "\\",
         "\\",        "\\",        "\\",        "\\"
     };
 	
@@ -54,11 +71,14 @@ namespace
 
 struct VersionInfo
 {
+	const char* desc;
 	const char* id;
 	unsigned int headerHash;
 	const char* const* directories;
+	const char* const* extensions;
 	unsigned int fileInfoOffset;
 	int fileCount;
+	bool altRecordFormat;
 };
 
 }
@@ -66,39 +86,84 @@ struct VersionInfo
 static const VersionInfo c_versionInfo[c_versionCount] =
 	{
 		{
+			"EU, Full Game",
 			"SLES-01514",
 			0xA8ECA2C7,
 			c_extendedDirectoryStruct,
+			c_defaultExtensions,
 			0xB8FC,
-			2310
+			2310,
+			false
 		},
 		{
-			"SLED-01735",
-			0x99C557EB,
-			c_defaultDirectoryStruct,
-			0xB648,
-			850
-		},
-		{
+			"US, Full Game (v1.1)",
 			"SLUS-00707",
 			0x6C5D2E16,
 			c_defaultDirectoryStruct,
+			c_defaultExtensions,
 			0xB91C,
-			2074
+			2074,
+			false
 		},
 		{
-			"SLUS-00707 (beta)",
+			"US, Full Game Beta (v1.0)",
+			"SLUS-00707",
 			0x3FC9668A,
 			c_defaultDirectoryStruct,
+			c_defaultExtensions,
 			0xB850,
-			2072
+			2072,
+			false
 		},
 		{
+			"JP, Full Game",
 			"SLPM-86192",
 			0xBA003D30,
 			c_defaultDirectoryStruct,
+			c_defaultExtensions,
 			0xB91C,
-			2074
+			2074,
+			false
+		},
+		{
+			"EU, Trial (Demo) Game",
+			"SLED-01735",
+			0x99C557EB,
+			c_demoDirectoryStruct,
+			c_demoExtensions,
+			0xB648,
+			850,
+			false
+		},
+		{
+			"US, Trial (Demo) Game",
+			"SLUS-90050",
+			0x75D2AA7F,
+			c_demoDirectoryStruct,
+			c_demoExtensions,
+			0xB648,
+			849,
+			false
+		},
+		{
+			"JP, Trial (Demo) Game",
+			"SLPM-80363",
+			0xCD9AF51E,
+			c_demoDirectoryStruct,
+			c_demoExtensions,
+			0xB780,
+			843,
+			true
+		},
+		{
+			"Official U.S. PlayStation Magazine Demo Disc #16",
+			"SCUS-94278",
+			0x435425B7,
+			c_defaultDirectoryStruct,
+			c_demoExtensions,
+			0xAA90,
+			886,
+			true
 		}
 	};
 
@@ -106,41 +171,113 @@ namespace
 {
 
 #pragma pack(push, 1)
-struct FileRecord
+
+struct FileRecordAlt
 {
 	// word 0
-	unsigned int startSector    : 19;  // CD start sector number
-	unsigned int chunkCount     : 13;  // Size in chunks of size 0x100
+	uint32_t startSector     : 19;  // CD start sector number
+	uint32_t chunkCount      : 12;  // Size in chunks of size 0x100
+	uint32_t directoryIndex0 : 1;
 	
 	// word 1
-    unsigned int directoryIndex : 4;
-	unsigned int name0          : 24;
-	unsigned int dummy          : 4;
+	uint32_t directoryIndex1 : 3;
+	uint32_t name0           : 29;
 
 	// word 3
-    unsigned int name1          : 24;
+    unsigned int name1          : 19;
     unsigned int extensionIndex : 8;
-	
+    unsigned int dummy          : 5;
+
 	int size() const
 	{
 		return chunkCount * 0x100;
 	}
 	
-	const char* extension() const
+	const char* extension(int version) const
 	{
-		return c_extensions[extensionIndex];
+		return c_versionInfo[version].extensions[extensionIndex];
 	}
 	
 	const char* directory(int version) const
 	{
-		return c_versionInfo[version].directories[directoryIndex];
+		return c_versionInfo[version].directories[(directoryIndex1 << 1) | directoryIndex0];
 	}
 	
 	std::string basename() const
 	{
+		uint64_t v = (name0 | (static_cast<uint64_t>(name1) << 29)) & 0xFFFFFFFFFFFFULL;
+		std::string name;
+
+		for (int i = 0; i < 8 && v != 0; i++)
+		{
+			const char c = (v & 0x3F) + 0x20;
+			name.push_back(c);
+			v >>= 6;
+		}
+
+		return name;
+	}
+};
+
+struct FileRecord
+{
+	// word 0
+	uint32_t startSector    : 19;  // CD start sector number
+	uint32_t chunkCount     : 13;  // Size in chunks of size 0x100
+	
+	// word 1
+	uint32_t directoryIndex : 4;
+	uint32_t name0          : 24;
+	uint32_t dummy          : 4;
+
+	// word 3
+    unsigned int name1          : 24;
+    unsigned int extensionIndex : 8;
+
+	int size(int version) const
+	{	
+		if (c_versionInfo[version].altRecordFormat)
+		{
+			return reinterpret_cast<const FileRecordAlt*>(this)->size();
+		}
+
+		return chunkCount * 0x100;
+	}
+	
+	const char* extension(int version) const
+	{
+		const VersionInfo& info = c_versionInfo[version];
+		
+		if (info.altRecordFormat)
+		{
+			return reinterpret_cast<const FileRecordAlt*>(this)->extension(version);
+		}
+
+		return info.extensions[extensionIndex];
+	}
+	
+	const char* directory(int version) const
+	{
+		const VersionInfo& info = c_versionInfo[version];
+	
+		if (info.altRecordFormat)
+		{
+			return reinterpret_cast<const FileRecordAlt*>(this)->directory(version);
+		}
+
+		return info.directories[directoryIndex];
+	}
+	
+	std::string basename(int version) const
+	{
+		if (c_versionInfo[version].altRecordFormat)
+		{
+			return reinterpret_cast<const FileRecordAlt*>(this)->basename();
+		}
+
 		std::string name;
 		unsigned int values[] = {name0, name1};
-		
+
 		for (int j = 0; j < 2; j++)
 		{
 			int v = values[j];
@@ -155,6 +292,7 @@ struct FileRecord
 		return name;
 	}
 };
+
 #pragma pack(pop)
 
 }
@@ -240,15 +378,15 @@ static bool extractFiles(const std::vector<FileRecord>& records, const char* inp
            forceDirectories(path);
         }
         
-		const std::string name = rec->basename();
+		const std::string name = rec->basename(ver);
         
-		std::cout << rec->directory(ver) << name.c_str() << rec->extension() << std::endl;
+		std::cout << rec->directory(ver) << name.c_str() << rec->extension(ver) << std::endl;
 
 		
         strcat(path, name.c_str());
-        strcat(path, rec->extension());
+        strcat(path, rec->extension(ver));
 
-        const uint32_t size = rec->size();
+        const uint32_t size = rec->size(ver);
         file.seekg(offset);
         
 		if (size > 0)
@@ -265,10 +403,11 @@ static bool extractFiles(const std::vector<FileRecord>& records, const char* inp
 		{
 			outFile.write(&buf[0], size);
 		}
-		list << std::setw(8) << offset << ' ' << std::setw(8) << size << ' ' << std::setw(8) << rec->startSector << ' ' << rec->directory(ver) << name << rec->extension() << std::endl;
+		list << std::setw(8) << offset << ' ' << std::setw(8) << size << ' ' << std::setw(8) << rec->startSector << ' ' << rec->directory(ver) << name << rec->extension(ver) << std::endl;
         offset += ((size + 0x7FF) / 0x800) * 0x800;
     }
-    return 0;
+
+    return true;
 }
 
 bool extractFiles(const char* executablePath, const char* silentPath, const char* outputDirectory)
@@ -291,12 +430,14 @@ bool extractFiles(const char* executablePath, const char* silentPath, const char
 	}
 
 	const VersionInfo& info = c_versionInfo[ver];
-	std::cout << "Executable detected: " << info.id << std::endl;
+	std::cout << "Executable detected: " << info.id << " - " << info.desc << std::endl;
 
 	std::vector<FileRecord> fileRecords;
 	fileRecords.resize(info.fileCount);
 	file.seekg(info.fileInfoOffset);
     file.read(reinterpret_cast<char*>(&fileRecords[0]), info.fileCount * sizeof(FileRecord));
+
+	std::cout << "Extracting..." << std::endl;
 
     return extractFiles(fileRecords, silentPath, outputDirectory, ver);
 }
@@ -306,7 +447,7 @@ void printSupportedVersions()
 	std::cout << "Supported versions:" << std::endl;
 	for (int i = 0; i < c_versionCount; i++)
 	{
-		std::cout << "    " << c_versionInfo[i].id << std::endl;
+		std::cout << "    " << c_versionInfo[i].id << " - " << c_versionInfo[i].desc << std::endl;
 	}
 }
 
