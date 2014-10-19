@@ -136,7 +136,7 @@ ISO9660FS ISO9660FS::fromImage(CDStream& stream)
 
 bool ISO9660FS::isNull() const
 {
-	return m_rootDir.subdirs.empty();
+	return m_rootDir.subdirs.empty() && m_rootDir.files.empty();
 }
 
 const ISO9660FS::DirectoryInfo& ISO9660FS::rootDirectory() const
