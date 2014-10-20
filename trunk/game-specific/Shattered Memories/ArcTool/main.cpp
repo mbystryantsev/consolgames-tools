@@ -14,7 +14,7 @@ void printUsage()
 		<< "Usage:" << endl
 		<< "  ArcTool.exe <-e, --extract> <ArcFile> <OutDir> [names or hashes]" << endl
 		<< "    Extract files from archive."  << endl
-		<< "  ArcTool.exe <-r, --rebuild> <ArcFile> <OutDir> [input dirs]" << endl
+		<< "  ArcTool.exe <-r, --rebuild> <ArcFile> <OutArcFile> [input dirs]" << endl
 		<< "    Rebuild archive using files from input dirs." << endl;
 }
 
