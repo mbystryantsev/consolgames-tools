@@ -7,13 +7,97 @@ namespace Origins
 
 struct FillInfo
 {
-	int rows[32];
-	int cols[32];
+	int rows[c_tilesPerLine];
+	int cols[c_tilesPerLine];
+	uint64 canvasRows[c_tilesPerLine][c_tilesCanvasWidthHeight];
+	uint64 canvasCols[c_tilesPerLine][c_tilesCanvasWidthHeight];
 };
 
-inline uint32 tileIndex(int x, int y)
+inline static uint32 tileIndex(int x, int y)
 {
 	return y * c_tilesCanvasWidthHeight + x;
+}
+
+inline static uint64 tileValueHorizontal(uint8* canvas, int x, int y, int line)
+{
+	uint64 result = 0;
+
+	const uint8* p = canvas + (y + line) * c_tilesCanvasWidthHeight + x;
+	for (int i = 0; i < c_tileWidthHeight; i++)
+	{
+		result <<= 4;
+		result |= *p++;
+	}
+
+	return result;
+}
+
+inline static uint64 tileValueVertical(uint8* canvas, int x, int y, int col)
+{
+	uint64 result = 0;
+
+	const uint8* p = canvas + y * c_tilesCanvasWidthHeight + x + col;
+	for (int i = 0; i < c_tileWidthHeight; i++)
+	{
+		result <<= 4;
+		result |= *p;
+		p += c_tilesCanvasWidthHeight;
+	}
+
+	return result;
+}
+
+static void calcPrefix(const uint8* pattern, int patternSize, char* prefix)
+{
+	prefix[0] = 0;
+	int k = 0;
+	for(int i = 1; i < patternSize; i++)
+	{
+		while (k > 0 && pattern[k] != pattern[i])
+		{
+			k = prefix[k - 1];
+		}
+		if (pattern[k] == pattern[i])
+		{
+			k++;
+		}
+		prefix[i] = k;
+	}
+}
+
+namespace
+{
+
+template <int layerWidth, int layerHeight>
+void copyRect(const uint8* image, int tileX, int tileY, uint8* canvas, int canvasX, int canvasY)
+{
+	for (int y = 0; y < c_tileWidthHeight; y++)
+	{
+		uint8* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
+		const uint8* imagePixels = image + (tileY + y) * layerWidth + tileX;
+		std::copy(imagePixels, imagePixels + c_tileWidthHeight, canvasPixels);
+	}
+}
+
+
+template <int layerWidth, int layerHeight>
+class Compressor
+{
+public:
+	Compressor(FillInfo& fillInfo, uint8* canvas, const uint8* layer)
+		: m_fillInfo(fillInfo)
+		, m_canvas(canvas)
+		, m_layer(layer)
+	{
+	}
+
+private:
+	FillInfo& m_fillInfo;
+	uint8* m_canvas;
+	const uint8* m_layer;
+	
+};
+
 }
 
 static bool compareTile(int compareWidth, int compareHeight, uint8* canvas, int canvasX, int canvasY, const uint8* image, int width, int, int tileX, int tileY)
@@ -31,15 +115,6 @@ static bool compareTile(int compareWidth, int compareHeight, uint8* canvas, int 
 	return true;
 }
 
-static void copyRect(const uint8* image, int width, int, int tileX, int tileY, uint8* canvas, int canvasX, int canvasY)
-{
-	for (int y = 0; y < c_tileWidthHeight; y++)
-	{
-		uint8* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
-		const uint8* imagePixels = image + (tileY + y) * width + tileX;
-		std::copy(imagePixels, imagePixels + c_tileWidthHeight, canvasPixels);
-	}
-}
 
 struct TilePlaceInfo
 {

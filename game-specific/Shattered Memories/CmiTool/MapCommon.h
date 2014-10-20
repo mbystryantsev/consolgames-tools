@@ -13,7 +13,8 @@ enum
 	c_layer0Height = c_layer1Height / 2,
 	c_bgWidthHeight = 128,
 	c_tileWidthHeight = 16,
-	c_nullTileIndex = -1
+	c_nullTileIndex = -1,
+	c_tilesPerLine = c_tilesCanvasWidthHeight / c_tileWidthHeight
 };
 
 void deswizzle8(const void* src, void* dest, int width, int height);
