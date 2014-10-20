@@ -166,7 +166,7 @@ public:
 	int m_generalPartitionCount;
 	std::vector<WiiPartition> m_partitions;
 
-	//       struct tree *tree;
+	//struct tree *tree;
 
 	struct _stat st;
 

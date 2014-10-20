@@ -24,40 +24,40 @@
 #   define _chdir chdir
 //#define _lseeki64 _lseek
 __int64 _lseeki64(int __handle, __int64 __offset, int __fromwhere){
-    LARGE_INTEGER new_offset;
-    new_offset.QuadPart = (LONGLONG)0;
-    if(SetFilePointerEx((HANDLE)__handle, *((LARGE_INTEGER*)&__offset), &new_offset, (DWORD)__fromwhere)){
-        return (__int64)new_offset.QuadPart;
-    } else {
-        return -1;
-    }
+	LARGE_INTEGER new_offset;
+	new_offset.QuadPart = (LONGLONG)0;
+	if(SetFilePointerEx((HANDLE)__handle, *((LARGE_INTEGER*)&__offset), &new_offset, (DWORD)__fromwhere)){
+		return (__int64)new_offset.QuadPart;
+	} else {
+		return -1;
+	}
 }
 
 int _read(int fd, void *buffer, unsigned int count){
-    unsigned long readed;
-    if(!ReadFile((HANDLE)fd, buffer, count, &readed, NULL)){
-        return -1;
-    } else {
-        return (int)readed;
-    }
+	unsigned long readed;
+	if(!ReadFile((HANDLE)fd, buffer, count, &readed, NULL)){
+		return -1;
+	} else {
+		return (int)readed;
+	}
 }
 
 int _open(const char *filename, int oflag){
-    OFSTRUCT tmp_struct;
-    return OpenFile(filename, &tmp_struct, oflag & 3);
+	OFSTRUCT tmp_struct;
+	return OpenFile(filename, &tmp_struct, oflag & 3);
 }
 
 int _close(int handle){
-    return !CloseHandle((HANDLE)handle);
+	return !CloseHandle((HANDLE)handle);
 }
 
 int _write(int fd, const void *buffer, unsigned int count){
-    unsigned long writed;
-    if(!WriteFile((HANDLE)fd, buffer, count, &writed, NULL)){
-        return -1;
-    } else {
-        return (int)writed;
-    }
+	unsigned long writed;
+	if(!WriteFile((HANDLE)fd, buffer, count, &writed, NULL)){
+		return -1;
+	} else {
+		return (int)writed;
+	}
 }
 
 #else
@@ -88,53 +88,53 @@ class CWIIScrubberDlg
 {
 	Tree<FileInfo> m_directoryTree;
 public:
-    PNode findFile(PNode folder, const CString& name);
-    PNode FindDataPartition();
+	PNode findFile(PNode folder, const CString& name);
+	PNode FindDataPartition();
 	CWIIScrubberDlg()
 	{
-    }
-    
+	}
+	
 	~CWIIScrubberDlg()
 	{
-    }
+	}
 
-    const Tree<FileInfo>& directories()
+	const Tree<FileInfo>& directories()
 	{
-      return m_directoryTree;
-    }
+	  return m_directoryTree;
+	}
 
-    PNode addItemToTree(PNode parent, const char* name, int data_type = dataFile, int subtype = 0)
+	PNode addItemToTree(PNode parent, const char* name, int data_type = dataFile, int subtype = 0)
 	{
-        PNode node;
-        if(parent)
+		PNode node;
+		if(parent)
 		{
-            node = parent->addChild();
-        }
+			node = parent->addChild();
+		}
 		else 
 		{
-            node = m_directoryTree.addChild();
-        }
-        //memset(&node->data, 0, sizeof(CFileInfo));
+			node = m_directoryTree.addChild();
+		}
+		//memset(&node->data, 0, sizeof(CFileInfo));
 
-        node->data.name   = name;
-        node->data.dataType   = data_type;
-        node->data.subtype     = subtype;
-        return node;
-    }
-    PNode addItemToTree(PNode parent, CString name, uint32 part, uint64 offset, uint64 size, int fst_reference, int data_type = dataFile){
-        PNode node = parent->addChild();
-        node->data.name   = name;
-        node->data.partition   = part;
-        node->data.size   = size;
-        node->data.offset = offset;
-        node->data.fstReference = fst_reference;
-        node->data.dataType   = data_type;
-        return node;
-    }
-    void ClearTree()
-    {
-        m_directoryTree.clear();
-    }
+		node->data.name      = name;
+		node->data.dataType  = data_type;
+		node->data.subtype   = subtype;
+		return node;
+	}
+	PNode addItemToTree(PNode parent, CString name, uint32 part, uint64 offset, uint64 size, int fst_reference, int data_type = dataFile){
+		PNode node = parent->addChild();
+		node->data.name   = name;
+		node->data.partition   = part;
+		node->data.size   = size;
+		node->data.offset = offset;
+		node->data.fstReference = fst_reference;
+		node->data.dataType   = data_type;
+		return node;
+	}
+	void ClearTree()
+	{
+		m_directoryTree.clear();
+	}
 };
 
 #include "include/openssl/aes.h"
@@ -147,7 +147,7 @@ public:
 
 void AfxMessageBox(const CString& s)
 {
-        MessageBox(NULL, s.data(), "WiiDisc", MB_ICONWARNING);
+	MessageBox(NULL, s.data(), "WiiDisc", MB_ICONWARNING);
 }
 #else
 
@@ -183,37 +183,37 @@ uint32 get_dol_size (const uint8 *header);
 /*
 enum TmdSigType 
 {
-        SIG_UNKNOWN = 0,
-        SIG_RSA_2048,
-        SIG_RSA_4096
+	SIG_UNKNOWN = 0,
+	SIG_RSA_2048,
+	SIG_RSA_4096
 };
 
 struct TmdContent
 {
-        uint32 cid;
-        uint16 index;
-        uint16 type;
-        uint64 size;
-        uint8 hash[20];
+	uint32 cid;
+	uint16 index;
+	uint16 type;
+	uint64 size;
+	uint8 hash[20];
 };
 
 struct Tmd 
 {
-        TmdSigType sigType;
-        uint8 *sig;
-        char issuer[64];
-        uint8 version;
-        uint8 ca_crl_version;
-        uint8 signer_crl_version;
-        uint64 sys_version;
-        uint64 title_id;
-        uint32 title_type;
-        uint16 group_id;
-        uint32 access_rights;
-        uint16 title_version;
-        uint16 num_contents;
-        uint16 boot_index;
-        struct TmdContent *contents;
+	TmdSigType sigType;
+	uint8 *sig;
+	char issuer[64];
+	uint8 version;
+	uint8 ca_crl_version;
+	uint8 signer_crl_version;
+	uint64 sys_version;
+	uint64 title_id;
+	uint32 title_type;
+	uint16 group_id;
+	uint32 access_rights;
+	uint16 title_version;
+	uint16 num_contents;
+	uint16 boot_index;
+	struct TmdContent *contents;
 };
 */
 
@@ -221,64 +221,64 @@ struct Tmd
 /*
 struct PartitionHeader 
 {
-        char console;
-        uint8 isGamecube;
-        uint8 isWii;
+	char console;
+	uint8 isGamecube;
+	uint8 isWii;
 
-        char gamecode[2];
-        char region;
-        char publisher[2];
+	char gamecode[2];
+	char region;
+	char publisher[2];
 
-        uint8 hasMagic;
-        char name[0x60];
+	uint8 hasMagic;
+	char name[0x60];
 
-        uint64 dolOffset;
-        uint64 dol_size;
+	uint64 dolOffset;
+	uint64 dol_size;
 
-        uint64 fstOffset;
-        uint64 fstSize;
+	uint64 fstOffset;
+	uint64 fstSize;
 };
 
 enum PartitionType
 {
-        PART_UNKNOWN = 0,
-        PART_DATA,
-        PART_UPDATE,
-        PART_INSTALLER,
-        PART_VC
+	PART_UNKNOWN = 0,
+	PART_DATA,
+	PART_UPDATE,
+	PART_INSTALLER,
+	PART_VC
 };
 
 struct Partition
 {
-        uint64 offset;
-        PartitionHeader header;
-        uint64 appldr_size;
-        uint8 isEncrypted;
-        uint64 tmdOffset;
-        uint64 tmdSize;
-        Tmd* tmd;
-		uint64	h3_offset;
+	uint64 offset;
+	PartitionHeader header;
+	uint64 appldr_size;
+	uint8 isEncrypted;
+	uint64 tmdOffset;
+	uint64 tmdSize;
+	Tmd* tmd;
+	uint64	h3_offset;
 
-        char title_id_str[17];
+	char title_id_str[17];
 
-        enum PartitionType type;
-        char chan_id[5];
+	enum PartitionType type;
+	char chan_id[5];
 
-        char key_c[35];
-        AES_KEY key;
+	char key_c[35];
+	AES_KEY key;
 
-		uint8 title_key[16];
+	uint8 title_key[16];
 
-        uint64 data_offset;
-        uint64 data_size;
+	uint64 data_offset;
+	uint64 data_size;
 
-        uint64 cert_offset;
-        uint64 cert_size;
+	uint64 cert_offset;
+	uint64 cert_size;
 
-        uint8 dec_buffer[0x8000];
+	uint8 dec_buffer[0x8000];
 
-        uint32 cached_block;
-        uint8 cache[0x7c00];
+	uint32 cached_block;
+	uint8 cache[0x7c00];
 };
 */
 
@@ -343,8 +343,8 @@ public:
 
 	//HTREEITEM	hPartition[20];
 	//HTREEITEM	hDisc;
-        PNode hPartition[20];
-        PNode hDisc;
+	PNode hPartition[20];
+	PNode hDisc;
 
 	uint8			image_parse_header (struct PartitionHeader *header, uint8 *buffer);
 	struct ImageFile *	image_init (const char *filename, int file_p = 0);
