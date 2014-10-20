@@ -1,5 +1,6 @@
 #include "EulaPage.h"
 #include "PatchWizard.h"
+#include <core.h>
 #include <QFile>
 #include <QTextStream>
 
