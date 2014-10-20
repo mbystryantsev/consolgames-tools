@@ -3,6 +3,7 @@
 #include "FreeSpaceChecker.h"
 #include "ImageFileChecker.h"
 #include "Configurator.h"
+#include <core.h>
 #include <QToolTip>
 #include <QFileDialog>
 #include <QMessageBox>

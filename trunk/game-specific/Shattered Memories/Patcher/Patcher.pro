@@ -2,8 +2,11 @@ include(Patcher.pri)
 
 QT += core gui
 CONFIG -= flat
-CONFIG += precompile_header
-PRECOMPILED_HEADER = pch.h
+
+isEmpty(NO_PRECOMPILED_HEADER){
+	CONFIG += precompile_header
+	PRECOMPILED_HEADER = pch.h
+}
 
 HEADERS = \
 	$$files(*.h) \
