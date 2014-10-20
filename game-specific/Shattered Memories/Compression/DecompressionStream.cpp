@@ -49,7 +49,13 @@ largesize_t DecompressionStream::read(void* buf, largesize_t size)
 			m_finished = true;
 			break;
 		}
-		ASSERT(ret == Z_OK);
+		if (ret != Z_OK)
+		{
+			DLOG << "Zlib error " << ret << ": " << m_zStream.msg;
+			ASSERT(!"Zlib error!");
+			break;
+		}
+
 	}
 
 	return (size - m_zStream.avail_out);
