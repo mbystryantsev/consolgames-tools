@@ -1,6 +1,7 @@
 #pragma once
 #include <QMap>
 #include <QByteArray>
+#include <QString>
 
 class QTextStream;
 
