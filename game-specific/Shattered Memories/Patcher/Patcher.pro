@@ -34,11 +34,14 @@ CONFIG(debug, debug|release){
 }
 
 LIBS += \
-	CommonQt.lib \
+	core.lib \
+	zlib.lib \
 	WiiStreams.lib \
+	Common.lib \
+	CommonQt.lib \
+	Compression.lib \
 	StreamParserLib.lib \
 	PatcherLib.lib \
-	core.lib \
 
 MOC_DIR = generatedfiles/moc
 UI_HEADERS_DIR = generatedfiles/ui
