@@ -1,5 +1,6 @@
 #pragma once
 #include <Stream.h>
+#include <memory>
 
 namespace ShatteredMemories
 {

@@ -3,11 +3,15 @@ include(../ShatteredMemories.pri)
 QT -= gui
 QT += core
 CONFIG -= flat
-CONFIG += static precompiled_header
+CONFIG += static
 TEMPLATE = lib
+
+isEmpty(NO_PRECOMPILED_HEADER){
+	CONFIG += precompile_header
+	PRECOMPILED_HEADER = pch.h
+}
 
 HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
-PRECOMPILED_HEADER = pch.h
 
 LIBS += core.lib Common.lib Compression.lib WiiStreams.lib CommonQt.lib
