@@ -1,4 +1,5 @@
 #include "CompoundProgressNotifier.h"
+#include <core.h>
 
 LOG_CATEGORY("PatcherLib.CompoundProgressNotifier");
 
