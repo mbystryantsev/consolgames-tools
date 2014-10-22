@@ -22,7 +22,7 @@ PatchWizard::PatchWizard(QWidget* parent)
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);
 
-	setButtonText(QWizard::CommitButton, QString::fromWCharArray(L"Применить!"));
+	setButtonText(QWizard::CommitButton, tr("Применить!"));
 
 	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/watermark.png"));
 
