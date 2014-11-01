@@ -49,36 +49,46 @@ static const char* c_opm16Extensions[16] =
         "",     "",     "",     ""
     };
 
+#ifdef _WIN32
+#define SEP_S "\\"
+#define SEP   '\\'
+#else
+#define SEP_S "/"
+#define SEP   '/'
+#endif
+#define DIR(dir) (SEP_S dir SEP_S)
+#define ROOT_DIR SEP_S
+
 static const char* c_defaultDirectoryStruct[16] =
 	{
-        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
-        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
-        "\\TIM\\",   "\\VIN\\",   "\\XA\\",    "\\",
-        "\\",        "\\",        "\\",        "\\"
+        DIR("1ST"),   DIR("ANIM"),  DIR("BG"),    DIR("CHARA"),
+        DIR("ITEM"),  DIR("MISC"),  DIR("SND"),   DIR("TEST"),
+        DIR("TIM"),   DIR("VIN"),   DIR("XA"),    ROOT_DIR,
+        ROOT_DIR,     ROOT_DIR,     ROOT_DIR,     ROOT_DIR
     };
 
 static const char* c_demoDirectoryStruct[16] =
 	{
-        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
-        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TIM\\",
-        "\\VIN\\",   "\\XA\\",    "\\",        "\\",
-        "\\",        "\\",        "\\",        "\\"
+        DIR("1ST"),   DIR("ANIM"),  DIR("BG"),     DIR("CHARA"),
+        DIR("ITEM"),  DIR("MISC"),  DIR("SND"),    DIR("TIM"),
+        DIR("VIN"),   DIR("XA"),    ROOT_DIR,      ROOT_DIR,
+        ROOT_DIR,     ROOT_DIR,     ROOT_DIR,      ROOT_DIR
     };
 	
 static const char* c_opm16DirectoryStruct[16] =
 	{
-        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
-        "\\ITEM\\",  "\\SND\\",   "\\TEST\\",  "\\TIM\\",
-        "\\VIN\\",   "\\XA\\",    "\\",        "\\",
-        "\\",        "\\",        "\\",        "\\"
+        DIR("1ST"),   DIR("ANIM"),  DIR("BG"),    DIR("CHARA"),
+        DIR("ITEM"),  DIR("SND"),   DIR("TEST"),  DIR("TIM"),
+        DIR("VIN"),   DIR("XA"),    ROOT_DIR,     ROOT_DIR,
+        ROOT_DIR,     ROOT_DIR,     ROOT_DIR,     ROOT_DIR
     };
 
 static const char* c_extendedDirectoryStruct[16] =
 	{
-        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
-        "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TEST\\",
-        "\\TIM\\",   "\\VIN\\",   "\\VIN2\\",  "\\VIN3\\",
-        "\\VIN4\\",  "\\VIN5\\",  "\\XA\\",    "\\"
+        DIR("1ST"),   DIR("ANIM"),  DIR("BG"),    DIR("CHARA"),
+        DIR("ITEM"),  DIR("MISC"),  DIR("SND"),   DIR("TEST"),
+        DIR("TIM"),   DIR("VIN"),   DIR("VIN2"),  DIR("VIN3"),
+        DIR("VIN4"),  DIR("VIN5"),  DIR("XA"),    ROOT_DIR
     };
 
 namespace
@@ -382,18 +392,18 @@ static void forceDirectories(const char *dir)
     char tmp[MAX_PATH];
     snprintf(tmp, sizeof(tmp), "%s" ,dir);
     const size_t len = strlen(tmp);
-    if (tmp[len - 1] == '\\')
+    if (tmp[len - 1] == SEP)
 	{
 		tmp[len - 1] = 0;
 	}
 
     for (char* p = tmp + 1; *p != '\0'; p++)
 	{
-		if (*p == '\\')
+		if (*p == SEP)
 		{
 			*p = 0;
 			mkdir(tmp);
-			*p = '\\';
+			*p = SEP;
 		}
     }
     mkdir(tmp);
@@ -413,7 +423,7 @@ static bool extractFiles(const std::vector<FileRecord>& records, CDStream& cd, c
     {
         forceDirectories(path);
     }
-    strcat(path, "\\list.txt");
+    strcat(path, SEP_S "list.txt");
 
     std::ofstream list(path, std::ios_base::out);
     if (!list.is_open())
