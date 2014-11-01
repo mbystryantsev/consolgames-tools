@@ -186,6 +186,19 @@ static const VersionInfo c_versionInfo[] =
 			NULL
 		},
 		{
+			"EU, Trial (Demo) Game #2",
+			"SLED-02186",
+			"/SLED_021.86",
+			0x983B18E0,
+			c_extendedDirectoryStruct,
+			c_defaultExtensions,
+			0xB8FC,
+			1015,
+			false,
+			0,
+			NULL
+		},
+		{
 			"US, Trial (Demo) Game",
 			"SLUS-90050",
 			"/SLUS_900.50",
