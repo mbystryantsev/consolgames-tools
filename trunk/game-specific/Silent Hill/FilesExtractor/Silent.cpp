@@ -262,6 +262,19 @@ static const VersionInfo c_versionInfo[] =
 			false,
 			176510,
 			"/SLED_021.90"
+		},
+		{
+			"Euro Demo (Future) 103",
+			"SCED-04082",
+			"/SH/SH.EXE",
+			0x47D6B153,
+			c_extendedDirectoryStruct,
+			c_defaultExtensions,
+			0xC8FC,
+			1015,
+			false,
+			92621,
+			"/SCED_040.82"
 		}
 	};
 
