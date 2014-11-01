@@ -113,6 +113,7 @@ struct VersionInfo
 	int fileCount;
 	bool altRecordFormat;
 	uint32_t baseLba;
+	const char* rootExecutable;
 };
 
 }
@@ -129,7 +130,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB8FC,
 			2310,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"US, Full Game (v1.1)",
@@ -141,7 +143,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB91C,
 			2074,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"US, Full Game Beta (v1.0)",
@@ -153,7 +156,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB850,
 			2072,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"JP, Full Game",
@@ -165,7 +169,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB91C,
 			2074,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"EU, Trial (Demo) Game",
@@ -177,7 +182,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB648,
 			850,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"US, Trial (Demo) Game",
@@ -189,7 +195,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB648,
 			849,
 			false,
-			0
+			0,
+			NULL
 		},
 		{
 			"JP, Trial (Demo) Game",
@@ -201,7 +208,8 @@ static const VersionInfo c_versionInfo[] =
 			0xB780,
 			843,
 			true,
-			0
+			0,
+			NULL
 		},
 		{
 			"Official U.S. PlayStation Magazine Demo Disc #16",
@@ -213,7 +221,8 @@ static const VersionInfo c_versionInfo[] =
 			0xAA90,
 			886,
 			true,
-			72656
+			72656,
+			"/SCUS_942.78"
 		},
 		{
 			"Best Horror Games Ever Demo",
@@ -225,7 +234,21 @@ static const VersionInfo c_versionInfo[] =
 			0xC8FC,
 			1015,
 			false,
-			31075
+			31075,
+			"/SCED_024.20"
+		},
+		{
+			"PlayStation Zone CD Vol. 10",
+			"SLED-02190",
+			"/SH/SH.EXE",
+			0x47D6B153,
+			c_extendedDirectoryStruct,
+			c_defaultExtensions,
+			0xC8FC,
+			1015,
+			false,
+			176510,
+			"/SLED_021.90"
 		}
 	};
 
@@ -374,6 +397,12 @@ static RegionInfo detectRegion(CDStream& cd)
 	for (int i = 0; i < versionCoint; i++)
 	{
 		const VersionInfo& info = c_versionInfo[i];
+		
+		if (info.rootExecutable != NULL && fs.findFile(info.rootExecutable).name.empty())
+		{
+			continue;
+		}
+
 		const ISO9660FS::FileInfo fileInfo = fs.findFile(info.executablePath);
 		if (fileInfo.name.empty())
 		{
