@@ -2,13 +2,20 @@
 #include "CDStream.h"
 #include "ISO9660_FS.h"
 #include "crc.h"
+#include <cstring>
 #include <string>
 #include <iostream>
 #include <vector>
 #include <fstream>
 #include <iomanip>
+#ifdef _WIN32
 #include <io.h>
 #include <direct.h>
+#else
+#include <unistd.h>
+#include <sys/io.h>
+#include <sys/stat.h>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
@@ -19,7 +26,7 @@
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
-#define mkdir _mkdir
+#define mkdir(path, mode) _mkdir(path)
 #define access _access
 #endif
 
@@ -402,11 +409,11 @@ static void forceDirectories(const char *dir)
 		if (*p == SEP)
 		{
 			*p = 0;
-			mkdir(tmp);
+			mkdir(tmp, 0);
 			*p = SEP;
 		}
     }
-    mkdir(tmp);
+    mkdir(tmp, 0);
 }
 
 static bool directoryExists(const char *dir)
