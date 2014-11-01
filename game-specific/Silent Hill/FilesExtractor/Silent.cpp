@@ -41,6 +41,13 @@ static const char* c_demoExtensions[16] =
         ".TXT", "",     "",     ""
     };
 
+static const char* c_opm16Extensions[16] =
+    {
+        ".TIM", ".VAB", ".BIN", ".ANM",
+        ".DMS", ".PLM", ".IPD", ".ILM",
+        ".TMD", ".KDT", ".CMP", "",
+        "",     "",     "",     ""
+    };
 
 static const char* c_defaultDirectoryStruct[16] =
 	{
@@ -54,10 +61,18 @@ static const char* c_demoDirectoryStruct[16] =
 	{
         "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
         "\\ITEM\\",  "\\MISC\\",  "\\SND\\",   "\\TIM\\",
-        "\\VIN\\",   "\\XA\\",   "\\",    "\\",
+        "\\VIN\\",   "\\XA\\",    "\\",        "\\",
         "\\",        "\\",        "\\",        "\\"
     };
 	
+static const char* c_opm16DirectoryStruct[16] =
+	{
+        "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
+        "\\ITEM\\",  "\\SND\\",   "\\TEST\\",  "\\TIM\\",
+        "\\VIN\\",   "\\XA\\",    "\\",        "\\",
+        "\\",        "\\",        "\\",        "\\"
+    };
+
 static const char* c_extendedDirectoryStruct[16] =
 	{
         "\\1ST\\",   "\\ANIM\\",  "\\BG\\",    "\\CHARA\\",
@@ -176,8 +191,8 @@ static const VersionInfo c_versionInfo[] =
 			"SCUS-94278",
 			"/SH/SH.EXE",
 			0x435425B7,
-			c_defaultDirectoryStruct,
-			c_demoExtensions,
+			c_opm16DirectoryStruct,
+			c_opm16Extensions,
 			0xAA90,
 			886,
 			true,
