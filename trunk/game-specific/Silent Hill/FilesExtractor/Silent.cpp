@@ -409,11 +409,11 @@ static void forceDirectories(const char *dir)
 		if (*p == SEP)
 		{
 			*p = 0;
-			mkdir(tmp, 0);
+			mkdir(tmp, 0755);
 			*p = SEP;
 		}
     }
-    mkdir(tmp, 0);
+    mkdir(tmp, 0755);
 }
 
 static bool directoryExists(const char *dir)
