@@ -102,7 +102,7 @@ static const uint16_t g_table16[256] = {
 	0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
 
-uint32_t crc32(const void* buf, size_t len, uint32_t crc)
+uint32_t crc32(const void* buf, uint32_t len, uint32_t crc)
 {
 	const uint8_t* d = reinterpret_cast<const uint8_t*>(buf);
 	crc ^= 0xFFFFFFFF;
@@ -111,7 +111,7 @@ uint32_t crc32(const void* buf, size_t len, uint32_t crc)
 	return crc ^ 0xFFFFFFFF;
 }
 
-uint16_t crc16(const void* buf, size_t len, uint16_t crc)
+uint16_t crc16(const void* buf, uint32_t len, uint16_t crc)
 {
 	const uint8_t* d = reinterpret_cast<const uint8_t*>(buf);
 	while (len--)
