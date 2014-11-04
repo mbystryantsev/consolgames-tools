@@ -16,7 +16,7 @@ WiiFileStream::WiiFileStream(WiiImage& image, int partition, offset_t offset, la
 
 largesize_t WiiFileStream::read(void* buf, largesize_t size)
 {
-	size = min(size, m_size - m_position);
+	size = std::min(size, m_size - m_position);
 	largesize_t result = m_image.io_read_part(buf, size, m_partition, m_offset + m_position);
 	m_position += result;
 	return result;
@@ -24,7 +24,7 @@ largesize_t WiiFileStream::read(void* buf, largesize_t size)
 
 largesize_t WiiFileStream::write(const void* buf, largesize_t size)
 {
-	size = min(m_size - m_position, size);
+	size = std::min(m_size - m_position, size);
 	const largesize_t written = m_image.wii_write_data_file(m_partition, m_offset + m_position, &MemoryStream(buf, static_cast<ptrdiff_t>(size)), size) ? size : 0;
 	m_position += written;
 	return written;
