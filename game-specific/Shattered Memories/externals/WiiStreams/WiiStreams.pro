@@ -12,15 +12,15 @@ CONFIG(external_build){
 }
 
 HEADERS = \
-	$$STRDIR/*.h \
-	$$STRDIR/aes/*.h \
-	$$STRDIR/include/openssl/*.h \
-	$$STRDIR/sha/*.h \
+	$$files($$STRDIR/*.h) \
+	$$files($$STRDIR/aes/*.h) \
+	$$files($$STRDIR/include/openssl/*.h) \
+	$$files($$STRDIR/sha/*.h) \
 	
 SOURCES = \
-	$$STRDIR/*.cpp \
-	$$STRDIR/aes/*.c \
-	$$STRDIR/sha/*.c \
+	$$files($$STRDIR/*.cpp) \
+	$$files($$STRDIR/aes/*.c) \
+	$$files($$STRDIR/sha/*.c) \
 
 INCLUDEPATH += \
 	$$STRDIR \
