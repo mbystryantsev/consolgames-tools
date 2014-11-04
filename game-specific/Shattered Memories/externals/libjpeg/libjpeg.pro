@@ -3,7 +3,7 @@ CONFIG += static
 TEMPLATE = lib
 
 DEFINES += _CRT_SECURE_NO_WARNINGS
-
+QMAKE_CXXFLAGS += /wd4100
 LIBJPEGDIR = ../../../../externals/libjpeg
 HEADERS = jconfig.h $$files($$LIBJPEGDIR/*.h)
 SOURCES = \

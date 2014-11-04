@@ -9,3 +9,5 @@ ZLIBDIR = ../../../../externals/zlib
 HEADERS = $$PNGLITEDIR/pnglite.h
 SOURCES = $$PNGLITEDIR/pnglite.c
 INCLUDEPATH += $$PNGLITEDIR $$ZLIBDIR
+
+QMAKE_CXXFLAGS += /wd4100
