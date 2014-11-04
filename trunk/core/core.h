@@ -125,6 +125,10 @@ public:
 # define ASSERT(expression) ((void)0)
 #endif
 
+#ifndef UNUSED
+# define UNUSED(x) ((void)x)
+#endif
+
 #ifdef VERIFY
 # undef VERIFY
 #endif
