@@ -68,7 +68,7 @@ void printUsage()
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
 			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] - encode image into texture\n"
 			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n"
-			"  -j <InImage> <OutImage> - reencode image as jpeg\n";
+			"  -j <InImage> <OutImage> [quality] - reencode image as jpeg\n";
 }
 
 enum Platform
