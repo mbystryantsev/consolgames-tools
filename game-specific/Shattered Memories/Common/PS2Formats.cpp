@@ -1,5 +1,6 @@
 #include "PS2Formats.h"
 #include <cstring>
+#include <algorithm>
 
 namespace ShatteredMemories
 {
@@ -8,11 +9,11 @@ const uint32 PS2Formats::encodedRasterSize(ImageFormat format, int width, int he
 {
 	if (format == imageFormatIndexed4)
 	{
-		return max(32, width) * height / 2;
+		return std::max(32, width) * height / 2;
 	}
 	if (format == imageFormatIndexed8)
 	{
-		return max(16, width) * height;
+		return std::max(16, width) * height;
 	}
 	if (format == imageFormatRGBA)
 	{

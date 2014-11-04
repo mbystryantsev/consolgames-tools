@@ -1,6 +1,7 @@
 #include "RowColMapEncoder.h"
 #include "MapCommon.h"
 #include <vector>
+#include <algorithm>
 
 namespace Origins
 {
@@ -65,39 +66,14 @@ static void calcPrefix(const uint8* pattern, int patternSize, char* prefix)
 	}
 }
 
-namespace
-{
-
-template <int layerWidth, int layerHeight>
-void copyRect(const uint8* image, int tileX, int tileY, uint8* canvas, int canvasX, int canvasY)
+static void copyRect(const uint8* image, int width, int, int tileX, int tileY, uint8* canvas, int canvasX, int canvasY)
 {
 	for (int y = 0; y < c_tileWidthHeight; y++)
 	{
 		uint8* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
-		const uint8* imagePixels = image + (tileY + y) * layerWidth + tileX;
+		const uint8* imagePixels = image + (tileY + y) * width + tileX;
 		std::copy(imagePixels, imagePixels + c_tileWidthHeight, canvasPixels);
 	}
-}
-
-
-template <int layerWidth, int layerHeight>
-class Compressor
-{
-public:
-	Compressor(FillInfo& fillInfo, uint8* canvas, const uint8* layer)
-		: m_fillInfo(fillInfo)
-		, m_canvas(canvas)
-		, m_layer(layer)
-	{
-	}
-
-private:
-	FillInfo& m_fillInfo;
-	uint8* m_canvas;
-	const uint8* m_layer;
-	
-};
-
 }
 
 static bool compareTile(int compareWidth, int compareHeight, uint8* canvas, int canvasX, int canvasY, const uint8* image, int width, int, int tileX, int tileY)
@@ -143,11 +119,11 @@ static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, 
 	{
 		const int rc = rcOffset / c_tileWidthHeight;
 
-		const int minLookupX = max(rcOffset, fillInfo.rows[rc] - c_tileWidthHeight);
-		const int maxLookupX = max(rcOffset, min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.rows[rc]));
+		const int minLookupX = std::max(rcOffset, fillInfo.rows[rc] - c_tileWidthHeight);
+		const int maxLookupX = std::max(rcOffset, std::min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.rows[rc]));
 		for (int x = minLookupX; x <= maxLookupX; x++)
 		{
-			const int weight = min(c_tileWidthHeight, max(0, fillInfo.rows[rc] - x));
+			const int weight = std::min<int>(c_tileWidthHeight, std::max<int>(0, fillInfo.rows[rc] - x));
 			if (compareTile(weight, c_tileWidthHeight, canvas, x, rcOffset, image, width, height, tileX, tileY))
 			{
 				if (weight > result.weight)
@@ -163,11 +139,11 @@ static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, 
 			}
 		}
 
-		const int minLookupY = max(rcOffset, fillInfo.cols[rc] - c_tileWidthHeight);
-		const int maxLookupY = max(rcOffset, min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.cols[rc]));
+		const int minLookupY = std::max(rcOffset, fillInfo.cols[rc] - c_tileWidthHeight);
+		const int maxLookupY = std::max(rcOffset, std::min(c_tilesCanvasWidthHeight - c_tileWidthHeight, fillInfo.cols[rc]));
 		for (int y = minLookupY; y <= maxLookupY; y++)
 		{
-			const int weight = min(c_tileWidthHeight, max(0, fillInfo.cols[rc] - y));
+			const int weight = std::min<int>(c_tileWidthHeight, std::max<int>(0, fillInfo.cols[rc] - y));
 			if (compareTile(c_tileWidthHeight, weight, canvas, rcOffset, y, image, width, height, tileX, tileY))
 			{
 				if (weight > result.weight)
@@ -221,8 +197,8 @@ static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillIn
 
 		const int row = bestPlace.x / c_tileWidthHeight;
 		const int col = bestPlace.y / c_tileWidthHeight;
-		fillInfo.rows[col] = max(fillInfo.rows[col], bestPlace.x + c_tileWidthHeight);
-		fillInfo.cols[row] = max(fillInfo.cols[row], bestPlace.y + c_tileWidthHeight);
+		fillInfo.rows[col] = std::max<int>(fillInfo.rows[col], bestPlace.x + c_tileWidthHeight);
+		fillInfo.cols[row] = std::max<int>(fillInfo.cols[row], bestPlace.y + c_tileWidthHeight);
 
 		copyRect(image, width, height, tiles[bestTileIndex].x, tiles[bestTileIndex].y, canvas, bestPlace.x, bestPlace.y);
 

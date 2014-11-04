@@ -167,7 +167,7 @@ bool DataStreamParser::initSegment()
 
 	m_currentMetaInfo = readMetaInfo();
 
-	m_position = m_stream->position() - m_startStreamPosition - m_currSegmentPosition;
+	m_position = static_cast<uint32>(m_stream->position() - m_startStreamPosition - m_currSegmentPosition);
 
 	if (!m_currentMetaInfo.isNull())
 	{

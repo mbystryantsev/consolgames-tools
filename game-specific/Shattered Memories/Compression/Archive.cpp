@@ -6,6 +6,7 @@
 #include <PartStream.h>
 #include <FileStream.h>
 #include <memory>
+#include <functional>
 
 using namespace std;
 using namespace tr1;

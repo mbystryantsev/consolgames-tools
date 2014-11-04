@@ -1,6 +1,6 @@
 #include "ProgressNotifier.h"
-#include <core.h>
 #include <QCoreApplication>
+#include <core.h>
 
 namespace ShatteredMemories
 {

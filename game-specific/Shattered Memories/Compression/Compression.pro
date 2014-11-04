@@ -5,14 +5,15 @@ CONFIG -= flat qt
 CONFIG += static
 TEMPLATE = lib
 
+HEADERS = $$files(*.h)
+SOURCES = $$files(*.cpp)
+
 isEmpty(NO_PRECOMPILED_HEADER){
 	CONFIG += precompile_header
 	PRECOMPILED_HEADER = pch.h
+	SOURCES -= pch.h.cpp
 } else {
 	QMAKE_CXXFLAGS += -FIpch.h
 }
-
-HEADERS = $$files(*.h)
-SOURCES = $$files(*.cpp)
 
 LIBS += core.lib zlib.lib Common.lib

@@ -3,9 +3,8 @@ include(Patcher.pri)
 QT += core gui
 CONFIG -= flat
 
-isEmpty(NO_PRECOMPILED_HEADER){
-	CONFIG += precompile_header
-	PRECOMPILED_HEADER = pch.h
+!lessThan(QT_VER_MAJ, 5) {
+	QT += widgets
 }
 
 HEADERS = \
@@ -23,6 +22,12 @@ FORMS = \
 RESOURCES = \
 	resources/Patcher.qrc \
 	patchdata.qrc \
+
+isEmpty(NO_PRECOMPILED_HEADER){
+	CONFIG += precompile_header
+	PRECOMPILED_HEADER = pch.h
+	SOURCES -= pch.h.cpp
+}
 
 RC_FILE = Patcher.rc
  

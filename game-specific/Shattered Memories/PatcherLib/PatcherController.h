@@ -9,7 +9,7 @@ namespace ShatteredMemories
 class PatcherController: public QObject
 {
 	Q_OBJECT
-	Q_ENUMS(PatcherProcessor::ErrorCode);
+	Q_ENUMS(ShatteredMemories::PatcherProcessor::ErrorCode);
 
 public:
 	PatcherController(QObject* parent = NULL);
