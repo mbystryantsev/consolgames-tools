@@ -4,7 +4,6 @@
 
 #if defined(_WIN32) || defined(__WIN32)
 #define USE_WINDOWS_FILES
-#include <windows.h>
 #endif
 
 #include <algorithm>
@@ -39,7 +38,7 @@ protected:
 	void init(const std::wstring& filename, OpenMode mode);
 
 #ifdef USE_WINDOWS_FILES
-	HANDLE m_handle;
+	void* m_handle;
 #else
 	int m_descriptor;
 #endif

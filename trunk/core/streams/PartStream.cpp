@@ -1,4 +1,5 @@
 #include "PartStream.h"
+#include <algorithm>
 
 namespace Consolgames
 {
@@ -30,7 +31,7 @@ offset_t PartStream::seek(offset_t offset, SeekOrigin origin)
 		return m_stream->seek(m_position + size() + offset, seekSet);
 	}
 
-	offset = min(offset, size() - position());
+	offset = std::min(offset, size() - position());
 	return m_stream->seek(offset, origin);
 }
 
@@ -41,13 +42,13 @@ void PartStream::setSize(largesize_t size)
 
 largesize_t PartStream::read(void* buf, largesize_t size)
 {
-	size = min(m_size - position(), size);
+	size = std::min(m_size - position(), size);
 	return m_stream->read(buf, size);
 }
 
 largesize_t PartStream::write(const void* buf, largesize_t size)
 {
-	size = min(m_size - position(), size);
+	size = std::min(m_size - position(), size);
 	return m_stream->write(buf, size);
 }
 
