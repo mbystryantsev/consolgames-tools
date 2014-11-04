@@ -96,12 +96,16 @@ uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height, int
 
 uint32 WiiTextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
 {
+	UNUSED(format);
+	UNUSED(paletteFormat);
 	ASSERT(format == WiiFormats::imageFormatDXT1 && paletteFormat == WiiFormats::paletteFormatNone);
 	return 0;
 }
 
 bool WiiTextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode)
 {
+	UNUSED(palette);
+
 	if (!isFormatSupported(format) || !isPaletteFormatSupported(paletteFormat))
 	{
 		ASSERT(!"Unsupported format!");
@@ -120,6 +124,8 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 
 bool WiiTextureCodec::encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps)
 {
+	UNUSED(palette);
+
 	if (!isFormatSupported(format) || !isPaletteFormatSupported(paletteFormat))
 	{
 		ASSERT(!"Unsupported format!");

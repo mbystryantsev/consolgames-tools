@@ -198,6 +198,8 @@ uint32 PSTextureCodec::encodedRasterSize(int format, int width, int height, int 
 
 uint32 PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
 {
+	UNUSED(paletteFormat);
+
 	if (format == PS2Formats::imageFormatIndexed4)
 	{
 		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
