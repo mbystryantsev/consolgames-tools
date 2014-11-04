@@ -7,6 +7,10 @@
 #endif
 #include <io.h>
 
+#ifdef USE_WINDOWS_FILES
+#include <windows.h>
+#endif
+
 namespace Consolgames
 {
 

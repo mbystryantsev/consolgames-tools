@@ -24,7 +24,6 @@
 #ifdef _MSC_VER
 # define _CRT_SECURE_NO_WARNINGS 1
 # define _CRT_SECURE_NO_DEPRECATE 1
-# include <windows.h>
 #endif
 
 typedef unsigned char uint8;
@@ -188,9 +187,13 @@ const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 	__if_exists(__s_consolgames_log_category){ (DLog() << __s_consolgames_log_category << ": ") }
 #define LOG_CATEGORY(category) static const char* __s_consolgames_log_category = category;
 
-#ifndef _MSC_VER
+#if __cplusplus < 201103L && !defined(_MSC_VER)
 # define override
 #endif
 
 typedef __int64 offset_t;
 typedef __int64 largesize_t;
+
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER <= 1800)
+# define CPP_SUPPORTS_MOVE_SEMANTICS
+#endif

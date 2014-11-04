@@ -1,4 +1,5 @@
 #include "Stream.h"
+#include <algorithm>
 
 #define S_BUF_SIZE 0x40000
 
@@ -46,7 +47,7 @@ largesize_t Stream::writeStream(Stream *stream, largesize_t size)
     largesize_t left = size;
     while (left > 0)
 	{
-        const largesize_t count = min(left, S_BUF_SIZE);
+        const largesize_t count = std::min<largesize_t>(left, S_BUF_SIZE);
         const largesize_t readed = stream->read(buf, count);
         const largesize_t writed = write(buf, readed);
 

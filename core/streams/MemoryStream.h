@@ -6,16 +6,17 @@
 #include <cstring>
 #include <vector>
 
-#define BLOCK_SIZE 0x10000
-
 namespace Consolgames
 {
 
-class MemoryStream: public Stream
+class MemoryStream : public Stream
 {
 public:
 	MemoryStream();
-    MemoryStream(const void* data, ptrdiff_t size); 
+    MemoryStream(const void* data, largesize_t size);
+#ifdef CPP_SUPPORTS_MOVE_SEMANTICS
+	MemoryStream(std::vector<uint8>&& data);
+#endif
     virtual ~MemoryStream(){}
 
     virtual largesize_t read(void* buf, largesize_t size) override;
@@ -33,6 +34,7 @@ private:
 
 private:
 	largesize_t m_size;
+	largesize_t m_bufferSize;
 	OpenMode m_mode;
 	largesize_t m_position;
 	uint8* m_memory;

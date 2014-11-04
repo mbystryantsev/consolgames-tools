@@ -47,16 +47,18 @@ void IsoFile::init()
 {
 	//ASSERT(m_fileEntry.isFile() && "IsoFile Error: Filename points to a directory.");
 
-	m_currentSectorNumber	= m_fileEntry.lba;
-	m_currentOffset		= 0;
-	m_sectorOffset		= 0;
-	m_maxOffset			= std::max<uint32>( 0, m_fileEntry.size );
+	m_currentSectorNumber = m_fileEntry.lba;
+	m_currentOffset       = 0;
+	m_sectorOffset        = 0;
+	m_maxOffset           = std::max<uint32>(0, m_fileEntry.size);
 
-	if(m_maxOffset > 0)
+	if (m_maxOffset > 0)
+	{
 		m_internalReader.readSector(m_currentSector, m_currentSectorNumber);
+	}
 }
 
-IsoFile::~IsoFile() throw()
+IsoFile::~IsoFile()
 {
 }
 
@@ -64,17 +66,17 @@ offset_t IsoFile::seek(offset_t offset)
 {
 	offset_t endOffset = offset;
 
-	int oldSectorNumber = m_currentSectorNumber;
-	int newSectorNumber = m_fileEntry.lba + static_cast<int>(endOffset / sectorLength);
+	const int oldSectorNumber = m_currentSectorNumber;
+	const int newSectorNumber = m_fileEntry.lba + static_cast<int>(endOffset / sectorLength);
 
-	if(oldSectorNumber != newSectorNumber)
+	if (oldSectorNumber != newSectorNumber)
 	{
 		m_internalReader.readSector(m_currentSector, newSectorNumber);
 	}
 
 	m_currentOffset = endOffset;
 	m_currentSectorNumber = newSectorNumber;
-	m_sectorOffset = (int)(m_currentOffset % sectorLength);
+	m_sectorOffset = static_cast<int>(m_currentOffset % sectorLength);
 
 	return m_currentOffset;
 }
@@ -84,19 +86,19 @@ offset_t IsoFile::seek(offset_t offset)
 
 offset_t IsoFile::seek(offset_t offset, Stream::SeekOrigin origin)
 {
-	switch(origin)
+	switch (origin)
 	{
 	case Stream::seekSet:
-			ASSERT(offset >= 0 && offset <= ULONG_MAX && "Invalid seek position from start.");
-			return seek(offset);
+		ASSERT(offset >= 0 && offset <= ULONG_MAX && "Invalid seek position from start.");
+		return seek(offset);
 
 	case Stream::seekCur:
-			// truncate negative values to zero, and positive values to 4gb
-			return seek(std::min<>(std::max<offset_t>(0, static_cast<offset_t>(m_currentOffset) + offset), static_cast<offset_t>(ULONG_MAX)));
+		// truncate negative values to zero, and positive values to 4gb
+		return seek(std::min<offset_t>(std::max<offset_t>(0, static_cast<offset_t>(m_currentOffset) + offset), static_cast<offset_t>(ULONG_MAX)));
 
 	case Stream::seekEnd:
-			// truncate negative values to zero, and positive values to 4gb
-			return seek(std::min<>(std::max<offset_t>(0, static_cast<offset_t>(m_fileEntry.size+offset)), static_cast<offset_t>(ULONG_MAX)));
+		// truncate negative values to zero, and positive values to 4gb
+		return seek(std::min<offset_t>(std::max<offset_t>(0, static_cast<offset_t>(m_fileEntry.size+offset)), static_cast<offset_t>(ULONG_MAX)));
 	}
 
 	return 0;
@@ -110,7 +112,7 @@ void IsoFile::reset()
 // Returns the number of bytes actually skipped.
 offset_t IsoFile::skip(largesize_t n)
 {
-	offset_t oldOffset = m_currentOffset;
+	const offset_t oldOffset = m_currentOffset;
 
 	if (n < 0) 
 	{
@@ -170,7 +172,7 @@ largesize_t IsoFile::internalRead(void* dest, offset_t off, largesize_t len)
 			slen = static_cast<size_t>(m_maxOffset - m_currentOffset);
 		}
 
-		memcpy((uint8*)dest + off, m_currentSector + m_sectorOffset, slen);
+		memcpy(reinterpret_cast<uint8*>(dest) + off, m_currentSector + m_sectorOffset, static_cast<size_t>(slen));
 
 		m_sectorOffset += slen;
 		m_currentOffset += slen;
@@ -185,16 +187,15 @@ largesize_t IsoFile::read(void* dest, largesize_t size)
 	ASSERT(dest != NULL);
 	ASSERT(size >= 0);
 
-	if(size <= 0)
+	if (size <= 0)
 	{
 		return 0;
 	}
 
-	int off = 0;
+	offset_t off = 0;
+	largesize_t totalLength = 0;
 
-	int totalLength = 0;
-
-	largesize_t firstSector = internalRead(dest, off, std::min<int>(size, sectorLength - m_sectorOffset));
+	const largesize_t firstSector = internalRead(dest, off, std::min<largesize_t>(size, sectorLength - m_sectorOffset));
 	off += firstSector;
 	size -= firstSector;
 	totalLength += firstSector;
@@ -203,7 +204,7 @@ largesize_t IsoFile::read(void* dest, largesize_t size)
 	while ((size >= sectorLength) && (m_currentOffset < m_maxOffset))
 	{
 		makeDataAvailable();
-		int n = internalRead(dest, off, sectorLength);
+		const largesize_t n = internalRead(dest, off, sectorLength);
 		off += n;
 		size -= n;
 		totalLength += n;
@@ -213,8 +214,7 @@ largesize_t IsoFile::read(void* dest, largesize_t size)
 	if (size > 0) 
 	{
 		makeDataAvailable();
-		int lastSector = internalRead(dest, off, size);
-		totalLength += lastSector;
+		totalLength += internalRead(dest, off, size);
 	}
 
 	return totalLength;
@@ -231,4 +231,3 @@ const IsoFileDescriptor& IsoFile::entry() const
 }
 
 }
-	

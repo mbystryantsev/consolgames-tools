@@ -43,7 +43,7 @@ public:
 	IsoFile(const IsoDirectory& dir, const std::string& filename);
 	IsoFile(SectorSource& reader, const std::string& filename);
 	IsoFile(SectorSource& reader, const IsoFileDescriptor& fileEntry);
-	virtual ~IsoFile() throw();
+	virtual ~IsoFile();
 
 	offset_t seek(offset_t absoffset);
 	offset_t seek(offset_t offset, Stream::SeekOrigin origin);
