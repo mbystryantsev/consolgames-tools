@@ -22,4 +22,5 @@ SUBDIRS = \
 	externals/pnglite \
 	externals/zlib \
 	externals/nvtt \
+	externals/libjpeg \
 	tests/PatcherLibTests \
