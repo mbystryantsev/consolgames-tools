@@ -3,6 +3,7 @@
 #include "dxt1.h"
 #include <WiiFormats.h>
 #include <vector>
+#include <algorithm>
 
 using namespace ShatteredMemories;
 
@@ -87,8 +88,8 @@ uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height, int
 		mipmaps--;
 		width /= 2;
 		height /= 2;
-		width = max(width, 8);
-		height = max(height, 8);
+		width = std::max(width, 8);
+		height = std::max(height, 8);
 	}
 	return size;
 }
@@ -111,7 +112,7 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 	ASSERT(palette == NULL);
 
 	std::vector<nv::Color32> bgra(width * height);
-	DXTCodec::decodeDXT1(image, &bgra[0], width, height, max(1, mipmapsToDecode));
+	DXTCodec::decodeDXT1(image, &bgra[0], width, height, std::max(1, mipmapsToDecode));
 
 	bgraToRgba(&bgra[0], result, bgra.size());
 	return true;
