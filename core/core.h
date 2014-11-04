@@ -194,6 +194,6 @@ const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 typedef __int64 offset_t;
 typedef __int64 largesize_t;
 
-#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER <= 1800)
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
 # define CPP_SUPPORTS_MOVE_SEMANTICS
 #endif
