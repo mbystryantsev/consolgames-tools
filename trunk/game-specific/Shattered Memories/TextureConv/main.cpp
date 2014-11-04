@@ -7,12 +7,14 @@
 #include <FileStream.h>
 #include <core.h>
 #include <pnglite.h>
+#include <jpeglib.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <set>
 
-static int s_pngInitCode = png_init(0, 0);
+static const int s_pngInitCode = png_init(0, 0);
+static const int c_defaultJpegQuality = 86;
 
 using namespace std;
 using namespace Consolgames;
@@ -65,7 +67,8 @@ void printUsage()
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
 			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] - encode image into texture\n"
-			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n";
+			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n"
+			"  -j <InImage> <OutImage> - reencode image as jpeg\n";
 }
 
 enum Platform
@@ -82,6 +85,7 @@ enum Action
 	actionEncode,
 	actionDecode,
 	actionParse,
+	actionEncodeJPEG,
 	actionPrintUsage
 };
 
@@ -92,6 +96,7 @@ struct Arguments
 		, platform(platformUndefined)
 		, decodeMipmaps(false)
 		, mipmapCount(0)
+		, quality(c_defaultJpegQuality)
 	{
 	}
 
@@ -120,6 +125,11 @@ struct Arguments
 				&& !outputPath.empty()
 				&& !csvPath.empty();
 		}
+		if (action == actionEncodeJPEG)
+		{
+			return !inputPath.empty()
+				&& !outputPath.empty();
+		}
 		return false;
 	}
 
@@ -131,6 +141,7 @@ struct Arguments
 	string outputPath;
 	string csvPath;
 	int mipmapCount;
+	int quality;
 };
 
 static Platform platformFromString(const char* platformStr)
@@ -151,7 +162,7 @@ static Platform platformFromString(const char* platformStr)
 	return platformUndefined;
 }
 
-Arguments parseArgs(int argc, char *argv[])
+static Arguments parseArgs(int argc, char *argv[])
 {
 	Arguments result;
 
@@ -266,6 +277,28 @@ Arguments parseArgs(int argc, char *argv[])
 		result.inputPath = permanentArgs[2];
 		result.outputPath = permanentArgs[3];
 	}
+	else if (strcmp(action, "-j") == 0 || strcmp(action, "--jpeg") == 0)
+	{		
+		result.action = actionEncodeJPEG;
+
+		if (permanentArgs.size() != 2 && permanentArgs.size() != 3)
+		{
+			cout << "Invalid actual parameters count!" << endl;
+			return Arguments();
+		}
+
+		result.inputPath = permanentArgs[0];
+		result.outputPath = permanentArgs[1];
+
+		if (permanentArgs.size() == 3)
+		{
+			result.quality = atoi(permanentArgs[3]);
+		}
+		else
+		{
+			result.quality = c_defaultJpegQuality;
+		}
+	}
 	else
 	{
 		result.action = actionPrintUsage;
@@ -275,7 +308,7 @@ Arguments parseArgs(int argc, char *argv[])
 	return result;
 }
 
-auto_ptr<TextureCodec> codecForPlatform(Platform platform)
+static auto_ptr<TextureCodec> codecForPlatform(Platform platform)
 {
 	switch (platform)
 	{
@@ -292,7 +325,7 @@ auto_ptr<TextureCodec> codecForPlatform(Platform platform)
 }
 
 
-Platform platformFromSignature(uint32 signature)
+static Platform platformFromSignature(uint32 signature)
 {
 	switch (signature)
 	{
@@ -307,7 +340,7 @@ Platform platformFromSignature(uint32 signature)
 	return platformUndefined;
 }
 
-uint32 platformToSignature(Platform platform)
+static uint32 platformToSignature(Platform platform)
 {
 	switch (platform)
 	{
@@ -340,7 +373,7 @@ static bool checkFormatsAndNotify(TextureCodec* codec, int format, int paletteFo
 	return true;
 }
 
-bool decodeTexture(Stream& stream, const string& destPath, bool decodeMipmap)
+static bool decodeTexture(Stream& stream, const string& destPath, bool decodeMipmap)
 {
 	const TexHeader header = TexHeader::read(&stream);
 
@@ -404,7 +437,7 @@ bool decodeTexture(Stream& stream, const string& destPath, bool decodeMipmap)
 	return true;
 }
 
-bool decodeTexture(const string& inputPath, const string& destPath, bool decodeMipmap)
+static bool decodeTexture(const string& inputPath, const string& destPath, bool decodeMipmap)
 {
 	FileStream stream(inputPath, Stream::modeRead);
 	if (!stream.opened())
@@ -416,7 +449,7 @@ bool decodeTexture(const string& inputPath, const string& destPath, bool decodeM
 	return decodeTexture(stream, destPath, decodeMipmap);
 }
 
-bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps)
+static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps)
 {
 	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -494,7 +527,7 @@ bool encodeTexture(const string& filename, const string& destFile, Platform plat
 	return true;
 }
 
-std::string extractPart(const std::string& str, int part)
+static std::string extractPart(const std::string& str, int part)
 {
 	int offset = 0;
 	int index = 0;
@@ -519,7 +552,7 @@ std::string extractPart(const std::string& str, int part)
 	}	
 }
 
-bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, bool skipExistingTextures = false)
+static bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, bool skipExistingTextures = false)
 {
 	std::auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -713,6 +746,75 @@ bool extractTextures(Platform platform, const std::string& csvFile, const std::s
 	return true;
 }
 
+static bool encodeJPEG(const string& filename, const string& destFile, int quality = c_defaultJpegQuality)
+{
+	nv::Image image;
+
+	if (!image.load(filename.c_str()))
+	{
+		cout << "Error loading image!" << endl;
+		return false;
+	}
+
+	FILE* outfile = fopen(destFile.c_str(), "wb");
+	if (outfile == NULL)
+	{				
+		cout << "Unable to open output file!" << endl;
+		return false;
+	}
+
+	jpeg_compress_struct cinfo;
+	jpeg_error_mgr jerr;
+
+	memset(&cinfo, 0, sizeof(cinfo));
+	memset(&jerr, 0, sizeof(jerr));
+	
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cinfo);
+	jpeg_stdio_dest(&cinfo, outfile);
+
+	cinfo.image_width = image.width();
+	cinfo.image_height = image.height();
+	cinfo.input_components = 3;
+	cinfo.in_color_space = JCS_RGB;
+
+	jpeg_set_defaults(&cinfo);
+	jpeg_set_quality(&cinfo, quality, false);
+	jpeg_start_compress(&cinfo, TRUE);
+
+#pragma pack(push, 1)
+	struct RGB24
+	{
+		uint8 r, g, b;
+	};
+#pragma pack(pop)
+
+	std::vector<RGB24> line(image.width());
+	JSAMPROW row_pointer[1] = { reinterpret_cast<JSAMPROW>(&line.front()) };
+	while (cinfo.next_scanline < cinfo.image_height)
+	{
+		const nv::Color32* color32 = image.scanline(cinfo.next_scanline);
+		RGB24* color24 = &line.front();
+		for (uint i = 0; i < image.width(); i++)
+		{
+			color24->r = color32->r;
+			color24->g = color32->g;
+			color24->b = color32->b;
+			color24++;
+			color32++;
+		}
+
+		jpeg_write_scanlines(&cinfo, row_pointer, 1);
+	}
+
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+
+	fclose(outfile);
+
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	const Arguments args = parseArgs(argc, argv);
@@ -733,6 +835,10 @@ int main(int argc, char *argv[])
 	else if(args.action == actionParse)
 	{
 		return extractTextures(args.platform, args.csvPath, args.inputPath, args.outputPath) ? 0 : -1;
+	}
+	else if(args.action == actionEncodeJPEG)
+	{
+		return encodeJPEG(args.inputPath, args.outputPath, args.quality) ? 0 : -1;
 	}
 	else
 	{
