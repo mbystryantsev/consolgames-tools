@@ -1,4 +1,5 @@
 #include "ZlibStream.h"
+#include <algorithm>
 
 namespace ShatteredMemories
 {
@@ -63,7 +64,7 @@ largesize_t ZlibStream::skip(largesize_t size)
 	largesize_t skipped = 0;
 	while (size > 0)
 	{
-		const int chunk = min(s_chunkSize, static_cast<int>(size));
+		const int chunk = std::min<int>(s_chunkSize, static_cast<int>(size));
 		size -= chunk;
 		skipped += read(buf, chunk);
 	}

@@ -140,22 +140,22 @@ void swizzle8Proc(Func func, int width, int height, int encodedWidth)
 
 void unswizzle4as8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Unswizzle4as8Func(source, dest), width, height, max(32, width));
+	swizzle8Proc(Unswizzle4as8Func(source, dest), width, height, std::max(32, width));
 }
 
 void unswizzle8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Unswizzle8Func(source, dest), width, height, max(16, width));
+	swizzle8Proc(Unswizzle8Func(source, dest), width, height, std::max(16, width));
 }
 
 void swizzle4as8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Swizzle4as8Func(source, dest), width, height, max(32, width));
+	swizzle8Proc(Swizzle4as8Func(source, dest), width, height, std::max(32, width));
 }
 
 void swizzle8(const void* source, void* dest, int width, int height)
 {
-	swizzle8Proc(Swizzle8Func(source, dest), width, height, max(16, width));
+	swizzle8Proc(Swizzle8Func(source, dest), width, height, std::max(16, width));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -192,22 +192,22 @@ void pspSwizzle8Proc(Func func, int width, int height, int encodedWidth)
 
 void pspUnswizzle4(const void* source, void* dest, int width, int height)
 {
-	pspSwizzle8Proc(Unswizzle8Func(source, dest), width / 2, height, max(16, width / 2));
+	pspSwizzle8Proc(Unswizzle8Func(source, dest), width / 2, height, std::max(16, width / 2));
 }
 
 void pspUnswizzle8(const void* source, void* dest, int width, int height)
 {
-	pspSwizzle8Proc(Unswizzle8Func(source, dest), width, height, max(16, width));
+	pspSwizzle8Proc(Unswizzle8Func(source, dest), width, height, std::max(16, width));
 }
 
 void pspSwizzle4(const void* source, void* dest, int width, int height)
 {
-	pspSwizzle8Proc(Swizzle8Func(source, dest), width / 2, height, max(16, width / 2));
+	pspSwizzle8Proc(Swizzle8Func(source, dest), width / 2, height, std::max(16, width / 2));
 }
 
 void pspSwizzle8(const void* source, void* dest, int width, int height)
 {
-	pspSwizzle8Proc(Swizzle8Func(source, dest), width, height, max(16, width));
+	pspSwizzle8Proc(Swizzle8Func(source, dest), width, height, std::max(16, width));
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -53,8 +53,8 @@
 #ifndef HTMLHIGHLIGHTER_H
 #define HTMLHIGHLIGHTER_H
 
-#include <QtGui/QSyntaxHighlighter>
-#include <QtGui/QPlainTextEdit>
+#include <QSyntaxHighlighter>
+#include <QPlainTextEdit>
 
 QT_BEGIN_NAMESPACE
 

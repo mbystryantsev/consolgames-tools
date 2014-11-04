@@ -6,13 +6,20 @@ HEADERS = $$files(*.h)
 SOURCES = $$files(*.cpp)
 FORMS = $$files(ui/*.ui)
 TEMPLATE = app
-CONFIG += precompiled_header
 DEFINES += CG_LOG_ENABLED
 
-PRECOMPILED_HEADER = pch.h
+!lessThan(QT_VER_MAJ, 5) {
+	QT += widgets
+}
+
+isEmpty(NO_PRECOMPILED_HEADER){
+	CONFIG += precompile_header
+	PRECOMPILED_HEADER = pch.h
+	SOURCES -= pch.h.cpp
+}
 
 !contains(DEFINES, PRODUCTION) || CONFIG(debug, release|debug){
 	CONFIG += console
 }
 
-LIBS += core.lib PatcherLib.lib Common.lib CommonQt.lib StreamParserLib.lib
+LIBS += core.lib PatcherLib.lib Common.lib CommonQt.lib StreamParserLib.lib Compression.lib WiiStreams.lib zlib.lib

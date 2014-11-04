@@ -1,5 +1,5 @@
+#include "MainFrame.h"
 #include <core.h>
-#include <MainFrame.h>
 #include <QString>
 #include <QListWidgetItem>
 #include <QDir>

@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QSettings>
+#include <algorithm>
 
 using namespace Consolgames;
 using namespace std;
@@ -854,7 +855,7 @@ bool PatcherProcessor::compareStreams(Stream* stream1, Stream* stream2, bool ign
 			return false;
 		}
 
-		const largesize_t toRead = min(chunk, size);
+		const largesize_t toRead = std::min<largesize_t>(chunk, size);
 		size -= chunk;
 
 		const largesize_t readed1 = stream1->read(&data1[0], toRead);
