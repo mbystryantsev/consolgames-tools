@@ -11,15 +11,15 @@ DEFINES += _SCL_SECURE_NO_WARNINGS
 COREDIR = ../../../../core
 
 HEADERS = \
-	$$COREDIR/*.h \
-	$$COREDIR/classes/*.h \
-	$$COREDIR/streams/*.h \
-	$$COREDIR/streams/iso/*.h \
+	$$files($$COREDIR/*.h) \
+	$$files($$COREDIR/classes/*.h) \
+	$$files($$COREDIR/streams/*.h) \
+	$$files($$COREDIR/streams/iso/*.h) \
 
 SOURCES = \
-	$$COREDIR/classes/*.cpp \
-	$$COREDIR/streams/*.cpp \
-	$$COREDIR/streams/iso/*.cpp \
+	$$files($$COREDIR/classes/*.cpp) \
+	$$files($$COREDIR/streams/*.cpp) \
+	$$files($$COREDIR/streams/iso/*.cpp) \
 
 INCLUDEPATH += \
 	$$COREDIR \
