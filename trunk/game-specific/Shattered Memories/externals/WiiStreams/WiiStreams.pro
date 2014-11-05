@@ -47,4 +47,4 @@ QMAKE_LIBDIR += \
 
 LIBS += core.lib
 
-QMAKE_CXXFLAGS += /wd4005
+QMAKE_CFLAGS += /wd4005
