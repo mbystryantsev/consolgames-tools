@@ -135,8 +135,8 @@ bool ExecutablePatcher::loadFromStream(QTextStream* stream)
 					return false;
 				}
 
-				const quint32 offset1 = spacePair[0].toUInt(NULL, 0);
-				const quint32 offset2 = spacePair[1].toUInt(NULL, 0);
+				const quint32 offset1 = spacePair[0].toUInt(NULL, 16);
+				const quint32 offset2 = spacePair[1].toUInt(NULL, 16);
 
 				if (offset1 == 0 || offset2 == 0 || offset1 >= offset2)
 				{
@@ -145,7 +145,7 @@ bool ExecutablePatcher::loadFromStream(QTextStream* stream)
 				}
 
 				bool ok = false;
-				const quint32 fileOffset = args[3].toUInt(&ok, 0);
+				const quint32 fileOffset = args[3].toUInt(&ok, 16);
 
 				if (!ok)
 				{
@@ -285,7 +285,8 @@ bool ExecutablePatcher::loadFromStream(QTextStream* stream)
 						DLOG << "Invalid string argument count: " << valuesStr;
 						return false;
 					}
-
+					
+					rec.inplace = false;
 					QString name = values[0].trimmed();
 					if (name.startsWith('@'))
 					{
@@ -461,9 +462,6 @@ bool ExecutablePatcher::apply(Consolgames::Stream* executableStream) const
 				DLOG << "Unable to find message!";
 				return false;
 			}
-
-			QString s = QString::fromRawData(reinterpret_cast<const QChar*>(m_messages[hash].constData()), m_messages[hash].size() / 2);
-			DLOG << s.length() << ' ' << s.toUtf8().length();
 
 			const QByteArray str = utf8
 				? QString::fromRawData(reinterpret_cast<const QChar*>(m_messages[hash].constData()), m_messages[hash].size() / 2).toUtf8()
