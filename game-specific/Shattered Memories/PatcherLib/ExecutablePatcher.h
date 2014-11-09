@@ -21,6 +21,14 @@ public:
 	bool apply(Consolgames::Stream* executableStream) const;
 
 private:
+	struct Segment
+	{
+		QString name;
+		quint32 memoryOffset;
+		quint32 fileOffset;
+		quint32 size;
+	};
+
 	struct SpaceRecord
 	{
 		SpaceRecord(quint32 offset = 0, quint32 size = 0)
@@ -43,7 +51,8 @@ private:
 		typeByte,
 		typeWord,
 		typeInt,
-		typeString
+		typeString,
+		typeUtf8
 	};
 
 	struct PatchRecord
@@ -51,6 +60,8 @@ private:
 		Type type;
 		QList<quint32> offsets;
 		QList<quint32> values;
+		bool inplace;
+		quint32 limit;
 	};
 
 private:
@@ -62,8 +73,7 @@ private:
 private:
 	QString m_filename;
 	bool m_loaded;
-	quint32 m_executableStartOffset;
-	quint32 m_executableLoadOffset;
+	QList<Segment> m_segments;
 	QList<SpaceRecord> m_spaceRecords;
 	QList<PatchRecord> m_patchRecords;
 	QMap<quint32, QByteArray> m_messages;
