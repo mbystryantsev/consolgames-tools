@@ -17,6 +17,7 @@ SUBDIRS = \
 	TextureConv \
 	Patcher \
 	CmiTool \
+	ExecutablePatcher \
 	externals/core \
 	externals/WiiStreams \
 	externals/pnglite \
