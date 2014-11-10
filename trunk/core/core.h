@@ -30,10 +30,6 @@ typedef unsigned char    uint8;
 typedef unsigned short   uint16;
 typedef unsigned int     uint32;
 typedef unsigned __int64 uint64;
-typedef char    int8;
-typedef short   int16;
-typedef int     int32;
-typedef __int64 int64;
 
 namespace Consolgames
 {
@@ -167,16 +163,16 @@ public:
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
 	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
 	DLog& operator <<(const std::wstring& s){std::cout << s.c_str(); return *this;}
-	DLog& operator <<(int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
-	DLog& operator <<(uint64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
-	DLog& operator <<(int32 v) { return (*this << (int64)v); }
-	DLog& operator <<(uint32 v) { return (*this << (uint64)v); }
-	DLog& operator <<(long v) { return (*this << (int64)v); }
-	DLog& operator <<(unsigned long v) { return (*this << (uint64)v); }
-	DLog& operator <<(int16 v) { return (*this << (int64)v); }
-	DLog& operator <<(uint16 v) { return (*this << (uint64)v); }
-	DLog& operator <<(int8 c){std::cout << c; return *this;}
-	DLog& operator <<(uint8 c){std::cout << c; return *this;}
+	DLog& operator <<(__int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
+	DLog& operator <<(unsigned __int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
+	DLog& operator <<(int v) { return (*this << (__int64)v); }
+	DLog& operator <<(unsigned int v) { return (*this << (unsigned __int64)v); }
+	DLog& operator <<(long v) { return (*this << (__int64)v); }
+	DLog& operator <<(unsigned long v) { return (*this << (unsigned __int64)v); }
+	DLog& operator <<(short v) { return (*this << (__int64)v); }
+	DLog& operator <<(unsigned short v) { return (*this << (unsigned __int64)v); }
+	DLog& operator <<(char c){std::cout << c; return *this;}
+	DLog& operator <<(unsigned char c){std::cout << c; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
 # ifdef QT_CORE_LIB
 	DLog& operator <<(const QString& s){std::cout << s.toStdString(); return *this;}
