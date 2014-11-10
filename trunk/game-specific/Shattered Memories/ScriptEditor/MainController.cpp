@@ -316,7 +316,7 @@ void MainController::loadSourceLanguage(const QByteArray& languageId, const QStr
 {
 	emit loadingLanguage(languageId);
 	m_scripts[languageId] = Strings::loadMessages(path);
-	Strings::expandReferences(m_scripts[languageId]);
+	Strings::expandReferences(m_scripts[languageId].messages);
 }
 
 void MainController::setMainSourceLanguage(const QByteArray& languageId)
