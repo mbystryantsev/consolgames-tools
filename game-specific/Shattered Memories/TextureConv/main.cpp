@@ -1,4 +1,6 @@
 #include <Image.h>
+#include <FloatImage.h>
+#include <Filter.h>
 #include <Color.h>
 #include "WiiTextureCodec.h"
 #include "PS2TextureCodec.h"
@@ -42,7 +44,7 @@ struct RGBA {uint8 r, g, b, a;};
 	}
 }
 
-bool savePNG(void* image, int width, int height, const char* filename)
+static bool savePNG(void* image, int width, int height, const char* filename)
 {
 	png_t png;
 	if (png_open_file_write(&png, filename) != PNG_NO_ERROR)
@@ -61,12 +63,12 @@ bool savePNG(void* image, int width, int height, const char* filename)
 	return result;
 }
 
-void printUsage()
+static void printUsage()
 {
 	cout << "Silent Hill: Shattered Memories Texture Converter by consolgames.ru\n"
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
-			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] - encode image into texture\n"
+			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
 			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n"
 			"  -j <InImage> <OutImage> [quality] - reencode image as jpeg\n";
 }
@@ -97,6 +99,8 @@ struct Arguments
 		, decodeMipmaps(false)
 		, mipmapCount(0)
 		, quality(c_defaultJpegQuality)
+		, customWidth(0)
+		, customHeight(0)
 	{
 	}
 
@@ -116,7 +120,8 @@ struct Arguments
 			return platform != platformUndefined
 				&& !format.empty()
 				&& !inputPath.empty()
-				&& !outputPath.empty();
+				&& !outputPath.empty()
+				&& ((customWidth == 0 && customHeight == 0) || (customWidth > 0 && customHeight > 0));
 		}
 		if (action == actionParse)
 		{
@@ -142,6 +147,8 @@ struct Arguments
 	string csvPath;
 	int mipmapCount;
 	int quality;
+	int customWidth;
+	int customHeight;
 };
 
 static Platform platformFromString(const char* platformStr)
@@ -219,7 +226,7 @@ static Arguments parseArgs(int argc, char *argv[])
 	{
 		result.action = actionEncode;
 
-		if (permanentArgs.size() != 4 && permanentArgs.size() != 5)
+		if (permanentArgs.size() < 4 || permanentArgs.size() > 7)
 		{
 			cout << "Invalid actual parameters count!" << endl;
 			return Arguments();
@@ -245,13 +252,24 @@ static Arguments parseArgs(int argc, char *argv[])
 		result.inputPath = permanentArgs[2];
 		result.outputPath = permanentArgs[3];
 
-		if (permanentArgs.size() == 5)
+		if (permanentArgs.size() == 5 || permanentArgs.size() == 7)
 		{
 			result.mipmapCount = atoi(permanentArgs[4]);
 		}
 		else
 		{
 			result.mipmapCount = TextureCodec::mipmapCountDefault;
+		}
+
+		if (permanentArgs.size() == 7)
+		{
+			result.customWidth = atoi(permanentArgs[5]);
+			result.customHeight = atoi(permanentArgs[6]);
+		}
+		else if (permanentArgs.size() == 6)
+		{
+			result.customWidth = atoi(permanentArgs[4]);
+			result.customHeight = atoi(permanentArgs[5]);
 		}
 	}
 	else if (strcmp(action, "-p") == 0 || strcmp(action, "--parse") == 0)
@@ -449,7 +467,7 @@ static bool decodeTexture(const string& inputPath, const string& destPath, bool 
 	return decodeTexture(stream, destPath, decodeMipmap);
 }
 
-static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps)
+static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps, int customWidth, int customHeight)
 {
 	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -471,25 +489,35 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		return false;
 	}
 
-	nv::Image image;
+	std::auto_ptr<nv::Image> image(new nv::Image());
 
-	if (!image.load(filename.c_str()))
+	if (!image->load(filename.c_str()))
 	{
 		cout << "Error loading image!" << endl;
 		return false;
 	}
 
-	std::vector<uint32> rgba(image.width() * image.height());
-	nvImageToRgba(image, &rgba[0]);
+	if (customWidth != 0)
+	{
+		ASSERT(customWidth > 0);
+		ASSERT(customHeight > 0);
+
+		nv::FloatImage floatImage(image.get());
+		std::auto_ptr<nv::FloatImage> resizedImage(floatImage.resize(nv::BoxFilter(), customWidth, customHeight, nv::FloatImage::WrapMode_Mirror));
+		image.reset(resizedImage->createImage());
+	}
+
+	std::vector<uint32> rgba(image->width() * image->height());
+	nvImageToRgba(*image, &rgba[0]);
 
 	TexHeader header;
 	header.platformSignature = platformToSignature(platform);
 	header.format = format;
 	header.paletteFormat = paletteFormat;
-	header.width = image.width();
-	header.height = image.height();
+	header.width = image->width();
+	header.height = image->height();
 	header.mipmapCount = mipmaps;
-	header.rasterSize = codec->encodedRasterSize(format, image.width(), image.height(), mipmaps);
+	header.rasterSize = codec->encodedRasterSize(format, image->width(), image->height(), mipmaps);
 	header.paletteSize = codec->encodedPaletteSize(format, paletteFormat);
 
 	if (header.rasterSize == 0)
@@ -501,7 +529,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 	vector<char> rasterData(header.rasterSize);
 	vector<char> paletteData(header.paletteSize);
 
-	if (!codec->encode(&rasterData[0], &rgba[0], format, image.width(), image.height(), paletteData.empty() ? NULL : &paletteData[0], paletteFormat, mipmaps))
+	if (!codec->encode(&rasterData[0], &rgba[0], format, image->width(), image->height(), paletteData.empty() ? NULL : &paletteData[0], paletteFormat, mipmaps))
 	{
 		cout << "Unable to encode image!";
 		return false;
@@ -830,7 +858,7 @@ int main(int argc, char *argv[])
 	}
 	else if(args.action == actionEncode)
 	{
-		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format.c_str(), args.mipmapCount) ? 0 : -1;
+		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format.c_str(), args.mipmapCount, args.customWidth, args.customHeight) ? 0 : -1;
 	}
 	else if(args.action == actionParse)
 	{
