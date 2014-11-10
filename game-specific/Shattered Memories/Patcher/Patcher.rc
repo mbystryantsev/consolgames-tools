@@ -17,7 +17,7 @@ BEGIN
 			VALUE "FileDescription",    GAME_TITLE " Russian Translation Patch"
 			VALUE "FileVersion",        VER_FILEVERSION_STR
 			VALUE "LegalCopyright",     "Copyright © 2013 Consolgames.ru"
-			VALUE "OriginalFilename",   GAME_ABBR "Patch.exe"
+			VALUE "OriginalFilename",   PATCH_FILENAME
 			VALUE "ProductName",        GAME_ABBR " Russian Translation Patch"
 			VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
 		END
