@@ -226,7 +226,7 @@ bool Strings::saveMessages(const QString& filename, const MessageSet& messages)
 	return saveMessages(filename, messages.messages, messages.hashes);
 }
 
-bool Strings::saveMessages(const QString& filename, const QMap<quint32,Message>& messages, const QList<quint32>& hashList)
+bool Strings::saveMessages(const QString& filename, const MessageSet::Messages& messages, const QList<quint32>& hashList)
 {
 	QFile file(filename);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -362,13 +362,13 @@ quint32 Strings::strToHash(const QString& hashStr)
 	return ok ? hash : 0;	
 }
 
-bool Strings::collapseDuplicates(MessageSet& messageSet)
+bool Strings::collapseDuplicates(MessageSet::Messages& messages)
 {
 	QHash<QString, quint32> stringsMap;
 
-	foreach (quint32 hash, messageSet.hashes)
+	foreach (quint32 hash, messages.keys())
 	{
-		Message& message = messageSet.messages[hash];
+		Message& message = messages[hash];
 		if (stringsMap.contains(message.text))
 		{
 			message.text = QString("{REF:%1}").arg(hashToStr(stringsMap.value(message.text)));
@@ -384,20 +384,20 @@ bool Strings::collapseDuplicates(MessageSet& messageSet)
 
 const QRegExp referenceExp("\\{REF:([0-9A-Fa-f]{8})\\}");
 
-bool Strings::expandReferences(MessageSet& messageSet)
+bool Strings::expandReferences(MessageSet::Messages& messages)
 {
-	foreach (quint32 hash, messageSet.hashes)
+	foreach (quint32 hash, messages.keys())
 	{
-		Message& message = messageSet.messages[hash];
+		Message& message = messages[hash];
 		if (isReference(message.text))
 		{
 			const quint32 sourceHash = extractReferenceHash(message.text);
-			if (sourceHash == 0 || !messageSet.messages.contains(hash))
+			if (sourceHash == 0 || !messages.contains(hash))
 			{
 				DLOG << "References expand error (" << hashToStr(hash) << " -> " << hashToStr(sourceHash) << ")";
 				return false;
 			}
-			message.text = messageSet.messages[sourceHash].text;
+			message.text = messages[sourceHash].text;
 		}
 	}
 

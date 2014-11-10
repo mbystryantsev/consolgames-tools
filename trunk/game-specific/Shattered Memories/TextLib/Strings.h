@@ -15,8 +15,11 @@ struct Message
 
 struct MessageSet
 {
-	QMap<quint32,Message> messages;
-	QList<quint32> hashes;
+	typedef QMap<quint32,Message> Messages;
+	typedef QList<quint32> HashList;
+
+	Messages messages;
+	HashList hashes;
 
 	bool isEmpty() const
 	{
@@ -36,8 +39,8 @@ public:
 	static bool exportMessages(const MessageSet& messages, const QString& filename);
 	static QString hashToStr(quint32 hash);
 	static quint32 strToHash(const QString& hashStr);
-	static bool collapseDuplicates(MessageSet& messages);
-	static bool expandReferences(MessageSet& messages);
+	static bool collapseDuplicates(MessageSet::Messages& messages);
+	static bool expandReferences(MessageSet::Messages& messages);
 
 	static bool isReference(const QString& str);
 	static quint32 extractReferenceHash(const QString& str);
