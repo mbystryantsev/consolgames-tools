@@ -116,6 +116,10 @@ private:
 		GameId game;
 		QByteArray discId;
 		QString executablePath;
+		QString mainArcPath;
+		QString igcArcPath;
+		QString uiArcContainer;
+		QString embededArcName;
 		quint32 embededArcOffset;
 		quint32 headersOffset;
 		QStringList files;

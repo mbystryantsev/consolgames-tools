@@ -37,16 +37,6 @@ static std::auto_ptr<DiscImage> imageForPlatform(PatcherProcessor::Platform plat
 	return std::auto_ptr<DiscImage>();
 }
 
-static QString embededArcNameForGame(PatcherProcessor::GameId game)
-{
-	return (game == PatcherProcessor::gameShatteredMemories ? "boot.arc" : "Embeded.arc");
-}
-
-static QString mainArcNameForGame(PatcherProcessor::GameId game)
-{
-	return (game == PatcherProcessor::gameShatteredMemories ? "data.arc" : "SH.arc");
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 PatcherProcessor::PatcherProcessor()
@@ -69,7 +59,10 @@ bool PatcherProcessor::init(const QString& manifestPath)
 		|| !manifest.contains("game")
 		|| !manifest.contains("discId")
 		|| !manifest.contains("executablePath")
-		|| !manifest.contains("embededArcOffset"))
+		|| !manifest.contains("mainArcPath")
+		|| !manifest.contains("uiArcContainer")
+		|| !manifest.contains("embededArcOffset")
+		|| !manifest.contains("embededArcName"))
 	{
 		m_errorCode = Init_InvalidManifest;
 		return false;
@@ -112,9 +105,12 @@ bool PatcherProcessor::init(const QString& manifestPath)
 	}
 
 	m_info.discId = manifest.value("discId").toByteArray();
-	m_info.executablePath = manifest.value("executablePath").toString();
+	m_info.executablePath   = manifest.value("executablePath").toString();
+	m_info.mainArcPath      = manifest.value("mainArcPath").toString();
+	m_info.uiArcContainer   = manifest.value("uiArcContainer").toString();
+	m_info.embededArcName   = manifest.value("embededArcName").toString();
 	m_info.embededArcOffset = manifest.value("embededArcOffset").toString().toUInt(NULL, 16);
-	m_info.headersOffset = manifest.value("arcHeadersOffset").toString().toUInt(NULL, 16);
+	m_info.headersOffset    = manifest.value("arcHeadersOffset").toString().toUInt(NULL, 16);
 
 	if (m_info.discId.isEmpty() || m_info.executablePath.isEmpty() || m_info.embededArcOffset == 0 || (m_info.game == gameShatteredMemories && m_info.headersOffset == 0))
 	{
@@ -254,7 +250,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		mergeMap = loadMergeMap(resDir.absoluteFilePath(mergeMapFilename));
 	}
 
-	PatcherDirectoriesFileSource arcDirectoriesFileSource(resourcesPaths);
+	PatcherDirectoriesFileSource arcDirectoriesFileSource(QStringList(resourcesPaths) << outPath);
 	PatcherTexturesFileSource arcTexturesFileSource(&arcDirectoriesFileSource, resourcesPaths.first(), textureDB,
 		m_info.platform == platformWii ? Stream::orderBigEndian : Stream::orderLittleEndian, m_info.game == gameOrigins);
 
@@ -265,11 +261,11 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.04);
 
-		auto_ptr<Stream> pakStream(m_image->openFile("igc.arc", Stream::modeRead));
+		auto_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -277,7 +273,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		if (!arc.open())
 		{
 			m_errorCode = RebuildArchives_UnableToOpenArchive;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -286,7 +282,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		if (uiArcStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInArchive;
-			m_errorData = "igc.arc;UI.arc";
+			m_errorData = m_info.uiArcContainer + QString(";UI.arc");
 			return false;
 		}
 
@@ -300,7 +296,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 
 		uiArc.addProgressListener(&listener);
 
-		const QString filename = outDir.absoluteFilePath("ui.arc");
+		const QString filename = outDir.absoluteFilePath(QString::fromStdString(Hash::toString(Hash::calc("ui.arc"))));
 		if (!uiArc.rebuild(filename.toStdWString(), arcTexturesFileSource, mergeMap))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
@@ -309,9 +305,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		}
 	}
 
-	const QString embededArcName = embededArcNameForGame(m_info.game);
-
-	DLOG << "Rebuilding " << embededArcName << "...";
+	DLOG << "Rebuilding " << m_info.embededArcName << "...";
 	{
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.01);
@@ -335,7 +329,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		if (embededArcInfo.isNull())
 		{
 			m_errorCode = RebuildArchives_UnableToParseEmbededResource;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
@@ -351,32 +345,32 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		if (!embededArc.open())
 		{
 			m_errorCode = RebuildArchives_UnableToOpenArchive;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
 		embededArc.addProgressListener(&listener);
-		const QString filename = outDir.absoluteFilePath(embededArcName);
+		const QString filename = outDir.absoluteFilePath(m_info.embededArcName);
 		if (!embededArc.rebuild(filename.toStdWString(), arcTexturesFileSource, mergeMap))
 		{
 			m_errorCode = RebuildArchives_UnableToRebuildArchive;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 	}
 
-	const QString mainArcName = mainArcNameForGame(m_info.game);
+	const QString mainArcName = QFileInfo(m_info.mainArcPath).fileName();
 
 	DLOG << "Rebuilding " << mainArcName << "...";
 	{
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener);
 
-		auto_ptr<Stream> pakStream(m_image->openFile(mainArcName.toStdString(), Stream::modeRead));
+		auto_ptr<Stream> pakStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
-			m_errorData = mainArcName;
+			m_errorData = m_info.mainArcPath;
 			return false;
 		}
 
@@ -428,9 +422,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		return false;
 	}
 
-	const QString embededArcName = embededArcNameForGame(m_info.game);
-
-	DLOG << "Replacing " << embededArcName << "...";
+	DLOG << "Replacing " << m_info.embededArcName << "...";
 	{
 		m_progressNotifier.unbindCurrentNotifier();
 
@@ -439,29 +431,29 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		if (info.isNull())
 		{
 			m_errorCode = ReplaceArchives_UnableToParseEmbededResource;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
-		QtFileStream stream(dir.absoluteFilePath(embededArcName), QIODevice::ReadOnly);
+		QtFileStream stream(dir.absoluteFilePath(m_info.embededArcName), QIODevice::ReadOnly);
 		if (!stream.opened())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
 		if (stream.size() > info.streamSizeLeft - EmbededResourceInfo::s_headerSize)
 		{
 			m_errorCode = ReplaceArchives_InputArcFileTooBig;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
 		if (executableStream->writeStream(&stream, stream.size()) != stream.size())
 		{
 			m_errorCode = ReplaceArchives_UnableToWriteFile;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
@@ -469,15 +461,15 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		executableStream->writeUInt32(stream.size());
 	}
 
-	if (m_info.game == gameShatteredMemories)
+	if (m_info.game == gameShatteredMemories && m_info.uiArcContainer != m_info.mainArcPath)
 	{
 		DLOG << "Replacing ui.arc...";
 
-		auto_ptr<Stream> arcStream(m_image->openFile("igc.arc", Stream::modeReadWrite));
+		auto_ptr<Stream> arcStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -485,7 +477,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		if (!arc.open())
 		{
 			m_errorCode = ReplaceArchives_UnableToParseArc;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -495,7 +487,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		quint32 maxSize = info.size + arc.alignment() - 1;
 		maxSize = maxSize - (maxSize % arc.alignment());
 
-		QtFileStream stream(dir.absoluteFilePath("ui.arc"), QIODevice::ReadOnly);
+		QtFileStream stream(dir.absoluteFilePath(QString::fromStdString(Hash::toString(Hash::calc("ui.arc")))), QIODevice::ReadOnly);
 		if (!stream.opened())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
@@ -528,27 +520,25 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		}
 	}
 
-	executableStream->seek(m_info.headersOffset, Stream::seekSet);
-
-	const QString mainArcName = mainArcNameForGame(m_info.game);
+	const QString mainArcName = QFileInfo(m_info.mainArcPath).fileName();
 
 	DLOG << "Replacing " << mainArcName << "...";
 	{
 		m_progressNotifier.setCurrentNotifier(m_image->progressNotifier());
 
-		const DiscImage::FileInfo fileRecord = m_image->findFile(mainArcName.toStdString());
+		const DiscImage::FileInfo fileRecord = m_image->findFile(m_info.mainArcPath.toStdString());
 		if (fileRecord.isNull())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
-			m_errorData = mainArcName;
+			m_errorData = m_info.mainArcPath;
 			return false;
 		}
 
-		QtFileStream stream(dir.absoluteFilePath(mainArcName), QIODevice::ReadOnly);
+		QtFileStream stream(dir.absoluteFilePath(QFileInfo(m_info.mainArcPath).fileName()), QIODevice::ReadOnly);
 		if (!stream.opened())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
-			m_errorData = mainArcName;
+			m_errorData = m_info.mainArcPath;
 			return false;
 		}
 
@@ -571,6 +561,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 
 		if (m_info.game == gameShatteredMemories)
 		{
+			executableStream->seek(m_info.headersOffset, Stream::seekSet);
 			const EmbededResourceInfo info = EmbededResourceInfo::parse(executableStream.get());
 			if (info.isNull())
 			{
@@ -669,10 +660,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 	CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	const QDir dir(arcPath);
 
-
-	const QString embededArcName = embededArcNameForGame(m_info.game);
-
-	DLOG << "Checking " << embededArcName << "...";
+	DLOG << "Checking " << m_info.embededArcName << "...";
 	{
 		auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
@@ -688,7 +676,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 		if (embededArcInfo.isNull())
 		{
 			m_errorCode = CheckArchives_UnableToParseEmbededResource;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
@@ -701,18 +689,18 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 
 		PartStream embededArcStream(executableStream.get(), executableStream->position(), embededArcInfo.contentSize);
 
-		QtFileStream resultArcSream(dir.absoluteFilePath(embededArcName), QIODevice::ReadOnly);
+		QtFileStream resultArcSream(dir.absoluteFilePath(m_info.embededArcName), QIODevice::ReadOnly);
 		if (!resultArcSream.opened())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 
 		if (!compareStreams(&embededArcStream, &resultArcSream, false, 0.01))
 		{
 			m_errorCode = CheckArchives_ArcsAreNotEqual;
-			m_errorData = embededArcName;
+			m_errorData = m_info.embededArcName;
 			return false;
 		}
 	}
@@ -721,11 +709,11 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 	{
 		DLOG << "Checking ui.arc...";
 
-		auto_ptr<Stream> pakStream(m_image->openFile("igc.arc", Stream::modeReadWrite));
+		auto_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -733,7 +721,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 		if (!arc.open())
 		{
 			m_errorCode = CheckArchives_UnableToParseArchive;
-			m_errorData = "igc.arc";
+			m_errorData = m_info.uiArcContainer;
 			return false;
 		}
 
@@ -745,7 +733,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 			return false;
 		}
 
-		QtFileStream resultArcSream(dir.absoluteFilePath("ui.arc"), QIODevice::ReadOnly);
+		QtFileStream resultArcSream(dir.absoluteFilePath(QString::fromStdString(Hash::toString(Hash::calc("ui.arc")))), QIODevice::ReadOnly);
 		if (!resultArcSream.opened())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
@@ -761,7 +749,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 		}
 	}
 
-	const QString mainArcName = mainArcNameForGame(m_info.game);
+	const QString mainArcName = QFileInfo(m_info.mainArcPath).fileName();
 
 	DLOG << "Checking " << mainArcName << "...";
 	{
@@ -802,7 +790,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 			}
 		}
 
-		auto_ptr<Stream> arcStream(m_image->openFile(mainArcName.toStdString(), Stream::modeRead));
+		auto_ptr<Stream> arcStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;
