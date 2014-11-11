@@ -147,6 +147,7 @@ private:
 	Header m_header;
 	uint32 m_magicMarker1;
 	uint32 m_magicMarker2;
+	bool m_hasMagicMarker;
 	bool m_opened;
 	std::map<uint32, std::string> m_names;
 	uint32 m_alignment;

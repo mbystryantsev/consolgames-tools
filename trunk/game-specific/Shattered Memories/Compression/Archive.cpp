@@ -40,6 +40,7 @@ Archive::Archive(const std::string& filename)
 	, m_originsMode(false)
 	, m_magicMarker1(0)
 	, m_magicMarker2(0)
+	, m_hasMagicMarker(false)
 {
 	m_fileStreamHolder.reset(new FileStream(strToWStr(filename), Stream::modeRead));
 	m_stream = m_fileStreamHolder.get();
@@ -131,8 +132,12 @@ bool Archive::open()
 		}
 	}
 
-	m_magicMarker1 = m_stream->readUInt();
-	m_magicMarker2 = m_stream->readUInt();
+	if (m_fileRecords.front().offset >= m_stream->position() + 16)
+	{
+		m_magicMarker1 = m_stream->readUInt();
+		m_magicMarker2 = m_stream->readUInt();
+		m_hasMagicMarker = true;
+	}
 
 	m_opened = true;
 	return true;
@@ -257,7 +262,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 	const int recordSize = 16;
 	const int headerSize = m_originsMode ? 20 : 16;
-	const int magicMarkerSize = 16;
+	const int magicMarkerSize = m_hasMagicMarker ? 16 : 0;
 	uint32 position = alignSize(m_fileRecords.size() * recordSize + headerSize + magicMarkerSize);
 
 	int processed = 0;
@@ -429,8 +434,11 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		file.writeUInt32(record->decompressedSize);
 	}
 
-	file.writeUInt32(m_magicMarker1);
-	file.writeUInt32(m_magicMarker2);
+	if (m_hasMagicMarker)
+	{
+		file.writeUInt32(m_magicMarker1);
+		file.writeUInt32(m_magicMarker2);
+	}
 
 	return true;
 }
