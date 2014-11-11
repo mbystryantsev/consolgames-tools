@@ -497,10 +497,15 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		return false;
 	}
 
-	if (customWidth != 0)
+	if (customWidth != 0 && image->width() != customWidth && image->height() != customHeight)
 	{
 		ASSERT(customWidth > 0);
 		ASSERT(customHeight > 0);
+
+		if (customWidth > image->width() || customHeight > image->height())
+		{		
+			cout << "WARNING: Upscaling from " << image->width() << 'x' << image->height() << " to " << customWidth << 'x' << customHeight << endl;
+		}
 
 		nv::FloatImage floatImage(image.get());
 		std::auto_ptr<nv::FloatImage> resizedImage(floatImage.resize(nv::BoxFilter(), customWidth, customHeight, nv::FloatImage::WrapMode_Mirror));
