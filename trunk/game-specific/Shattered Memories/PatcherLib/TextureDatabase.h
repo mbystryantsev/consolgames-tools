@@ -12,6 +12,8 @@ public:
 	{
 		quint32 fileHash;
 		QString textureName;
+		QString format;
+		QString paletteFormat;
 		int width;
 		int height;
 		int mipmapCount;
