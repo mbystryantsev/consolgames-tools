@@ -125,11 +125,21 @@ PatcherTexturesFileSource::TextureDataSource::TextureDataSource(const QString& p
 	qSort(m_partInfo.begin(), m_partInfo.end(), PartInfoComparator());
 }
 
+static QString textureFilename(const TextureDatabase::TextureInfo& info)
+{
+	return QString("%1.%2x%3.%4.%5.TXTR")
+		.arg(info.textureName)
+		.arg(info.width)
+		.arg(info.height)
+		.arg(info.format)
+		.arg(info.paletteFormat);
+}
+
 shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index)
 {
 	const PartInfoRecord& record = m_partInfo[index];
 
-	const QString filename = QDir(m_path).absoluteFilePath(record.textureInfo.textureName + ".TXTR");
+	const QString filename = QDir(m_path).absoluteFilePath(textureFilename(record.textureInfo));
 
 	if (m_cachedFile.get() == NULL || m_cachedFile->fileName() != filename)
 	{

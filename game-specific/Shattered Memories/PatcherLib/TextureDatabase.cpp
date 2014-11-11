@@ -18,11 +18,13 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 
 	ASSERT(reader.header().contains("fileHash") || reader.header().contains("fileName"));
 	ASSERT(reader.header().contains("textureName"));
+	ASSERT(reader.header().contains("format"));
 	ASSERT(reader.header().contains("width"));
 	ASSERT(reader.header().contains("height"));
 	ASSERT(reader.header().contains("mipmapCount"));
 	ASSERT(reader.header().contains("rasterPosition"));
 	ASSERT(reader.header().contains("rasterSize"));
+	ASSERT(reader.header().contains("paletteFormat"));
 
 	while (true)
 	{
@@ -46,7 +48,9 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 			ASSERT(ok);
 		}
 		
-		info.textureName = values["textureName"];
+		info.textureName   = values["textureName"];
+		info.format        = values["format"];
+		info.paletteFormat = values["paletteFormat"];
 
 
 		bool ok = false;
