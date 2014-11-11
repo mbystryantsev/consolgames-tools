@@ -497,7 +497,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		return false;
 	}
 
-	if (customWidth != 0 && image->width() != customWidth && image->height() != customHeight)
+	if (customWidth != 0 && (image->width() != customWidth || image->height() != customHeight))
 	{
 		ASSERT(customWidth > 0);
 		ASSERT(customHeight > 0);
