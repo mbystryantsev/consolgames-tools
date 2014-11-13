@@ -26,7 +26,9 @@ int main(int argc, char* argv[])
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("Windows-1251"));
 #else
+#if defined(PRODUCTION)
 #error "Supported only Qt4, some strings in GUI will be unreadable!"
+#endif
 #endif
 
 	QTranslator *translator = new QTranslator(&application); 
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
 	const bool checkingEnabled = application.arguments().contains("--check");
 #endif
 
-	Configurator& configurator = Configurator::instanse();
+	Configurator& configurator = Configurator::instance();
 	configurator.setDebug(checkingEnabled);
 
 	configurator.setAvailablePlatforms(Configurator::parsePlatforms(PLATFORMS));

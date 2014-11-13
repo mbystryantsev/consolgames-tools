@@ -58,7 +58,7 @@ bool ImagePatchPage::validatePage()
 		}
 	}
 	
-	Configurator& configurator = Configurator::instanse();
+	Configurator& configurator = Configurator::instance();
 	configurator.setImagePath(m_ui.imagePath->text());
 	configurator.setTempPath(m_ui.tempPath->text());
 
@@ -77,7 +77,7 @@ void ImagePatchPage::processEuristic()
 		return;
 	}
 
-	const QStringList entries = QDir().entryList(Configurator::instanse().imageNameEuristicMasks(),
+	const QStringList entries = QDir().entryList(Configurator::instance().imageNameEuristicMasks(),
 			QDir::Files | QDir::Writable);
 	
 	if (!entries.isEmpty())

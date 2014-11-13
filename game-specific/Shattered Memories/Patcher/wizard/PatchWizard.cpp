@@ -17,7 +17,13 @@ PatchWizard::PatchWizard(QWidget* parent)
 	, m_patchType(ImagePatch)
 	, m_errorCode(0)
 {
-	setWindowTitle(tr("Патч-перевод " GAME_TITLE));
+	const Configurator& configurator = Configurator::instance();
+
+	const QString platformsStr = configurator.availablePlatforms().size() == 1
+		? QString(" (%1)").arg(Configurator::platformAbbr(*configurator.availablePlatforms().begin()))
+		: QString();
+
+	setWindowTitle(tr("Патч-перевод " GAME_TITLE) + platformsStr);
 
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);

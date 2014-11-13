@@ -42,7 +42,7 @@ void FailedPage::initializePage()
 {
 	wizard()->setButtonLayout(QList<QWizard::WizardButton>() << QWizard::Stretch << QWizard::FinishButton);
 
-	const Configurator& configurator = Configurator::instanse();
+	const Configurator& configurator = Configurator::instance();
 
 	const QString errorText = m_ui.errorInfo->text().arg(configurator.errorCode()).arg(wrapped(configurator.errorData(), m_ui.errorInfo->font(), 230));
 	m_ui.errorInfo->setText(errorText);

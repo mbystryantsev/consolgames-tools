@@ -11,3 +11,5 @@
 
 #define VER_PRODUCTVERSION          1,0,0,0
 #define VER_PRODUCTVERSION_STR      "1.0.0.0\0"
+
+#define PATCH_FILENAME              "SHSMPatch.exe"

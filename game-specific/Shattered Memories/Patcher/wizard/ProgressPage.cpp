@@ -66,7 +66,7 @@ bool ProgressPage::isComplete() const
 
 void ProgressPage::startPatching()
 {	
-	const Configurator& configurator = Configurator::instanse();
+	const Configurator& configurator = Configurator::instance();
 	configurator.configure(m_patcherController);
 
 	foreach (const QByteArray& action, m_patcherController.actionList())
@@ -129,7 +129,7 @@ void ProgressPage::onPatchingFailed(const QByteArray& step, int errorCode, const
 	m_ui.errorMessage->setText(errorInfo.message);
 	m_ui.errorDescription->setText(errorInfo.description);
 
-	Configurator& configurator = Configurator::instanse();
+	Configurator& configurator = Configurator::instance();
 	configurator.setErrorCode(errorCode);
 	configurator.setErrorData(QString("%1;%2;%3").arg(errorCode).arg(m_patcherController.errorName(errorCode)).arg(errorData).toLatin1().toBase64());
 
