@@ -30,7 +30,7 @@ public:
 	};
 
 public:
-	static Configurator& instanse();
+	static Configurator& instance();
 
 	void configure(ShatteredMemories::PatcherController& controller) const;
 
@@ -52,7 +52,9 @@ public:
 	static QString version();
 	static QSet<Platform> parsePlatforms(const QString& platforms);
 	static Game gameByCode(const QString& code);
-	
+	static QString platformAbbr(Platform platform);
+	static QString platformName(Platform platform);
+
 private:
 	static std::auto_ptr<Configurator> s_instance;
 

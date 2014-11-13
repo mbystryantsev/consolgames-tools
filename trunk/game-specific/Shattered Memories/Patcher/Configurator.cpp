@@ -60,7 +60,7 @@ void Configurator::configure(ShatteredMemories::PatcherController& controller) c
 	controller.addResourcesPath(s_resourcesPath);
 }
 
-Configurator& Configurator::instanse()
+Configurator& Configurator::instance()
 {
 	if (s_instance.get() == NULL)
 	{
@@ -216,4 +216,30 @@ void Configurator::setGame(Game game)
 {
 	ASSERT(game != gameUndefined);
 	m_game = game;
+}
+
+QString Configurator::platformAbbr(Platform platform)
+{
+	switch (platform)
+	{
+	case platformPS2: return "PS2";
+	case platformPSP: return "PSP";
+	case platformWii: return "Wii";
+	}
+
+	ASSERT(!"Invalid platform!");
+	return QString();
+}
+
+QString Configurator::platformName(Platform platform)
+{
+	switch (platform)
+	{
+	case platformPS2: return "PlayStation Portable";
+	case platformPSP: return "PlatStation 2";
+	case platformWii: return "Nintendo Wii";
+	}
+
+	ASSERT(!"Invalid platform!");
+	return QString();
 }
