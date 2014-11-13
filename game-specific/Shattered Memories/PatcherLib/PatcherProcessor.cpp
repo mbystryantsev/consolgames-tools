@@ -60,7 +60,6 @@ bool PatcherProcessor::init(const QString& manifestPath)
 		|| !manifest.contains("discId")
 		|| !manifest.contains("executablePath")
 		|| !manifest.contains("mainArcPath")
-		|| !manifest.contains("uiArcContainer")
 		|| !manifest.contains("embededArcOffset")
 		|| !manifest.contains("embededArcName"))
 	{
