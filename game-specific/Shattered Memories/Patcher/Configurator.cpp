@@ -235,8 +235,8 @@ QString Configurator::platformName(Platform platform)
 {
 	switch (platform)
 	{
-	case platformPS2: return "PlayStation Portable";
-	case platformPSP: return "PlatStation 2";
+	case platformPS2: return "PlatStation 2";
+	case platformPSP: return "PlayStation Portable";
 	case platformWii: return "Nintendo Wii";
 	}
 
