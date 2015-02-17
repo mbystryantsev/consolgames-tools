@@ -1,4 +1,4 @@
-#include "TextureDictionaryParserPS2.h"
+#include "TextureDictionaryParserPSP.h"
 #include <PS2Formats.h>
 
 namespace ShatteredMemories
@@ -6,7 +6,7 @@ namespace ShatteredMemories
 
 using namespace Consolgames;
 
-TextureDictionaryParserPS2::TextureDictionaryParserPS2()
+TextureDictionaryParserPSP::TextureDictionaryParserPSP()
 	: TextureDictionaryParser()
 	, m_stream(NULL)
 	, m_streamSize(0) 
@@ -15,75 +15,69 @@ TextureDictionaryParserPS2::TextureDictionaryParserPS2()
 {
 }
 
-bool TextureDictionaryParserPS2::fetch()
+bool TextureDictionaryParserPSP::fetch()
 {
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 
 	const uint32 pos = m_stream->position(); 
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
-	const uint32 unk5 = m_stream->readUInt32();
-	const uint32 unk6 = m_stream->readUInt32();
+	m_stream->skip(0x10);
+
 	const uint32 size = m_stream->readUInt32();
-	const uint32 unk8 = m_stream->readUInt32();
 
 	if (size == 0)
 	{
 		return false;
 	}
 
-	const uint32 unk9 = m_stream->readUInt32();
-	const uint32 unk10 = m_stream->readUInt32();
-	const uint32 unk11 = m_stream->readUInt32();
-	const uint32 ps2Signature = m_stream->readUInt32();
+	m_stream->skip(0x14);
 
-	if (ps2Signature != 0x325350)
+	m_currentMetaInfo.width = m_stream->readUInt16();
+	m_currentMetaInfo.height = m_stream->readUInt16();
+	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt8();
+	m_currentMetaInfo.mipmapCount = m_stream->readUInt8();
+	const uint8 textureFormat = m_stream->readUInt8();
+	const uint8 paletteFormat = m_stream->readUInt8();
+
+	if (m_currentMetaInfo.mipmapCount != 1)
 	{
-		DLOG << "Not a PS2";
-		return false;
+		DLOG << "WARNING: Unexpected mipmap count!";
 	}
 
-	const uint32 unk13 = m_stream->readUInt32();
-	const uint32 unk14 = m_stream->readUInt32();
-	const uint32 stringLen = m_stream->readUInt32();
-	const uint32 unk16 = m_stream->readUInt32();
+	m_stream->skip(0x60);
 
 	char name[0x41] = {};
-	m_stream->read(name, stringLen);
+	m_stream->read(name, 0x40);
 	m_currentMetaInfo.name = name;
 
-	//DLOG << HEX << "Texture, position: " << m_stream->position() << ", name: " << name; 
 
-	m_stream->skip(0x28);
-
-	m_currentMetaInfo.width = m_stream->readUInt32();
-	m_currentMetaInfo.height = m_stream->readUInt32();
-	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt32();
-	m_currentMetaInfo.mipmapCount = 1;
-	const uint32 unk17 = m_stream->readUInt32();
-
-	int paletteTotalSize = 0;
+	int paletteSize = 0;
 	if (m_currentMetaInfo.bitsPerPixel == 4)
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed4;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
-		paletteTotalSize = 0x60 + 0x50;
+		paletteSize = 0x40;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 8)
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed8;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
-		paletteTotalSize = 0x400 + 0x50;
+		paletteSize = 0x400;
+	}
+	else if (m_currentMetaInfo.bitsPerPixel == 16)
+	{
+		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA16;
+		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
+		paletteSize = 0;
 	}
 	else
 	{
 		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA;
 		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
-		paletteTotalSize = 0;
+		paletteSize = 0;
 	}
 
-	m_currentMetaInfo.rasterPosition = m_stream->position() + ((unk17 & 0xFF0000) == 0 ? 0x40 - 4 : 0x90 - 4);
+	m_currentMetaInfo.rasterPosition = m_stream->position() + paletteSize;
 	m_currentMetaInfo.rasterSize = PS2Formats::encodedRasterSize(static_cast<PS2Formats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
 
 	if (m_currentMetaInfo.bitsPerPixel <= 8)
@@ -107,7 +101,7 @@ bool TextureDictionaryParserPS2::fetch()
 	}
 	else
 	{
-		const uint32 expectedRasterSize = size - paletteTotalSize - stringLen - ((unk17 & 0xFF0000) == 0 ? 0xB0 : 0x100);
+		const uint32 expectedRasterSize = size - paletteSize - 0xC4;
 		if (m_currentMetaInfo.rasterSize != expectedRasterSize)
 		{
 			DLOG << "WARNING: Unexpected raster size!";
@@ -119,23 +113,23 @@ bool TextureDictionaryParserPS2::fetch()
 	return true;
 }
 
-bool TextureDictionaryParserPS2::atEnd() const 
+bool TextureDictionaryParserPSP::atEnd() const 
 {
 	return m_stream->atEnd();
 }
 
-const TextureDictionaryParser::TextureMetaInfo& TextureDictionaryParserPS2::metaInfo() const 
+const TextureDictionaryParser::TextureMetaInfo& TextureDictionaryParserPSP::metaInfo() const 
 {
 	return m_currentMetaInfo;
 }
 
-bool TextureDictionaryParserPS2::open(Stream* stream)
+bool TextureDictionaryParserPSP::open(Stream* stream)
 {
 	m_stream = stream;
 	return true;
 }
 
-bool TextureDictionaryParserPS2::initSegment()
+bool TextureDictionaryParserPSP::initSegment()
 {
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 	
@@ -152,12 +146,12 @@ bool TextureDictionaryParserPS2::initSegment()
 	return true;
 }
 
-const char* TextureDictionaryParserPS2::textureFormatToString(int format) const
+const char* TextureDictionaryParserPSP::textureFormatToString(int format) const
 {
 	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
 }
 
-const char* TextureDictionaryParserPS2::paletteFormatToString(int format) const
+const char* TextureDictionaryParserPSP::paletteFormatToString(int format) const
 {
 	return PS2Formats::paletteFormatToString(static_cast<PS2Formats::PaletteFormat>(format));
 }

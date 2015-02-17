@@ -107,7 +107,7 @@ bool TextureDictionaryParserWii::atEnd() const
 	return m_stream->atEnd();
 }
 
-const TextureDictionaryParserWii::TextureMetaInfo& TextureDictionaryParserWii::metaInfo() const 
+const TextureDictionaryParser::TextureMetaInfo& TextureDictionaryParserWii::metaInfo() const 
 {
 	return m_currentMetaInfo;
 }

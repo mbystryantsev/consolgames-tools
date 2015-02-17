@@ -12,7 +12,8 @@ public:
 		imageFormatUndefined = -1,
 		imageFormatIndexed4 = 0,
 		imageFormatIndexed8 = 1,
-		imageFormatRGBA = 2
+		imageFormatRGBA = 2,
+		imageFormatRGBA16 = 3
 	};
 
 	enum PaletteFormat

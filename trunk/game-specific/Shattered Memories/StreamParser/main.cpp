@@ -1,6 +1,7 @@
 #include <DataStreamParser.h>
 #include "TextureDictionaryParserWii.h"
 #include "TextureDictionaryParserPS2.h"
+#include "TextureDictionaryParserPSP.h"
 #include <FileStream.h>
 #include <QtFileStream.h>
 #include <iomanip>
@@ -36,8 +37,8 @@ static std::auto_ptr<TextureDictionaryParser> makeTextureParserForPlatform(Platf
 		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserWii());
 	case PS2:
 		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserPS2());
-	//case PSP:
-		//return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserPSP());
+	case PSP:
+		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserPSP());
 	}
 
 	return std::auto_ptr<TextureDictionaryParser>();
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
 
 	csvStream << QString(useHashes ? "fileHash" : "fileName") + ";textureName;format;width;height;mipmapCount;rasterPosition;rasterSize;paletteFormat;palettePosition;paletteSize\n";
 
-	QDir dir("D:/rev/origins/data");
+	QDir dir("D:/rev/shsm/psp/files");
 	//QDir dir("E:/_job/SHSM/ps2/test");
 	const QStringList files = dir.entryList(QDir::Files);
 	foreach (const QString& file, files)
@@ -159,7 +160,7 @@ int main(int argc, char* argv[])
 // 		}
 		stream.seek(0, Stream::seekSet);
 
-		const Platform platform = PS2;
+		const Platform platform = PSP;
 
 		bool parsed = parseDictionary(stream, file, csvStream, platform);
 		if (!parsed)
