@@ -31,12 +31,19 @@ private:
 		uint32 originalSize() const;
 		bool isPacked() const;
 
-		bool operator == (const FileRecord& other) const
+		bool operator ==(const FileRecord& other) const
 		{
 			return hash == other.hash
 				&& offset == other.offset
 				&& storedSize == other.storedSize
 				&& decompressedSize == other.decompressedSize;
+		}
+				
+		bool isValid(const FileRecord& next) const
+		{
+			return offset != next.offset
+				|| (storedSize == next.storedSize
+				&& decompressedSize == next.decompressedSize);
 		}
 	};
 

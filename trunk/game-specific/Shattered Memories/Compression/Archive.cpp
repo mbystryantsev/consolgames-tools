@@ -167,6 +167,14 @@ bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32>& f
 	int processed = 0;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
+		std::vector<FileRecord>::const_iterator next = record + 1;
+		if (next != m_fileRecords.end() && !record->isValid(*next))
+		{
+			DLOG << "Skipping bad file record: " << Hash::toString(record->hash);
+			processed++;
+			continue;
+		}
+
 		if (!fileList.empty() && (fileList.find(record->hash) == fileList.end()))
 		{
 			continue;
@@ -267,6 +275,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 	int processed = 0;
 	std::map<uint32, FileRecord*> recordsMap;
+	std::set<uint32> badRecords;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
 		//DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
@@ -295,6 +304,16 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 				return false;
 			}
 
+			entryList.push_back(newRecord);
+			recordsMap[record->hash] = &entryList.back();
+			processed++;
+			continue;
+		}
+
+		const std::vector<FileRecord>::const_iterator next = record + 1;
+		if (next != m_fileRecords.end() && !record->isValid(*next))
+		{
+			badRecords.insert(record->hash);
 			entryList.push_back(newRecord);
 			recordsMap[record->hash] = &entryList.back();
 			processed++;
@@ -395,6 +414,16 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 			sourceRecord->offset = targetRecord->offset;
 			sourceRecord->decompressedSize = targetRecord->decompressedSize;
 			sourceRecord->storedSize = targetRecord->storedSize;
+		}
+	}
+
+	// Process bad records
+	for (std::vector<FileRecord>::iterator record = entryList.begin(); record != entryList.end() - 1; record++)
+	{
+		if (badRecords.find(record->hash) != badRecords.end() && mergeMap.find(record->hash) == mergeMap.end())
+		{
+			const std::vector<FileRecord>::const_iterator next = record + 1;
+			record->offset = next->offset;
 		}
 	}
 
