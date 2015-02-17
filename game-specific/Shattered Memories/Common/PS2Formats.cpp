@@ -15,6 +15,10 @@ const uint32 PS2Formats::encodedRasterSize(ImageFormat format, int width, int he
 	{
 		return std::max(16, width) * height;
 	}
+	if (format == imageFormatRGBA16)
+	{
+		return width * height * 2;
+	}
 	if (format == imageFormatRGBA)
 	{
 		return width * height * 4;
@@ -31,6 +35,8 @@ const char* PS2Formats::imageFormatToString(ImageFormat format)
 		return "indexed4";
 	case imageFormatIndexed8:
 		return "indexed8";
+	case imageFormatRGBA16:
+		return "rgba16";
 	case imageFormatRGBA:
 		return "rgba";
 	}
@@ -47,6 +53,10 @@ PS2Formats::ImageFormat PS2Formats::imageFormatFromString(const char* str)
 	if (strcmp(str, "indexed8") == 0)
 	{
 		return imageFormatIndexed8;
+	}
+	if (strcmp(str, "rgba16") == 0)
+	{
+		return imageFormatRGBA16;
 	}
 	if (strcmp(str, "rgba") == 0)
 	{
