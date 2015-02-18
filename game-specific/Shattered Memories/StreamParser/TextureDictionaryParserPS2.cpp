@@ -1,5 +1,5 @@
 #include "TextureDictionaryParserPS2.h"
-#include <PS2Formats.h>
+#include <PSFormats.h>
 
 namespace ShatteredMemories
 {
@@ -66,25 +66,25 @@ bool TextureDictionaryParserPS2::fetch()
 	int paletteTotalSize = 0;
 	if (m_currentMetaInfo.bitsPerPixel == 4)
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed4;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatIndexed4;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatRGBA;
 		paletteTotalSize = 0x60 + 0x50;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 8)
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed8;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatIndexed8;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatRGBA;
 		paletteTotalSize = 0x400 + 0x50;
 	}
 	else
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatRGBA;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatNone;
 		paletteTotalSize = 0;
 	}
 
 	m_currentMetaInfo.rasterPosition = m_stream->position() + ((unk17 & 0xFF0000) == 0 ? 0x40 - 4 : 0x90 - 4);
-	m_currentMetaInfo.rasterSize = PS2Formats::encodedRasterSize(static_cast<PS2Formats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
+	m_currentMetaInfo.rasterSize = PSFormats::encodedRasterSize(static_cast<PSFormats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
 
 	if (m_currentMetaInfo.bitsPerPixel <= 8)
 	{
@@ -154,12 +154,12 @@ bool TextureDictionaryParserPS2::initSegment()
 
 const char* TextureDictionaryParserPS2::textureFormatToString(int format) const
 {
-	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
+	return PSFormats::imageFormatToString(static_cast<PSFormats::ImageFormat>(format));
 }
 
 const char* TextureDictionaryParserPS2::paletteFormatToString(int format) const
 {
-	return PS2Formats::paletteFormatToString(static_cast<PS2Formats::PaletteFormat>(format));
+	return PSFormats::paletteFormatToString(static_cast<PSFormats::PaletteFormat>(format));
 }
 
 }

@@ -1,11 +1,11 @@
-#include "PS2Formats.h"
+#include "PSFormats.h"
 #include <cstring>
 #include <algorithm>
 
 namespace ShatteredMemories
 {
 
-const uint32 PS2Formats::encodedRasterSize(ImageFormat format, int width, int height)
+const uint32 PSFormats::encodedRasterSize(ImageFormat format, int width, int height)
 {
 	if (format == imageFormatIndexed4)
 	{
@@ -27,7 +27,7 @@ const uint32 PS2Formats::encodedRasterSize(ImageFormat format, int width, int he
 	return 0;
 }
 
-const char* PS2Formats::imageFormatToString(ImageFormat format)
+const char* PSFormats::imageFormatToString(ImageFormat format)
 {
 	switch (format)
 	{
@@ -44,7 +44,7 @@ const char* PS2Formats::imageFormatToString(ImageFormat format)
 	return "undefined";
 }
 
-PS2Formats::ImageFormat PS2Formats::imageFormatFromString(const char* str)
+PSFormats::ImageFormat PSFormats::imageFormatFromString(const char* str)
 {
 	if (strcmp(str, "indexed4") == 0)
 	{
@@ -66,7 +66,7 @@ PS2Formats::ImageFormat PS2Formats::imageFormatFromString(const char* str)
 	return imageFormatUndefined;
 }
 
-const char* PS2Formats::paletteFormatToString(PaletteFormat format)
+const char* PSFormats::paletteFormatToString(PaletteFormat format)
 {
 	switch (format)
 	{
@@ -79,7 +79,7 @@ const char* PS2Formats::paletteFormatToString(PaletteFormat format)
 	return "undefined";
 }
 
-PS2Formats::PaletteFormat PS2Formats::paletteFormatFromString(const char* str)
+PSFormats::PaletteFormat PSFormats::paletteFormatFromString(const char* str)
 {
 	if (strcmp(str, "none") == 0)
 	{

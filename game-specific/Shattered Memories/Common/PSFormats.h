@@ -4,7 +4,7 @@
 namespace ShatteredMemories
 {
 
-class PS2Formats
+class PSFormats
 {
 public:
 	enum ImageFormat
