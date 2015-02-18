@@ -135,10 +135,13 @@ bool ExecutablePatcher::loadFromStream(QTextStream* stream)
 					return false;
 				}
 
-				const quint32 offset1 = spacePair[0].toUInt(NULL, 16);
-				const quint32 offset2 = spacePair[1].toUInt(NULL, 16);
+				bool ok1 = false;
+				bool ok2 = false;
 
-				if (offset1 == 0 || offset2 == 0 || offset1 >= offset2)
+				const quint32 offset1 = spacePair[0].toUInt(&ok1, 16);
+				const quint32 offset2 = spacePair[1].toUInt(&ok2, 16);
+
+				if (!ok1 || !ok2 || offset1 >= offset2)
 				{
 					DLOG << "Invalid segment range: " << args[2];
 					return false;
