@@ -1,5 +1,5 @@
 #include "TextureDictionaryParserPSP.h"
-#include <PS2Formats.h>
+#include <PSFormats.h>
 
 namespace ShatteredMemories
 {
@@ -54,31 +54,31 @@ bool TextureDictionaryParserPSP::fetch()
 	int paletteSize = 0;
 	if (m_currentMetaInfo.bitsPerPixel == 4)
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed4;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatIndexed4;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatRGBA;
 		paletteSize = 0x40;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 8)
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatIndexed8;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatRGBA;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatIndexed8;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatRGBA;
 		paletteSize = 0x400;
 	}
 	else if (m_currentMetaInfo.bitsPerPixel == 16)
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA16;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatRGBA16;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatNone;
 		paletteSize = 0;
 	}
 	else
 	{
-		m_currentMetaInfo.textureFormat = PS2Formats::imageFormatRGBA;
-		m_currentMetaInfo.paletteFormat = PS2Formats::paletteFormatNone;
+		m_currentMetaInfo.textureFormat = PSFormats::imageFormatRGBA;
+		m_currentMetaInfo.paletteFormat = PSFormats::paletteFormatNone;
 		paletteSize = 0;
 	}
 
 	m_currentMetaInfo.rasterPosition = m_stream->position() + paletteSize;
-	m_currentMetaInfo.rasterSize = PS2Formats::encodedRasterSize(static_cast<PS2Formats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
+	m_currentMetaInfo.rasterSize = PSFormats::encodedRasterSize(static_cast<PSFormats::ImageFormat>(m_currentMetaInfo.textureFormat), m_currentMetaInfo.width, m_currentMetaInfo.height);
 
 	if (m_currentMetaInfo.bitsPerPixel <= 8)
 	{
@@ -148,12 +148,12 @@ bool TextureDictionaryParserPSP::initSegment()
 
 const char* TextureDictionaryParserPSP::textureFormatToString(int format) const
 {
-	return PS2Formats::imageFormatToString(static_cast<PS2Formats::ImageFormat>(format));
+	return PSFormats::imageFormatToString(static_cast<PSFormats::ImageFormat>(format));
 }
 
 const char* TextureDictionaryParserPSP::paletteFormatToString(int format) const
 {
-	return PS2Formats::paletteFormatToString(static_cast<PS2Formats::PaletteFormat>(format));
+	return PSFormats::paletteFormatToString(static_cast<PSFormats::PaletteFormat>(format));
 }
 
 }
