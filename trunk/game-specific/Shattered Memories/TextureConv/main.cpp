@@ -68,7 +68,7 @@ static void printUsage()
 	cout << "Silent Hill: Shattered Memories Texture Converter by consolgames.ru\n"
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
-			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
+			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8|rgba16|rgba> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
 			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n"
 			"  -j <InImage> <OutImage> [quality] - reencode image as jpeg\n";
 }
@@ -502,7 +502,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		ASSERT(customWidth > 0);
 		ASSERT(customHeight > 0);
 
-		if (customWidth > image->width() || customHeight > image->height())
+		if (customWidth > static_cast<int>(image->width()) || customHeight > static_cast<int>(image->height()))
 		{		
 			cout << "WARNING: Upscaling from " << image->width() << 'x' << image->height() << " to " << customWidth << 'x' << customHeight << endl;
 		}

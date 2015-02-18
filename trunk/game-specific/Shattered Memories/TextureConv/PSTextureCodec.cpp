@@ -2,6 +2,8 @@
 #include <PS2Formats.h>
 #include <libimagequant.h>
 #include <vector>
+#include <nvimage/Quantize.h>
+#include <nvimage/Image.h>
 
 using namespace ShatteredMemories;
 
@@ -12,6 +14,15 @@ struct RGBA
 {
 	uint8 r, g, b, a;
 };
+
+struct RGBA16
+{
+	uint16 r : 5;
+	uint16 g : 5;
+	uint16 b : 5;
+	uint16 a : 1;
+};
+
 #pragma pack(pop)
 }
 
@@ -59,6 +70,52 @@ static void decode32ColorsToRGBA(const void* colors, int count, void* dest)
 		dst->g = src->g;
 		dst->b = src->b;
 		dst->a = (src->a > 0x80 ? 255 : s_colorDecodingTable[src->a]);
+
+		dst++;
+		src++;
+	}
+}
+
+static inline uint8 expandColor16to32(uint8 color)
+{
+	const double normalized = static_cast<double>(color) / 31.0;
+	return static_cast<uint8>(normalized * 255.0 + 0.5);
+}
+
+static void decode16ColorsToRGBA(const void* colors, int count, void* dest)
+{
+	const RGBA16* src = static_cast<const RGBA16*>(colors);
+	RGBA* dst = static_cast<RGBA*>(dest);
+
+	while (count-- > 0)
+	{
+		dst->r = expandColor16to32(src->r);
+		dst->g = expandColor16to32(src->g);
+		dst->b = expandColor16to32(src->b);
+		dst->a = (src->a == 1 ? 255 : 0);
+
+		dst++;
+		src++;
+	}
+}
+
+static inline uint8 collapseColor32to16(uint8 color)
+{
+	const double normalized = static_cast<double>(color) / 255.0;
+	return static_cast<uint8>(normalized * 31.0 + 0.5);
+}
+
+static void encode16ColorsFromRGBA(const void* colors, int count, void* dest)
+{
+	const RGBA* src = static_cast<const RGBA*>(colors);
+	RGBA16* dst = static_cast<RGBA16*>(dest);
+
+	while (count-- > 0)
+	{
+		dst->r = collapseColor32to16(src->r);
+		dst->g = collapseColor32to16(src->g);
+		dst->b = collapseColor32to16(src->b);
+		dst->a = src->a == 255 ? 1 : 0;
 
 		dst++;
 		src++;
@@ -163,7 +220,8 @@ static void quantize4(const void* data, int width, int height, void* dest, void*
 
 bool PSTextureCodec::isFormatSupported(int format) const
 {
-	return (format == PS2Formats::imageFormatIndexed4 || format == PS2Formats::imageFormatIndexed8 || format == PS2Formats::imageFormatRGBA);
+	return (format == PS2Formats::imageFormatIndexed4 || format == PS2Formats::imageFormatIndexed8
+		|| format == PS2Formats::imageFormatRGBA || format == PS2Formats::imageFormatRGBA16);
 }
 
 bool PSTextureCodec::isPaletteFormatSupported(int format) const
@@ -173,7 +231,7 @@ bool PSTextureCodec::isPaletteFormatSupported(int format) const
 
 int PSTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 {
-	if (textureFormat == PS2Formats::imageFormatRGBA)
+	if (textureFormat == PS2Formats::imageFormatRGBA || textureFormat == PS2Formats::imageFormatRGBA16)
 	{
 		return PS2Formats::paletteFormatNone;
 	}
@@ -210,7 +268,7 @@ uint32 PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const
 		ASSERT(paletteFormat == PS2Formats::paletteFormatRGBA);
 		return 4 * 256;
 	}
-	else if (format == PS2Formats::imageFormatRGBA)
+	else if (format == PS2Formats::imageFormatRGBA || format == PS2Formats::imageFormatRGBA16)
 	{
 		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
 		return 0;
@@ -264,6 +322,17 @@ bool PSTextureCodec::decode(void* result, const void* image, int format, int wid
 		rotatePalette32(pal);
 		unswizzle8(image, &buffer[0], width, height);
 		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
+		return true;
+	}
+	if (format == PS2Formats::imageFormatRGBA16)
+	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
+		if (paletteFormat != PS2Formats::paletteFormatNone)
+		{
+			return false;
+		}
+
+		decode16ColorsToRGBA(image, width * height, result);
 		return true;
 	}
 	if (format == PS2Formats::imageFormatRGBA)
@@ -326,6 +395,21 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		encode32ColorsFromRGBA(pal, 256, palette);
 		rotatePalette32(palette);
 		swizzle8(&buffer[0], result, width, height);
+		return true;
+	}
+	if (format == PS2Formats::imageFormatRGBA16)
+	{
+		ASSERT(paletteFormat == PS2Formats::paletteFormatNone);
+		if (paletteFormat != PS2Formats::paletteFormatNone)
+		{
+			return false;
+		}
+
+		nv::Image nvImage;
+		nvImage.allocate(width, height);
+		memcpy(nvImage.pixels(), image, width * height * 4);
+		nv::Quantize::FloydSteinberg(&nvImage, 5, 5, 5, 8);
+		encode16ColorsFromRGBA(nvImage.pixels(), width * height, result);
 		return true;
 	}
 	if (format == PS2Formats::imageFormatRGBA)
