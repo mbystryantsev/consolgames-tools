@@ -5,7 +5,8 @@
 #include "ArchiveProgressNotifier.h"
 #include "CheckingProgressNotifier.h"
 #include "WiiDiscImage.h"
-#include "IsoDiscImage.h"
+#include "PS2DiscImage.h"
+#include "PSPDiscImage.h"
 #include <Archive.h>
 #include <PartStream.h>
 #include <QtFileStream.h>
@@ -29,8 +30,9 @@ static std::auto_ptr<DiscImage> imageForPlatform(PatcherProcessor::Platform plat
 	case PatcherProcessor::platformWii:
 		return std::auto_ptr<DiscImage>(new WiiDiscImage());
 	case PatcherProcessor::platformPS2:
+		return std::auto_ptr<DiscImage>(new PS2DiscImage());
 	case PatcherProcessor::platformPSP:
-		return std::auto_ptr<DiscImage>(new IsoDiscImage());
+		return std::auto_ptr<DiscImage>(new PSPDiscImage());
 	}
 
 	ASSERT(!"Invalid platform!");
@@ -78,7 +80,7 @@ bool PatcherProcessor::init(const QString& manifestPath)
 	}
 	else if (plarformName == "psp")
 	{
-		m_info.platform = platformWii;
+		m_info.platform = platformPSP;
 	}
 	else
 	{
@@ -181,13 +183,15 @@ bool PatcherProcessor::openImage(const QString& path)
 
 	if (m_image.get() == NULL)
 	{
+		m_errorCode = Open_UnableToCreateImageForPlatform;
+		m_errorData = QString::number(m_info.platform);
 		return false;
 	}
 
 	if (!m_image->open(path.toStdWString(), Stream::modeReadWrite))
 	{
-		m_errorCode = Open_UnableToCreateImageFormPlatform;
-		m_errorData = QString::number(m_info.platform);
+		m_errorCode = Open_UnableToOpenImage;
+		m_errorData = path;
 		return false;
 	}
 

@@ -20,10 +20,10 @@ public:
 	virtual std::string lastErrorData() const override;
 	virtual ProgressNotifier* progressNotifier() override;
 
-private:
-	void loadDiscId();
+protected:
+	virtual std::string loadDiscId() = 0;
 
-private:
+protected:
 	Consolgames::IsoImage m_image;
 	std::string m_discId;
 	ProgressNotifier m_notifier;
