@@ -82,7 +82,7 @@ bool TextureDictionaryParserPSP::fetch()
 
 	if (m_currentMetaInfo.bitsPerPixel <= 8)
 	{
-		m_currentMetaInfo.palettePosition = m_currentMetaInfo.rasterPosition + m_currentMetaInfo.rasterSize + 0x50;
+		m_currentMetaInfo.palettePosition = m_stream->position();
 		m_currentMetaInfo.paletteSize = (1 << m_currentMetaInfo.bitsPerPixel) * 4;
 	}
 	else
