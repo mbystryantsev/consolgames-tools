@@ -58,7 +58,7 @@ public:
 		Init_UnableToLoadFileList = 0x06,
 		Open_UnableToOpenImage = 0x10,
 		Open_InvalidDiscId = 0x11,
-		Open_UnableToCreateImageFormPlatform = 0x12,
+		Open_UnableToCreateImageForPlatform = 0x12,
 		RebuildArchives_UnableToOpenFileInImage = 0x20,
 		RebuildArchives_UnableToOpenArchive = 0x21,
 		RebuildArchives_UnableToRebuildArchive = 0x22,
