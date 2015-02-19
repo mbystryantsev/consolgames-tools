@@ -165,17 +165,56 @@ static void convertIndexed8ToRGBA(const void* indexed8Data, int count, const voi
 	}	
 }
 
-static void quantize(const void* data, int colorCount, int width, int height, void* dest, void* palette)
+static bool quantize(const void* data, int colorCount, int width, int height, void* dest, void* palette)
 {
 	liq_attr *attr = liq_attr_create();
-	liq_set_max_colors(attr, colorCount);
+	
+	if (attr == NULL)
+	{
+		DLOG << "Unable to create liq attr";
+		return false;
+	}
+
+	if (liq_set_max_colors(attr, colorCount) != LIQ_OK)
+	{
+		DLOG << "Unable to set liq max colors";
+		return false;
+	}
 
 	liq_image *image = liq_image_create_rgba(attr, const_cast<void*>(data), width, height, 0);
+	
+	if (image == NULL)
+	{
+		DLOG << "Unable to create liq image";
+		return false;
+	}
 
 	liq_result *res = liq_quantize_image(attr, image);
 
-	liq_write_remapped_image(res, image, dest, width * height);
+	if (res == NULL)
+	{
+		DLOG << "Unable to quantize image";
+		return false;
+	}
+
+	if (liq_set_dithering_level(res, 0.1f) != LIQ_OK)
+	{
+		DLOG << "Dithering error!";
+		return false;
+	}
+
+	if (liq_write_remapped_image(res, image, dest, width * height) != LIQ_OK)
+	{
+		DLOG << "Unable to write liq remapped image";
+		return false;
+	}
+
 	const liq_palette *pal = liq_get_palette(res);
+	if (pal == NULL)
+	{
+		DLOG << "Unable to get liq palette";
+		return false;
+	}
 
 	RGBA* c = static_cast<RGBA*>(palette);
 	for (int i = 0; i < colorCount; i++)
@@ -191,17 +230,23 @@ static void quantize(const void* data, int colorCount, int width, int height, vo
 	liq_attr_destroy(attr);
 	liq_image_destroy(image);
 	liq_result_destroy(res);
+
+	return true;
 }
 
-static void quantize8(const void* data, int width, int height, void* dest, void* palette)
+static bool quantize8(const void* data, int width, int height, void* dest, void* palette)
 {
-	quantize(data, 256, width, height, dest, palette);
+	return quantize(data, 256, width, height, dest, palette);
 }
 
-static void quantize4(const void* data, int width, int height, void* dest, void* palette)
+static bool quantize4(const void* data, int width, int height, void* dest, void* palette)
 {
 	std::vector<uint8> buffer(width * height);
-	quantize(data, 16, width, height, &buffer[0], palette);
+	
+	if (!quantize(data, 16, width, height, &buffer[0], palette))
+	{
+		return false;
+	}
 
 	const uint8* src = &buffer[0];
 	uint8* dst = static_cast<uint8*>(dest);
@@ -214,6 +259,8 @@ static void quantize4(const void* data, int width, int height, void* dest, void*
 		ASSERT(c1 < 16 && c2 < 16);
 		*dst++ = (c1 & 0xF) | (c2 << 4);
 	}
+
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -376,7 +423,12 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		}
 
 		uint32 pal[16];
-		quantize4(image, width, height, &buffer[0], pal);
+		
+		if (!quantize4(image, width, height, &buffer[0], pal))
+		{
+			return false;
+		}
+
 		encode32ColorsFromRGBA(pal, 16, palette);
 		swizzle4(&buffer[0], result, width, height);
 		return true;
@@ -391,7 +443,11 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		}
 
 		uint32 pal[256];
-		quantize8(image, width, height, &buffer[0], pal);
+		if (!quantize8(image, width, height, &buffer[0], pal))
+		{
+			return false;
+		}
+
 		encode32ColorsFromRGBA(pal, 256, palette);
 		rotatePalette32(palette);
 		swizzle8(&buffer[0], result, width, height);
