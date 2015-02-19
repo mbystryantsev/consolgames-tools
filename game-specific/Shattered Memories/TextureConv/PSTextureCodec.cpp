@@ -178,6 +178,7 @@ static bool quantize(const void* data, int colorCount, int width, int height, vo
 	if (liq_set_max_colors(attr, colorCount) != LIQ_OK)
 	{
 		DLOG << "Unable to set liq max colors";
+		liq_attr_destroy(attr);
 		return false;
 	}
 
@@ -186,6 +187,7 @@ static bool quantize(const void* data, int colorCount, int width, int height, vo
 	if (image == NULL)
 	{
 		DLOG << "Unable to create liq image";
+		liq_attr_destroy(attr);
 		return false;
 	}
 
@@ -194,18 +196,26 @@ static bool quantize(const void* data, int colorCount, int width, int height, vo
 	if (res == NULL)
 	{
 		DLOG << "Unable to quantize image";
+		liq_attr_destroy(attr);
+		liq_image_destroy(image);
 		return false;
 	}
 
 	if (liq_set_dithering_level(res, 0.1f) != LIQ_OK)
 	{
 		DLOG << "Dithering error!";
+		liq_attr_destroy(attr);
+		liq_image_destroy(image);
+		liq_result_destroy(res);
 		return false;
 	}
 
 	if (liq_write_remapped_image(res, image, dest, width * height) != LIQ_OK)
 	{
 		DLOG << "Unable to write liq remapped image";
+		liq_attr_destroy(attr);
+		liq_image_destroy(image);
+		liq_result_destroy(res);
 		return false;
 	}
 
@@ -213,6 +223,9 @@ static bool quantize(const void* data, int colorCount, int width, int height, vo
 	if (pal == NULL)
 	{
 		DLOG << "Unable to get liq palette";
+		liq_attr_destroy(attr);
+		liq_image_destroy(image);
+		liq_result_destroy(res);
 		return false;
 	}
 
