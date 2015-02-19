@@ -180,7 +180,12 @@ IsoFileDescriptor IsoDirectory::findFile(const std::string& filePath) const
 
 	if (!pathInfo.path().empty())
 	{
-		const int index = directory->indexOf(pathInfo.basename() + ";1");
+		int index = directory->indexOf(pathInfo.basename() + ";1");
+		if (index == -1)
+		{
+			index = directory->indexOf(pathInfo.basename());
+		}
+		
 		if (index != -1)
 		{
 			return directory->entry(index);
