@@ -1,4 +1,5 @@
 #pragma once
+#include <stddef.h>
 
 template<typename Type>
 class Tree
