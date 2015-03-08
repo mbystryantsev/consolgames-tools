@@ -68,7 +68,11 @@ static void printUsage()
 	cout << "Silent Hill: Shattered Memories Texture Converter by consolgames.ru\n"
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
-			"  -e <wii|ps2|psp> <dxt1|indexed4|indexed8|rgba16|rgba> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
+			"  -e <wii|ps2|psp> <format[:paletteFormat]> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
+			"     Wii formats:         dxt1|c4|c8\n"
+			"     Wii palette formats: rgb565|rgb5a3\n"
+			"     PS formats:          indexed4|indexed8|rgba16|rgba\n"
+			"     PS palette formats:  rgba\n"
 			"  -p <wii|ps2|psp> <csv> <InDir> <OutDir> - parse and extract textures\n"
 			"  -j <InImage> <OutImage> [quality] - reencode image as jpeg\n";
 }
@@ -141,6 +145,8 @@ struct Arguments
 	Action action;
 	Platform platform;
 	string format;
+	string paletteFormat;
+	vector<string> extractFormats;
 	bool decodeMipmaps;
 	string inputPath;
 	string outputPath;
@@ -248,6 +254,12 @@ static Arguments parseArgs(int argc, char *argv[])
 		}
 
 		result.format = permanentArgs[1];
+		const size_t palFormatPos = result.format.find(':');
+		if (palFormatPos != string::npos)
+		{
+			result.paletteFormat = result.format.c_str() + palFormatPos + 1;
+			result.format.resize(palFormatPos);
+		}
 
 		result.inputPath = permanentArgs[2];
 		result.outputPath = permanentArgs[3];
@@ -276,7 +288,7 @@ static Arguments parseArgs(int argc, char *argv[])
 	{
 		result.action = actionParse;
 
-		if (permanentArgs.size() != 4)
+		if (permanentArgs.size() < 4)
 		{
 			cout << "Invalid actual parameters count!" << endl;
 			return Arguments();
@@ -294,6 +306,12 @@ static Arguments parseArgs(int argc, char *argv[])
 		result.csvPath = permanentArgs[1];
 		result.inputPath = permanentArgs[2];
 		result.outputPath = permanentArgs[3];
+
+		result.extractFormats.reserve(permanentArgs.size() - 4);
+		for (size_t i = 4; i < permanentArgs.size(); i++)
+		{
+			result.extractFormats.push_back(permanentArgs[i]);
+		}
 	}
 	else if (strcmp(action, "-j") == 0 || strcmp(action, "--jpeg") == 0)
 	{		
@@ -467,7 +485,7 @@ static bool decodeTexture(const string& inputPath, const string& destPath, bool 
 	return decodeTexture(stream, destPath, decodeMipmap);
 }
 
-static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, int mipmaps, int customWidth, int customHeight)
+static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, const char* paletteFormatStr, int mipmaps, int customWidth, int customHeight)
 {
 	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -477,12 +495,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 	}
 
 	const int format = codec->textureFormatFromString(formatStr);
-	const int paletteFormat = codec->bestSuitablePaletteFormatFor(format);
-
-	if (mipmaps == TextureCodec::mipmapCountDefault)
-	{
-		mipmaps = codec->defaultMipmapCount();
-	}
+	const int paletteFormat = paletteFormatStr == NULL ? codec->bestSuitablePaletteFormatFor(format) : codec->paletteFormatFromString(paletteFormatStr);
 
 	if (!checkFormatsAndNotify(codec.get(), format, paletteFormat))
 	{
@@ -585,7 +598,7 @@ static std::string extractPart(const std::string& str, int part)
 	}	
 }
 
-static bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, bool skipExistingTextures = false)
+static bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, const vector<string>& formats = vector<string>(), bool skipExistingTextures = false)
 {
 	std::auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
@@ -599,6 +612,19 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 	{
 		std::cout << "Unable to open input csv" << std::endl;
 		return false;
+	}
+
+	set<int> formatSet;
+	for (vector<string>::const_iterator it = formats.begin(); it != formats.end(); it++)
+	{
+		const int format = codec->textureFormatFromString(it->c_str());
+		if (format == TextureCodec::textureFormatUndefined)
+		{
+			std::cout << "Unknown image format: " << *it << std::endl;
+			return false;
+		}
+
+		formatSet.insert(format);
 	}
 
 	char buf[1024];
@@ -694,10 +720,11 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 
 	std::set<std::string> convertedTextures;
 
-	int lineNum = 1;
+	int lineNum = 0;
 	while (!stream.eof())
 	{
 		stream.getline(buf, sizeof(buf));
+		lineNum++;
 		const std::string line = buf;
 
 		const std::string fileName = extractPart(line, indexFileName);
@@ -714,6 +741,11 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 		if (fileName.empty() || width == 0 || height == 0 || name.empty() || format == TextureCodec::textureFormatUndefined || rasterPosition == 0 || rasterSize == 0)
 		{
 			std::cout << "Invalid line " << lineNum << ": " << line << std::endl;
+			continue;
+		}
+
+		if (!formatSet.empty() && formatSet.find(format) == formatSet.end())
+		{
 			continue;
 		}
 
@@ -772,8 +804,6 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 			cout << "Error saving image!" << endl;
 			return false;
 		}
-
-		lineNum++;
 	}
 	
 	return true;
@@ -863,11 +893,11 @@ int main(int argc, char *argv[])
 	}
 	else if(args.action == actionEncode)
 	{
-		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format.c_str(), args.mipmapCount, args.customWidth, args.customHeight) ? 0 : -1;
+		return encodeTexture(args.inputPath, args.outputPath, args.platform, args.format.c_str(), args.paletteFormat.empty() ? NULL : args.paletteFormat.c_str(), args.mipmapCount, args.customWidth, args.customHeight) ? 0 : -1;
 	}
 	else if(args.action == actionParse)
 	{
-		return extractTextures(args.platform, args.csvPath, args.inputPath, args.outputPath) ? 0 : -1;
+		return extractTextures(args.platform, args.csvPath, args.inputPath, args.outputPath, args.extractFormats) ? 0 : -1;
 	}
 	else if(args.action == actionEncodeJPEG)
 	{

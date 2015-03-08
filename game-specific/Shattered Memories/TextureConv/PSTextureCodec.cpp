@@ -1,8 +1,7 @@
 #include "PSTextureCodec.h"
+#include "Quantize.h"
 #include <PSFormats.h>
-#include <libimagequant.h>
 #include <vector>
-#include <nvimage/Quantize.h>
 #include <nvimage/Image.h>
 
 using namespace ShatteredMemories;
@@ -10,10 +9,6 @@ using namespace ShatteredMemories;
 namespace
 {
 #pragma pack(push, 1)
-struct RGBA
-{
-	uint8 r, g, b, a;
-};
 
 struct RGBA16
 {
@@ -26,7 +21,7 @@ struct RGBA16
 #pragma pack(pop)
 }
 
-static const uint8 s_colorDecodingTable[129] =
+static const uint8 s_alphaDecodingTable[129] =
 {
 	0,   2,   4,   6,   8,   10,  12,  14,  16,  18,  20,  22,  24,  26,  28,  30,
 	32,  34,  36,  38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,  60,  62,
@@ -39,7 +34,7 @@ static const uint8 s_colorDecodingTable[129] =
 	255
 };
 
-static const uint8 s_colorEncodingTable[256] =
+static const uint8 s_alphaEncodingTable[256] =
 {
 	0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   7,   7,   8,
 	8,   9,   9,   10,  10,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,  16,
@@ -69,17 +64,11 @@ static void decode32ColorsToRGBA(const void* colors, int count, void* dest)
 		dst->r = src->r;
 		dst->g = src->g;
 		dst->b = src->b;
-		dst->a = (src->a > 0x80 ? 255 : s_colorDecodingTable[src->a]);
+		dst->a = (src->a > 0x80 ? 255 : s_alphaDecodingTable[src->a]);
 
 		dst++;
 		src++;
 	}
-}
-
-static inline uint8 expandColor16to32(uint8 color)
-{
-	const double normalized = static_cast<double>(color) / 31.0;
-	return static_cast<uint8>(normalized * 255.0 + 0.5);
 }
 
 static void decode16ColorsToRGBA(const void* colors, int count, void* dest)
@@ -89,20 +78,14 @@ static void decode16ColorsToRGBA(const void* colors, int count, void* dest)
 
 	while (count-- > 0)
 	{
-		dst->r = expandColor16to32(src->r);
-		dst->g = expandColor16to32(src->g);
-		dst->b = expandColor16to32(src->b);
+		dst->r = expandColorTo32<5>(src->r);
+		dst->g = expandColorTo32<5>(src->g);
+		dst->b = expandColorTo32<5>(src->b);
 		dst->a = (src->a == 1 ? 255 : 0);
 
 		dst++;
 		src++;
 	}
-}
-
-static inline uint8 collapseColor32to16(uint8 color)
-{
-	const double normalized = static_cast<double>(color) / 255.0;
-	return static_cast<uint8>(normalized * 31.0 + 0.5);
 }
 
 static void encode16ColorsFromRGBA(const void* colors, int count, void* dest)
@@ -112,9 +95,9 @@ static void encode16ColorsFromRGBA(const void* colors, int count, void* dest)
 
 	while (count-- > 0)
 	{
-		dst->r = collapseColor32to16(src->r);
-		dst->g = collapseColor32to16(src->g);
-		dst->b = collapseColor32to16(src->b);
+		dst->r = collapseColor32<5>(src->r);
+		dst->g = collapseColor32<5>(src->g);
+		dst->b = collapseColor32<5>(src->b);
 		dst->a = src->a == 255 ? 1 : 0;
 
 		dst++;
@@ -132,148 +115,11 @@ static void encode32ColorsFromRGBA(const void* colors, int count, void* dest)
 		dst->r = src->r;
 		dst->g = src->g;
 		dst->b = src->b;
-		dst->a = s_colorEncodingTable[src->a];
+		dst->a = s_alphaEncodingTable[src->a];
 
 		dst++;
 		src++;
 	}
-}
-
-static void convertIndexed4ToRGBA(const void* indexed4Data, int count, const void* palette, void* dest)
-{
-	const uint32* pal = static_cast<const uint32*>(palette);
-
-	const uint8* src = static_cast<const uint8*>(indexed4Data);
-	uint32* dst = static_cast<uint32*>(dest);
-	for (int i = 0; i < count; i += 2)
-	{
-		*dst++ = pal[*src & 0xF];
-		*dst++ = pal[*src >> 4];
-		src++;
-	}	
-}
-
-static void convertIndexed8ToRGBA(const void* indexed8Data, int count, const void* palette, void* dest)
-{
-	const uint32* pal = static_cast<const uint32*>(palette);
-
-	const uint8* src = static_cast<const uint8*>(indexed8Data);
-	uint32* dst = static_cast<uint32*>(dest);
-	for (int i = 0; i < count; i++)
-	{
-		*dst++ = pal[*src++];
-	}	
-}
-
-static bool quantize(const void* data, int colorCount, int width, int height, void* dest, void* palette)
-{
-	liq_attr *attr = liq_attr_create();
-	
-	if (attr == NULL)
-	{
-		DLOG << "Unable to create liq attr";
-		return false;
-	}
-
-	if (liq_set_max_colors(attr, colorCount) != LIQ_OK)
-	{
-		DLOG << "Unable to set liq max colors";
-		liq_attr_destroy(attr);
-		return false;
-	}
-
-	liq_image *image = liq_image_create_rgba(attr, const_cast<void*>(data), width, height, 0);
-	
-	if (image == NULL)
-	{
-		DLOG << "Unable to create liq image";
-		liq_attr_destroy(attr);
-		return false;
-	}
-
-	liq_result *res = liq_quantize_image(attr, image);
-
-	if (res == NULL)
-	{
-		DLOG << "Unable to quantize image";
-		liq_attr_destroy(attr);
-		liq_image_destroy(image);
-		return false;
-	}
-
-	if (liq_set_dithering_level(res, 0.1f) != LIQ_OK)
-	{
-		DLOG << "Dithering error!";
-		liq_attr_destroy(attr);
-		liq_image_destroy(image);
-		liq_result_destroy(res);
-		return false;
-	}
-
-	if (liq_write_remapped_image(res, image, dest, width * height) != LIQ_OK)
-	{
-		DLOG << "Unable to write liq remapped image";
-		liq_attr_destroy(attr);
-		liq_image_destroy(image);
-		liq_result_destroy(res);
-		return false;
-	}
-
-	const liq_palette *pal = liq_get_palette(res);
-	if (pal == NULL)
-	{
-		DLOG << "Unable to get liq palette";
-		liq_attr_destroy(attr);
-		liq_image_destroy(image);
-		liq_result_destroy(res);
-		return false;
-	}
-
-	RGBA* c = static_cast<RGBA*>(palette);
-	for (int i = 0; i < colorCount; i++)
-	{
-		c->r = pal->entries[i].r;
-		c->g = pal->entries[i].g;
-		c->b = pal->entries[i].b;
-		c->a = pal->entries[i].a;
-		c++;
-	}
-	//memcpy(palette, pal, 4 * colorCount);
-
-	liq_attr_destroy(attr);
-	liq_image_destroy(image);
-	liq_result_destroy(res);
-
-	return true;
-}
-
-static bool quantize8(const void* data, int width, int height, void* dest, void* palette)
-{
-	return quantize(data, 256, width, height, dest, palette);
-}
-
-static bool quantize4(const void* data, int width, int height, void* dest, void* palette)
-{
-	std::vector<uint8> buffer(width * height);
-	
-	if (!quantize(data, 16, width, height, &buffer[0], palette))
-	{
-		return false;
-	}
-
-	const uint8* src = &buffer[0];
-	uint8* dst = static_cast<uint8*>(dest);
-
-	const int rasterSize = (width * height) / 2;
-	for (int i = 0; i < rasterSize; i++)
-	{
-		const uint8 c1 = *src++;
-		const uint8 c2 = *src++;
-		ASSERT(c1 < 16 && c2 < 16);
-		*dst++ = (c1 & 0xF) | (c2 << 4);
-	}
-
-	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -474,11 +320,10 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		nv::Image nvImage;
-		nvImage.allocate(width, height);
-		memcpy(nvImage.pixels(), image, width * height * 4);
-		nv::Quantize::FloydSteinberg(&nvImage, 5, 5, 5, 8);
-		encode16ColorsFromRGBA(nvImage.pixels(), width * height, result);
+		std::vector<uint32> data(width * height * 4);
+		memcpy(&data[0], image, width * height * 4);
+		floydSteinberg(&data[0], width, height, 5, 5, 5, 8);
+		encode16ColorsFromRGBA(&data[0], width * height, result);
 		return true;
 	}
 	if (format == PSFormats::imageFormatRGBA)
