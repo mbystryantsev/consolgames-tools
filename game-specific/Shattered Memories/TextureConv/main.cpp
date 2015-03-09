@@ -69,7 +69,7 @@ static void printUsage()
 			"Usage:\n"
 			"  -d [--mipmap] <InTexture> <OutImage> - decode texture to image\n"
 			"  -e <wii|ps2|psp> <format[:paletteFormat]> <InImage> <OutTexture> [MipmapCount] [width height] - encode image into texture\n"
-			"     Wii formats:         dxt1|c4|c8\n"
+			"     Wii formats:         dxt1|rgba|c4|c8\n"
 			"     Wii palette formats: rgb565|rgb5a3\n"
 			"     PS formats:          indexed4|indexed8|rgba16|rgba\n"
 			"     PS palette formats:  rgba\n"
@@ -396,13 +396,13 @@ static bool checkFormatsAndNotify(TextureCodec* codec, int format, int paletteFo
 {
 	if (!codec->isFormatSupported(format))
 	{
-		cout << "Unsupported texture format (" << codec->textureFormatToString(format) << ", id=" << format << "), supported only dxt1 for Wii and indexed4/indexed8/RGBA for PS2/PSP" << endl;
+		cout << "Unsupported texture format!" << endl;
 		return false;
 	}
 
 	if (!codec->isPaletteFormatSupported(paletteFormat))
 	{
-		cout << "Unsupported palette format (" << codec->paletteFormatToString(paletteFormat) << ", id=" << paletteFormat << "), supported only RGBA palette for PS2/PSP" << endl;
+		cout << "Unsupported palette format!" << endl;
 		return false;
 	}
 

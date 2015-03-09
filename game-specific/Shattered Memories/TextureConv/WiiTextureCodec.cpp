@@ -224,7 +224,7 @@ static const int s_defaultMipmapCount = 4;
 
 bool WiiTextureCodec::isFormatSupported(int format) const
 {
-	return (format == WiiFormats::imageFormatDXT1 || format == WiiFormats::imageFormatC4 || format == WiiFormats::imageFormatC8);
+	return (format == WiiFormats::imageFormatDXT1 || format == WiiFormats::imageFormatC4 || format == WiiFormats::imageFormatC8 || format == WiiFormats::imageFormatRGBA8);
 }
 
 bool WiiTextureCodec::isPaletteFormatSupported(int format) const
@@ -234,7 +234,7 @@ bool WiiTextureCodec::isPaletteFormatSupported(int format) const
 
 int WiiTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 {
-	if (textureFormat == WiiFormats::imageFormatDXT1)
+	if (textureFormat == WiiFormats::imageFormatDXT1 || textureFormat == WiiFormats::imageFormatRGBA8)
 	{
 		return WiiFormats::paletteFormatNone;
 	}
@@ -247,6 +247,39 @@ int WiiTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 		return WiiFormats::paletteFormatRGB5A3;
 	}
 	return WiiFormats::paletteFormatUndefined;
+}
+
+static int bitsPerPixel(int format)
+{
+	switch (format)
+	{
+		case WiiFormats::imageFormatC4:
+		case WiiFormats::imageFormatDXT1:
+			return 4;
+		case WiiFormats::imageFormatC8:
+			return 8;
+		case WiiFormats::imageFormatRGBA8:
+			return 32;
+	}
+
+	ASSERT(!"Unsupported format!");
+	return 0;
+}
+
+static int blockSize(int format)
+{
+	switch (format)
+	{
+		case WiiFormats::imageFormatC4:
+		case WiiFormats::imageFormatDXT1:
+		case WiiFormats::imageFormatC8:
+			return 32;
+		case WiiFormats::imageFormatRGBA8:
+			return 64;
+	}
+
+	ASSERT(!"Unsupported format!");
+	return 0;
 }
 
 uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const 
@@ -262,13 +295,14 @@ uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height, int
 		mipmaps = format == WiiFormats::imageFormatDXT1 ? s_defaultMipmapCount : 1;
 	}
 
-	const int sizeFactor = format == WiiFormats::imageFormatC8 ? 1 : 2;
-	const int minSize = 32;
+
+	const int bpp = bitsPerPixel(format);
+	const int minSize = blockSize(format);
 
 	uint32 size = 0;
 	while (mipmaps > 0)
 	{
-		size += std::max(minSize, (width * height) / sizeFactor);
+		size += std::max(minSize, (width * height * bpp) / 8);
 		mipmaps--;
 		width /= 2;
 		height /= 2;
@@ -312,6 +346,17 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 		DXTCodec::decodeDXT1(image, &bgra[0], width, height, std::max(1, mipmapsToDecode));
 		bgraToRgba(&bgra[0], result, bgra.size());
 	
+		return true;
+	}
+	if (format == WiiFormats::imageFormatRGBA8)
+	{
+		ASSERT(paletteFormat == WiiFormats::paletteFormatNone);
+		if (paletteFormat != WiiFormats::paletteFormatNone)
+		{
+			return false;
+		}
+
+		wiiUnswizzle32(image, result, width, height);
 		return true;
 	}
 	
@@ -370,6 +415,17 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 		DXTCodec::encodeDXT1(&bgra[0], result, width, height, mipmaps == mipmapCountDefault ? s_defaultMipmapCount : mipmaps);
 		return true;
 	}
+	if (format == WiiFormats::imageFormatRGBA8)
+	{
+		ASSERT(palette == NULL);
+		if (palette != NULL)
+		{
+			return false;
+		}
+		
+		wiiSwizzle32(image, result, width, height);
+		return true;
+	}
 
 	std::vector<uint8> buffer(encodedRasterSize(format, width, height, mipmaps));
 
@@ -393,7 +449,6 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 		wiiSwizzle4(&buffer[0], result, width, height);
 		return true;
 	}
-
 	if (format == WiiFormats::imageFormatC8)
 	{
 		ASSERT(palette != NULL);
