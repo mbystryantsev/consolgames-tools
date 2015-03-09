@@ -534,7 +534,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 	header.paletteFormat = paletteFormat;
 	header.width = image->width();
 	header.height = image->height();
-	header.mipmapCount = mipmaps;
+	header.mipmapCount = mipmaps == TextureCodec::mipmapCountDefault ? codec->defaultMipmapCount() : mipmaps;
 	header.rasterSize = codec->encodedRasterSize(format, image->width(), image->height(), mipmaps);
 	header.paletteSize = codec->encodedPaletteSize(format, paletteFormat);
 
