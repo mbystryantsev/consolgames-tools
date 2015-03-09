@@ -139,6 +139,16 @@ void wiiSwizzle32(const void* src, void* dst, int width, int height)
 	swapEncode32(dst, width, height);
 }
 
+void wiiUnswizzle16(const void* src, void* dst, int width, int height)
+{
+	swizzleProc<typeUnswizzle, 8, 4>(static_cast<const uint8*>(src), static_cast<uint8*>(dst), width * 2, height);
+}
+
+void wiiSwizzle16(const void* src, void* dst, int width, int height)
+{
+	swizzleProc<typeSwizzle, 8, 4>(static_cast<uint8*>(dst), static_cast<const uint8*>(src), width * 2, height);
+}
+
 void wiiUnswizzle8(const void* src, void* dst, int width, int height)
 {
 	swizzleProc<typeUnswizzle, 8, 4>(static_cast<const uint8*>(src), static_cast<uint8*>(dst), width, height);
