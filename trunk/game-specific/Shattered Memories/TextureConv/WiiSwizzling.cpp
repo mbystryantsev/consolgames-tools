@@ -1,6 +1,8 @@
 #include "WiiSwizzling.h"
 #include <core.h>
 
+using namespace Consolgames;
+
 namespace
 {
 
@@ -57,6 +59,85 @@ void swizzleProc(Swizzled* swizzled, Unswizzled* unswizzled, int width, int heig
 }
 
 //////////////////////////////////////////////////////////////////////
+
+static void swapDecode32(void* data, int width, int height, const char* map)
+{
+	static const char s_map[] = {4, 0, 5, 1, 6, 2, 7, 3};
+
+	uint16* a = static_cast<uint16*>(data);
+
+	for (int i = 0; i < width * height; i+=4)
+	{
+		uint16 v[8];
+		std::copy(a, a + 8, v);
+		
+		for (int j = 0; j < 8; j++)
+		{
+			a[j] = endian16(v[map[j]]);
+		}
+		
+		a += 8;
+	}
+}
+
+static void swapDecode32(void* data, int width, int height)
+{
+	static const char s_map[] = {4, 0, 5, 1, 6, 2, 7, 3};
+
+	uint16* a = static_cast<uint16*>(data);
+
+	for (int i = 0; i < width * height; i+=4)
+	{
+		uint16 v[8];
+		std::copy(a, a + 8, v);
+		
+		for (int j = 0; j < 8; j++)
+		{
+			a[j] = endian16(v[s_map[j]]);
+		}
+		
+		a += 8;
+	}
+}
+
+static void swapEncode32(void* data, int width, int height)
+{
+	uint16* a = static_cast<uint16*>(data);
+
+	for (int i = 0; i < width * height; i+=16)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			uint16* b = a + 16;
+			uint16 v[8] = {a[0], a[1], a[2], a[3], b[0], b[1], b[2], b[3]};
+
+			a[0] = endian16(v[1]);
+			a[1] = endian16(v[3]);
+			a[2] = endian16(v[5]);
+			a[3] = endian16(v[7]);
+			b[0] = endian16(v[0]);
+			b[1] = endian16(v[2]);
+			b[2] = endian16(v[4]);
+			b[3] = endian16(v[6]);
+
+			a += 4;
+		}
+		
+		a += 16;
+	}
+}
+
+void wiiUnswizzle32(const void* src, void* dst, int width, int height)
+{
+	swizzleProc<typeUnswizzle, 8, 4>(static_cast<const uint8*>(src), static_cast<uint8*>(dst), width * 4, height);
+	swapDecode32(dst, width, height);
+}
+
+void wiiSwizzle32(const void* src, void* dst, int width, int height)
+{
+	swizzleProc<typeSwizzle, 8, 4>(static_cast<uint8*>(dst), static_cast<const uint8*>(src), width * 4, height);
+	swapEncode32(dst, width, height);
+}
 
 void wiiUnswizzle8(const void* src, void* dst, int width, int height)
 {
