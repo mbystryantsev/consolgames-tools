@@ -7,6 +7,8 @@
 #include <vector>
 #include <algorithm>
 
+// TODO: Add mipmaps support for not indexed textures
+
 using namespace ShatteredMemories;
 using namespace Consolgames;
 
@@ -181,6 +183,23 @@ static bool encodeColorsFromRGBA(WiiFormats::PaletteFormat format, const void* c
 	return false;
 }
 
+
+static bool encodeColorsFromRGBA(WiiFormats::ImageFormat format, const void* colors, int count, void* dest)
+{
+	if (format == WiiFormats::imageFormatRGB565)
+	{
+		encodeColorsFromRGBA<RGB565>(colors, count, dest);
+		return true;
+	}
+	if (format == WiiFormats::imageFormatRGB5A3)
+	{
+		encodeColorsFromRGBA<RGB5A3>(colors, count, dest);
+		return true;
+	}
+
+	return false;
+}
+
 template <typename Color>
 static void decodeColorsToRGBA(const void* colors, int count, void* dest)
 {
@@ -209,6 +228,22 @@ static bool decodeColorsToRGBA(WiiFormats::PaletteFormat format, const void* col
 	return false;
 }
 
+static bool decodeColorsToRGBA(WiiFormats::ImageFormat format, const void* colors, int count, void* dest)
+{
+	if (format == WiiFormats::imageFormatRGB565)
+	{
+		decodeColorsToRGBA<RGB565>(colors, count, dest);
+		return true;
+	}
+	if (format == WiiFormats::imageFormatRGB5A3)
+	{
+		decodeColorsToRGBA<RGB5A3>(colors, count, dest);
+		return true;
+	}
+
+	return false;
+}
+
 static void swapHalfBytes(uint8* data, int size)
 {
 	for (int i = 0; i < size; i++)
@@ -224,8 +259,20 @@ static const int s_defaultMipmapCount = 4;
 
 bool WiiTextureCodec::isFormatSupported(int format) const
 {
-	return (format == WiiFormats::imageFormatDXT1 || format == WiiFormats::imageFormatC4 || format == WiiFormats::imageFormatC8 || format == WiiFormats::imageFormatRGBA8);
+	switch (format)
+	{
+	case WiiFormats::imageFormatDXT1:
+	case WiiFormats::imageFormatC4:
+	case WiiFormats::imageFormatC8:
+	case WiiFormats::imageFormatRGBA8:
+	case WiiFormats::imageFormatRGB565:
+	case WiiFormats::imageFormatRGB5A3:
+		return true;
+	}
+
+	return false;
 }
+
 
 bool WiiTextureCodec::isPaletteFormatSupported(int format) const
 {
@@ -234,18 +281,19 @@ bool WiiTextureCodec::isPaletteFormatSupported(int format) const
 
 int WiiTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 {
-	if (textureFormat == WiiFormats::imageFormatDXT1 || textureFormat == WiiFormats::imageFormatRGBA8)
+	switch (textureFormat)
 	{
+	case WiiFormats::imageFormatDXT1:
+	case WiiFormats::imageFormatRGBA8:
+	case WiiFormats::imageFormatRGB565:
+	case WiiFormats::imageFormatRGB5A3:
 		return WiiFormats::paletteFormatNone;
-	}
-	if (textureFormat == WiiFormats::imageFormatC4)
-	{
+	case WiiFormats::imageFormatC4:
 		return WiiFormats::paletteFormatRGB565;
-	}
-	if (textureFormat == WiiFormats::imageFormatC8)
-	{
+	case WiiFormats::imageFormatC8:
 		return WiiFormats::paletteFormatRGB5A3;
 	}
+
 	return WiiFormats::paletteFormatUndefined;
 }
 
@@ -258,6 +306,9 @@ static int bitsPerPixel(int format)
 			return 4;
 		case WiiFormats::imageFormatC8:
 			return 8;
+		case WiiFormats::imageFormatRGB565:
+		case WiiFormats::imageFormatRGB5A3:
+			return 16;
 		case WiiFormats::imageFormatRGBA8:
 			return 32;
 	}
@@ -273,6 +324,8 @@ static int blockSize(int format)
 		case WiiFormats::imageFormatC4:
 		case WiiFormats::imageFormatDXT1:
 		case WiiFormats::imageFormatC8:
+		case WiiFormats::imageFormatRGB565:
+		case WiiFormats::imageFormatRGB5A3:
 			return 32;
 		case WiiFormats::imageFormatRGBA8:
 			return 64;
@@ -371,13 +424,15 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 		}
 
 		uint32 pal[16];
-		decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 16, pal);
+		if (!decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 16, pal))
+		{
+			return false;
+		}
 		wiiUnswizzle4(image, &buffer[0], width, height);
 		swapHalfBytes(&buffer[0], buffer.size());
 		convertIndexed4ToRGBA(&buffer[0], width * height, pal, result);
 		return true;
 	}
-
 	if (format == WiiFormats::imageFormatC8)
 	{
 		ASSERT(palette != NULL);
@@ -387,9 +442,27 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 		}
 
 		uint32 pal[256];
-		decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 256, pal);
+		if (!decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 256, pal))
+		{
+			return false;
+		}
 		wiiUnswizzle8(image, &buffer[0], width, height);
 		convertIndexed8ToRGBA(&buffer[0], width * height, pal, result);
+		return true;
+	}
+	if (format == WiiFormats::imageFormatRGB565 || format == WiiFormats::imageFormatRGB5A3)
+	{
+		ASSERT(palette == NULL);
+		if (palette != NULL)
+		{
+			return false;
+		}
+
+		wiiUnswizzle16(image, &buffer[0], width, height);
+		if (!decodeColorsToRGBA(static_cast<WiiFormats::ImageFormat>(format), &buffer[0], width * height, result))
+		{
+			return false;
+		}
 		return true;
 	}
 
@@ -445,7 +518,10 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 		uint32 pal[16];
 		quantize4(image, width, height, &buffer[0], pal);
 		swapHalfBytes(&buffer[0], buffer.size());
-		encodeColorsFromRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), pal, 16, palette);
+		if (!encodeColorsFromRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), pal, 16, palette))
+		{
+			return false;
+		}
 		wiiSwizzle4(&buffer[0], result, width, height);
 		return true;
 	}
@@ -459,8 +535,26 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 
 		uint32 pal[256];
 		quantize8(image, width, height, &buffer[0], pal);
-		encodeColorsFromRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), pal, 256, palette);
+		if (!encodeColorsFromRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), pal, 256, palette))
+		{
+			return false;
+		}
 		wiiSwizzle8(&buffer[0], result, width, height);
+		return true;
+	}
+	if (format == WiiFormats::imageFormatRGB565 || format == WiiFormats::imageFormatRGB5A3)
+	{
+		ASSERT(palette == NULL);
+		if (palette != NULL)
+		{
+			return false;
+		}
+
+		if (!encodeColorsFromRGBA(static_cast<WiiFormats::ImageFormat>(format), image, width * height, &buffer[0]))
+		{
+			return false;
+		}
+		wiiSwizzle16(&buffer[0], result, width, height);
 		return true;
 	}
 
