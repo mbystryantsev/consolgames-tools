@@ -135,6 +135,11 @@ bool PSTextureCodec::isPaletteFormatSupported(int format) const
 	return (format == PSFormats::paletteFormatNone || format == PSFormats::paletteFormatRGBA);
 }
 
+bool PSTextureCodec::isMipmapsSupported(int) const
+{
+	return false;
+}
+
 int PSTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 {
 	if (textureFormat == PSFormats::imageFormatRGBA || textureFormat == PSFormats::imageFormatRGBA16)
@@ -148,15 +153,8 @@ int PSTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 	return PSFormats::paletteFormatUndefined;
 }
 
-uint32 PSTextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const 
+uint32 PSTextureCodec::encodedRasterSize(int format, int width, int height) const 
 {
-	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
-	
-	if (mipmaps != 1 && mipmaps != mipmapCountDefault)
-	{
-		return 0;
-	}
-
 	return PSFormats::encodedRasterSize(static_cast<PSFormats::ImageFormat>(format), width, height);
 }
 
@@ -184,14 +182,8 @@ uint32 PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const
 	return 0;
 }
 
-bool PSTextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode)
+bool PSTextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat)
 {
-	ASSERT(mipmapsToDecode == 1);
-	if (mipmapsToDecode != 1)
-	{
-		return false;
-	}
-
 	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
@@ -257,10 +249,10 @@ bool PSTextureCodec::decode(void* result, const void* image, int format, int wid
 	return false;
 }
 
-bool PSTextureCodec::encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps)
+bool PSTextureCodec::encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, bool isMipmap, Quantizer& quantizer)
 {
-	ASSERT(mipmaps == 1 || mipmaps == mipmapCountDefault);
-	if (mipmaps != 1 && mipmaps != mipmapCountDefault)
+	ASSERT(!isMipmap);
+	if (isMipmap)
 	{
 		return false;
 	}
@@ -282,12 +274,13 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		}
 
 		uint32 pal[16];
-		
-		if (!quantize4(image, width, height, &buffer[0], pal))
+		std::vector<uint8> indices(width * height);
+		if (!quantizer.quantize(image, 16, width, height, &indices[0], pal))
 		{
 			return false;
 		}
 
+		indexed8to4(&indices[0], &buffer[0], width * height); 
 		encode32ColorsFromRGBA(pal, 16, palette);
 		swizzle4(&buffer[0], result, width, height);
 		return true;
@@ -302,7 +295,7 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		}
 
 		uint32 pal[256];
-		if (!quantize8(image, width, height, &buffer[0], pal))
+		if (!quantizer.quantize(image, 256, width, height, &buffer[0], pal))
 		{
 			return false;
 		}
@@ -344,6 +337,38 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 int PSTextureCodec::defaultMipmapCount() const 
 {
 	return 1;
+}
+
+int PSTextureCodec::minWidth(int format) const
+{
+	switch (format)
+	{
+	case PSFormats::imageFormatIndexed4:
+		return 32;
+	case PSFormats::imageFormatIndexed8:
+		return 16;
+	case PSFormats::imageFormatRGBA:
+	case PSFormats::imageFormatRGBA16:
+		return 4;
+	}
+
+	ASSERT(!"Unsupported image format!");
+	return 0;
+}
+
+int PSTextureCodec::minHeight(int format) const
+{
+	switch (format)
+	{
+	case PSFormats::imageFormatIndexed4:
+	case PSFormats::imageFormatIndexed8:
+	case PSFormats::imageFormatRGBA:
+	case PSFormats::imageFormatRGBA16:
+		return 4;
+	}
+
+	ASSERT(!"Unsupported image format!");
+	return 0;
 }
 
 const char* PSTextureCodec::textureFormatToString(int format) const

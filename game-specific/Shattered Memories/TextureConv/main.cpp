@@ -490,7 +490,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
 	{
-		cout << "Platform unknown or not supported yet.";
+		cout << "Platform is unknown." << endl;
 		return false;
 	}
 
@@ -499,6 +499,12 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 
 	if (!checkFormatsAndNotify(codec.get(), format, paletteFormat))
 	{
+		return false;
+	}
+
+	if (mipmaps > 1 && !codec->isMipmapsSupported(format))
+	{
+		cout << "Mipmaps is not supported by current format!" << endl;
 		return false;
 	}
 
