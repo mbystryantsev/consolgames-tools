@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.06.00"/>
+    <PROJECT value="&quot;F:\_job\Princess Maker 4\ImgConv.exe&quot;"/>
+    <OBJFILES value="ImgConv.obj image.obj pnglite.obj zlib\adler32.obj zlib\compress.obj 
+      zlib\crc32.obj zlib\deflate.obj zlib\gzio.obj zlib\infback.obj 
+      zlib\inffast.obj zlib\inflate.obj zlib\inftrees.obj zlib\trees.obj 
+      zlib\uncompr.obj zlib\zutil.obj"/>
+    <RESFILES value="ImgConv.res"/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value="Indy60.lib"/>
+    <SPARELIBS value="vcl.lib rtl.lib Indy60.lib"/>
+    <PACKAGES value="vcl.bpi rtl.bpi dbrtl.bpi adortl.bpi vcldb.bpi vclx.bpi bdertl.bpi 
+      vcldbx.bpi ibxpress.bpi dsnap.bpi cds.bpi bdecds.bpi qrpt.bpi teeui.bpi 
+      teedb.bpi tee.bpi dss.bpi teeqr.bpi visualclx.bpi visualdbclx.bpi 
+      dsnapcrba.bpi dsnapcon.bpi bcbsmp.bpi vclie.bpi xmlrtl.bpi inet.bpi 
+      inetdbbde.bpi inetdbxpress.bpi inetdb.bpi nmfast.bpi webdsnap.bpi 
+      bcbie.bpi websnap.bpi soaprtl.bpi dclocx.bpi dbexpress.bpi dbxcds.bpi 
+      bcb2kaxserver.bpi indy.bpi"/>
+    <PATHCPP value=".;zlib"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value=""/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL;USEPACKAGES"/>
+    <MAINSOURCE value="ImgConv.bpf"/>
+    <INCLUDEPATH value="zlib;&quot;D:\_job\Programming\Princess Maker 4\images&quot;;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
+    <LIBPATH value="zlib;&quot;D:\_job\Programming\Princess Maker 4\images&quot;;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <WARNINGS value="-w-par"/>
+    <OTHERFILES value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-Izlib -I&quot;D:\_job\Programming\Princess Maker 4\images&quot; 
+      -ID:\_job\Programming\FVTFantasy\engine\render 
+      -ID:\_job\Programming\FVTFantasy\engine\program 
+      -I&quot;D:\Program Files\Borland\CBuilder6\Projects&quot; -IF:\_job\SHSM\code\map 
+      -I$(BCB)\include -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -src_suffix 
+      cpp -boa"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
+    <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zn"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn"/>
+    <OTHERFILES value=""/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(PACKAGES) $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32.lib"/>
+    <OTHERFILES value=""/>
+  </LINKER>
+  <FILELIST>
+      <FILE FILENAME="ImgConv.res" FORMNAME="" UNITNAME="ImgConv.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ImgConv.bpf" FORMNAME="" UNITNAME="ImgConv" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="ImgConv.cpp" FORMNAME="" UNITNAME="ImgConv" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="image.cpp" FORMNAME="" UNITNAME="image" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="pnglite.c" FORMNAME="" UNITNAME="pnglite" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\adler32.c" FORMNAME="" UNITNAME="adler32.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\compress.c" FORMNAME="" UNITNAME="compress.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\crc32.c" FORMNAME="" UNITNAME="crc32.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\deflate.c" FORMNAME="" UNITNAME="deflate.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\gzio.c" FORMNAME="" UNITNAME="gzio.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\infback.c" FORMNAME="" UNITNAME="infback.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\inffast.c" FORMNAME="" UNITNAME="inffast.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\inflate.c" FORMNAME="" UNITNAME="inflate.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\inftrees.c" FORMNAME="" UNITNAME="inftrees.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\trees.c" FORMNAME="" UNITNAME="trees.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\uncompr.c" FORMNAME="" UNITNAME="uncompr.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="zlib\zutil.c" FORMNAME="" UNITNAME="zutil.c" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+  </FILELIST>
+  <BUILDTOOLS>
+  </BUILDTOOLS>
+
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1049
+CodePage=1251
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=6
+Item0=zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item1=zlib;D:\_job\Programming\Princess Maker 4\images\zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item2=D:\_job\Programming\Princess Maker 4\images\zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item3=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item4=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item5=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=5
+Item0=zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item1=zlib;D:\_job\Programming\Princess Maker 4\images\zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item2=D:\_job\Programming\Princess Maker 4\images\zlib;D:\_job\Programming\Princess Maker 4\images;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item3=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Item4=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[HistoryLists\hlFinalOutputDir]
+Count=2
+Item0=F:\_job\Princess Maker 4\
+Item1=F:\_job\Princess Maker 4
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=-ed &quot;F:\_job\Princess Maker 4\images&quot; &quot;F:\_job\Princess Maker 4\build_test&quot;
+Launcher=
+UseLauncher=0
+DebugCWD=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteLauncher=
+RemoteCWD=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=0
+
+[CORBA]
+AddServerUnit=1
+AddClientUnit=1
+PrecompiledHeaders=1
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>
