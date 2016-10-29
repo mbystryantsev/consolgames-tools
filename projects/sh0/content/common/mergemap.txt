@@ -1,0 +1,30 @@
+# This information for mapping language-specific files to one file.
+# This will help reduce archives size.
+
+# Strings
+Strings.Fre Strings.Eng
+Strings.Ita Strings.Eng
+Strings.Ger Strings.Eng
+Strings.Spa Strings.Eng
+Strings.Jap Strings.Eng
+
+# Main Menu
+# Merging all to german because it
+# has enough space for Russian words
+LocaleUIEng LocaleUIGer
+LocaleUIFre LocaleUIGer
+LocaleUIIta LocaleUIGer
+LocaleUISpa LocaleUIGer
+LocaleUIJap LocaleUIGer
+
+# Font
+FontJAP FontEUR
+
+mainmenuGER.xml mainmenu.xml 
+mainmenuFRE.xml mainmenu.xml
+mainmenuITA.xml mainmenu.xml
+mainmenuSPA.xml mainmenu.xml
+mainmenuJAP.xml mainmenu.xml
+
+# Splash Screens
+splash_n4Jap.jpg splash_n4.jpg

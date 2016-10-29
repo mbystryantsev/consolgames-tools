@@ -1,0 +1,871 @@
+System
+	PS2 Messages
+		D08C6262
+		BCCB61EE
+		BDABA0EF
+		2F7615B0
+		B9C69835
+		46F336D5
+		71E12124
+		2C893517
+		581D6732
+		EF1A4EB2
+		7AE8C148
+		7EE33E8D
+		4F4D5DAD
+		618C098B
+		2CBEE537
+		DA900697
+		23DAC478
+		7C254D63
+		7A3782EA
+		9F79328D
+		72C20896
+		78699B2D
+		1BFC705A
+		CE4AD34C
+		1CF9E8CF
+		1DC41AE6
+		E03D08AB
+		BF37D56D
+		2DD3AB23
+		00000E24
+		E46C0506
+		08236C08
+		ADAD2A33
+		F03B12E3
+		BCFDF67A
+		00020F0F
+		00000E41
+		2FF6DA6A
+		3948DAFA
+		5950A277
+		4005E5AD
+		4A979345
+		BE0414BA
+		7A1F1E81
+		29FF85DD
+		29F63E1A
+		98A03F9E
+		5FE7914B
+		50451343
+		69EECEAD
+		29FB094E
+		68BE0129
+		D333D23E
+		D7645971
+		21BCE3DC
+		0D9E9912
+
+Options
+	Game Options
+		#ui_newgame_sub
+		#ui_newgame_vibration
+		#ui_newgame_no
+		#ui_options_title
+		#ui_options_on
+		#ui_options_off
+		#ui_options_in
+		#ui_options_subt
+		#ui_subtitles_on
+		#ui_subtitles_off
+		#ui_vibration
+		#ui_options_map
+		#ui_options_in
+		#ui_options_out
+		#ui_options_music_vol
+		#ui_options_sfx_vol
+		#ui_options_controls
+		#ui_options_accol
+		#ui_options_extra
+		#ui_options_walkrun
+		#ui_options_run
+		#ui_options_walk
+		#ui_options_extra_blood
+		#ui_options_noise
+		#ui_options_footsteps
+		#ui_options_torch
+		#ui_options_confirm
+	Controls
+		#ui_controls_norm
+		#ui_controls_ctr_cam
+		#ui_controls_weaponswap
+		#ui_controls_toggle_l
+		#ui_controls_toggle_r
+		#ui_controls_move
+		#ui_controls_inv
+		#ui_controls_pause
+		#ui_controls_interact
+		#ui_controls_run
+		#ui_controls_torch
+		#ui_controls_map
+		#ui_controls_combat
+		#ui_controls_attk
+		#ui_controls_hold
+		#ui_controls_combat_title
+		#ui_controls_target_l
+		#ui_controls_target_r
+		#ui_controls_reload
+	Ratings
+		#ui_rating_title
+		
+Credits
+	Intro Credits
+		E291C9E1
+		E291C9E2
+		E291C9E3
+		E291C9E4
+		E291C9E5
+		E291C9E6
+		E291C9E7
+		E291C9E8
+		E291C9E9
+		34CB0631
+		34CB0630
+		34CB0632
+		34CB0635
+		34CB0634
+	Ending Credits
+		4687DCC9
+		4687DCC8
+		4687DCCF
+		087503F5
+		07D8FDF1
+		087503F7
+		07D8FDFF
+		087503F9
+		17158221
+		02F8BC87
+		02F8BC84
+		17158222
+		02F8BC82
+		17158224
+		02F8BC80
+		17158226
+		02F8BC8E
+		17158228
+		02F8BCA5
+		02F8BCA4
+		17158200
+		02F8BCA6
+		17158206
+		17158207
+		17158204
+		02F8BCA2
+		1715820A
+		02F8BCAC
+		17158263
+		02F8BC45
+		17158261
+		02F8BC47
+		17158267
+		02F8BC41
+		17158265
+		02F8BC43
+		1715826B
+		02F8BC4D
+		17158244
+		02F8BC62
+		02F8BC61
+		02F8BC60
+		17158240
+		02F8BC66
+		17158242
+		02F8BC64
+		02F8BC6B
+		1715824D
+		02F8BC02
+		171582A4
+		02F8BC00
+		171582A6
+		02F8BC06
+		171582A0
+		02F8BC04
+		171582A2
+		02F8BC0A
+		171582AC
+		02F8BC21
+		17158287
+		17158284
+		02F8BC22
+		17158282
+		02F8BC24
+		17158280
+		02F8BC26
+		1715828E
+		02F8BC28
+		171582E7
+		02F8BBC1
+		02F8BBC2
+		171582E4
+		171582E3
+		171582E2
+		171582E1
+		02F8BBC7
+		02F8BBC8
+		02F8BBC9
+		17837513
+		17837512
+		171582CA
+		02F8BDEC
+		02F8BDEB
+		171582CD
+		02F8BDE9
+		171582CF
+		02F8BDE7
+		171582C1
+		02F8BD8E
+		17158328
+		02F8BD8C
+		1715832A
+		02F8BD8A
+		1715832C
+		02F8BD88
+		1715832E
+		02F8BD86
+		17158320
+		62104D76
+		F9C5C670
+		62104D74
+		F9C5C672
+		62104D72
+		F9C5C674
+		62104D70
+		F9C5C676
+		62104D7E
+		F9C5C678
+		62104D57
+		62104D56
+		62104D55
+		F9C5C613
+		62104D53
+		62104D52
+		62104D51
+		62104D50
+		62104D5F
+		62104D5E
+		62104D34
+		F9C5C6B2
+		62104D36
+		62104D37
+		F9C5C6B7
+		62104D31
+		62104D32
+		62104D33
+		62104D3C
+		F9C5C6BA
+		62104D15
+		62104D14
+		62104D17
+		62104D16
+		F9C5C656
+		62104D10
+		62104D13
+		62104D12
+		F9C5C65A
+		62104D1C
+		F9C5C6F5
+		62104CF3
+		62104CF0
+		F9C5C6F6
+		62104CF6
+		F9C5C6F0
+		62104CF4
+		62104CF5
+		F9C5C6FD
+		62104CFB
+		F9C5C694
+		62104CD2
+		F9C5C696
+		62104CD0
+		62104CD7
+		62104CD6
+		62104CD5
+		F9C5C693
+		62104CDB
+		62104CDA
+		F9C5C737
+		62104CB1
+		62104CB2
+		62104CB3
+		62104CB4
+		62104CB5
+		62104CB6
+		62104CB7
+		07F23D84
+		07F23D85
+		F9C5C6D6
+		62104C90
+		62104C93
+		F9C5C6D5
+		62104C95
+		F9C5C6D3
+		62104C97
+		F9C5C6D1
+		62104C99
+		F9C5C6DF
+		62104E7E
+		F9C5C778
+		62104E7C
+		62104E7D
+		62104E7A
+		62104E7B
+		62104E78
+		62104E79
+		F9C5C771
+		62104E77
+		62104E5F
+		F9C5C719
+		62104E5D
+		62104E5C
+		F9C5C71C
+		62104E5A
+		F9C5C71E
+		62104E58
+		F9C5C710
+		62104E56
+		F9C5C272
+		62105174
+		62105177
+		F9C5C271
+		62105171
+		62105170
+		62105173
+		F9C5C275
+		6210517D
+		6210517C
+		F9C5C253
+		62105115
+		62105116
+		62105117
+		F9C5C257
+		62105111
+		62105112
+		62105113
+		07F230E0
+		F9C5C25A
+		621051B7
+		F9C5C231
+		621051B5
+		F9C5C233
+		621051B3
+		F9C5C235
+		621051B1
+		F9C5C237
+		621051BF
+		621051BE
+		62105156
+		62105157
+		62105154
+		62105155
+		62105152
+		62105153
+		62105150
+		62105151
+		6210515E
+		6210515F
+		621050F1
+		621050F0
+		621050F3
+		621050F2
+		621050F5
+		621050F4
+		07F2314B
+		F9C5C2F1
+		621050F9
+		F9C5C2FF
+		62105090
+		F9C5C2D6
+		62105092
+		F9C5C2D4
+		62105094
+		F9C5C2D2
+		62105096
+		F9C5C2D0
+		62105098
+		62105099
+		62105133
+		07F2318E
+		07F2318D
+		07F2318C
+		F9C5C2B0
+		62105136
+		F9C5C2B2
+		62105134
+		F9C5C2BC
+		6210513A
+		621050D2
+		621050D3
+		621050D0
+		621050D1
+		F9C5C291
+		621050D7
+		621050D4
+		621050D5
+		621050DA
+		621050DB
+		6210527D
+		6210527C
+		6210527F
+		6210527E
+		62105279
+		62105278
+		6210527B
+		6210527A
+		62105275
+		62105274
+		6210521C
+		6210521D
+		6210521E
+		6210521F
+		62105218
+		62105219
+		6210521A
+		6210521B
+		62105214
+		62105215
+		621044F4
+		621044F5
+		621044F6
+		621044F7
+		621044F0
+		621044F1
+		621044F2
+		621044F3
+		621044FC
+		621044FD
+		621044D5
+		621044D4
+		621044D7
+		621044D6
+		621044D1
+		621044D0
+		621044D3
+		621044D2
+		621044DD
+		07F23520
+IGC
+	Intro
+		#Intro_Subtitle01
+		#Intro_Subtitle02
+		#Intro_Subtitle03
+		#Intro_Subtitle04
+		#Intro_Subtitle05
+		#Intro_Subtitle06
+		#Intro_Subtitle07
+		#Intro_Subtitle08
+		#Intro_Subtitle09
+		#Intro_Subtitle10
+		#Intro_Subtitle11
+		#Intro_Subtitle12
+		#Intro_Subtitle13
+		#Intro_Subtitle14
+		#Intro_Subtitle15
+		#Intro_Subtitle16
+		#Intro_Subtitle17
+		#Intro_Subtitle18
+		#Intro_Subtitle19
+		#Intro_Subtitle20
+		#Intro_Subtitle21
+		#Intro_Subtitle22
+		
+	Asylum Interview Archives
+		#VoiceAS1_Subtitle01
+		#VoiceAS1_Subtitle02
+		#VoiceAS1_Subtitle03
+		#VoiceAS1_Subtitle04
+		#VoiceAS1_Subtitle05
+		#VoiceAS1_Subtitle06
+		#VoiceAS1_Subtitle07
+		#VoiceAS1_Subtitle08
+		#VoiceAS1_Subtitle09
+		#VoiceAS1_Subtitle10
+		#VoiceAS1_Subtitle11
+		#VoiceAS1_Subtitle12
+		#VoiceAS1_Subtitle13
+		#VoiceAS1_Subtitle14
+		#VoiceAS1_Subtitle15
+		#VoiceAS1_Subtitle16
+		#VoiceAS1_Subtitle17
+		#VoiceAS1_Subtitle18
+		#VoiceAS1_Subtitle19
+		#VoiceAS1_Subtitle20
+		#VoiceAS1_Subtitle21
+		#VoiceAS1_Subtitle22
+		#VoiceAS1_Subtitle23
+		#VoiceAS1_Subtitle24
+		#VoiceAS1_Subtitle25
+		#VoiceAS1_Subtitle26
+		#VoiceAS1_Subtitle27
+		#VoiceAS1_Subtitle28
+		#VoiceAS1_Subtitle29
+		#VoiceAS1_Subtitle30
+		#VoiceAS1_Subtitle31
+		#VoiceAS1_Subtitle32
+		#VoiceAS1_Subtitle33
+		#VoiceAS1_Subtitle34
+		
+	Asylum Female Dorm Corridor_D flashback
+		#VoiceAS2_Subtitle01
+		#VoiceAS2_Subtitle02
+		#VoiceAS2_Subtitle03
+		#VoiceAS2_Subtitle04
+		#VoiceAS2_Subtitle05
+
+	Asylum East StairCase Phone flashback
+		#VoiceASFB_Subtitle01
+
+	Theatre Forest Caliban flashback
+		#VoiceTH1_Subtitle02
+		#VoiceTH1_Subtitle03
+		#VoiceTH1_Subtitle04
+		#VoiceTH1_Subtitle05
+		#VoiceTH1_Subtitle06
+		#VoiceTH1_Subtitle07
+		#VoiceTH1_Subtitle08
+		#VoiceTH1_Subtitle09
+		#VoiceTH1_Subtitle10
+		#VoiceTH1_Subtitle11
+
+	Theatre Stage Closed flashback
+		#VoiceTH2_Subtitle01
+		#VoiceTH2_Subtitle02
+		#VoiceTH2_Subtitle03
+		#VoiceTH2_Subtitle04
+		#VoiceTH2_Subtitle05
+		#VoiceTH2_Subtitle06
+		#VoiceTH2_Subtitle07
+		#VoiceTH2_Subtitle08
+		#VoiceTH2_Subtitle09
+		#VoiceTH2_Subtitle10
+		#VoiceTH2_Subtitle11
+
+	Motel Game Room Pinball FlashBack
+		#VoiceMO2_Subtitle01
+		#VoiceMO2_Subtitle02
+		#VoiceMO2_Subtitle03
+		#VoiceMO2_Subtitle04
+		#VoiceMO2_Subtitle05
+		#VoiceMO2_Subtitle06
+		#VoiceMO2_Subtitle07
+
+	Motel Crawl Space Daddy FlashBack
+		#VoiceMO1_Subtitle01
+		#VoiceMO1_Subtitle02
+		#VoiceMO1_Subtitle03
+		#VoiceMO1_Subtitle04
+		#VoiceMO1_Subtitle05
+		#VoiceMO1_Subtitle06
+		#VoiceMO1_Subtitle07
+
+	IGC2 Chase Alessa
+		#IGC02_Subtitle01
+		#IGC02_Subtitle02
+
+	IGC3 Burning House intro
+		#IGC03_Subtitle01
+		#IGC03_Subtitle03
+
+	IGC4 Find Alessa and Pickup
+		#IGC04_Subtitle01
+		#IGC04_Subtitle02
+
+	IGC5 Burning House exit
+		#IGC05_Subtitle01
+		#IGC05_Subtitle02
+		#IGC05_Subtitle03
+		#IGC05_Subtitle04
+		#IGC05_Subtitle05
+
+	IGC6 Wake up in Silent Hill
+		#IGC06_Subtitle02
+		#IGC06_Subtitle03
+		#IGC06_Subtitle04
+		#IGC06_Subtitle05
+		#IGC06_Subtitle06
+		#IGC06_Subtitle07
+		#IGC06_Subtitle08
+		#IGC06_Subtitle09
+
+	IGC7 Encounter Kauffman
+		#IGC07_Subtitle01
+		#IGC07_Subtitle02
+		#IGC07_Subtitle03
+		#IGC07_Subtitle03b
+		#IGC07_Subtitle04
+		#IGC07_Subtitle05
+		#IGC07_Subtitle05b
+		#IGC07_Subtitle06
+		#IGC07_Subtitle07
+		#IGC07_Subtitle07b
+		#IGC07_Subtitle08
+		#IGC07_Subtitle08b
+		#IGC07_Subtitle09
+		#IGC07_Subtitle09b
+		#IGC07_Subtitle10
+		#IGC07_Subtitle11
+		#IGC07_Subtitle12
+
+	IGC8 Nurse Attack
+		#IGC08_Subtitle01
+		#IGC08_Subtitle02
+		#IGC08_Subtitle03
+
+
+	IGC9B See Alessa in mirror
+		#IGC09B_Subtitle01
+		#IGC09B_Subtitle02
+
+
+	IGC9C Phased into Dark World
+		#IGC09C_Subtitle01
+		#IGC09C_Subtitle02
+
+
+	IGC11 StraightJacket Boss Battle complete
+		#IGC11_Subtitle01
+		#IGC11_Subtitle02
+		#IGC11_Subtitle03
+		#IGC11_Subtitle04
+
+	IGC12 Wake up in Hospital Lobby
+		#IGC12_Subtitle01
+		#IGC12_Subtitle02
+		#IGC12_Subtitle03
+		#IGC12_Subtitle04
+		#IGC12_Subtitle05
+		#IGC12_Subtitle06
+		#IGC12_Subtitle07
+		#IGC12_Subtitle08
+		#IGC12_Subtitle09
+		#IGC12_Subtitle10
+		#IGC12_Subtitle11
+		#IGC12_Subtitle12
+		#IGC12_Subtitle13
+		#IGC12_Subtitle14
+		#IGC12_Subtitle15
+		#IGC12_Subtitle16
+		#IGC12_Subtitle17
+		#IGC12_Subtitle18
+		#IGC12_Subtitle19
+		#IGC12_Subtitle20
+		#IGC12_Subtitle21
+		#IGC12_Subtitle22
+		#IGC12_Subtitle23
+		#IGC12_Subtitle24
+		#IGC12_Subtitle25
+		#IGC12_Subtitle26
+		#IGC12_Subtitle27
+		#IGC12_Subtitle28
+		#IGC12_Subtitle29
+
+	IGC13 Encounter Dahlia in corridor
+		#IGC13_Subtitle02
+		#IGC13_Subtitle03
+		#IGC13_Subtitle04
+		#IGC13_Subtitle05
+		#IGC13_Subtitle06
+		#IGC13_Subtitle07
+		#IGC13_Subtitle08
+		#IGC13_Subtitle09
+		#IGC13_Subtitle10
+		#IGC13_Subtitle11
+		#IGC13_Subtitle12
+		#IGC13_Subtitle13
+		#IGC13_Subtitle14
+		#IGC13_Subtitle15
+		#IGC13_Subtitle16
+		#IGC13_Subtitle17
+		#IGC13_Subtitle18
+		#IGC13_Subtitle19
+		#IGC13_Subtitle20
+		#IGC13_Subtitle21
+		#IGC13_Subtitle22
+
+	IGC14 Meet Lisa in Female Selclusion
+		#IGC14_Subtitle01
+		#IGC14_Subtitle02
+		#IGC14_Subtitle03
+		#IGC14_Subtitle04
+		#IGC14_Subtitle05
+		#IGC14_Subtitle06
+		#IGC14_Subtitle07
+		#IGC14_Subtitle08
+		#IGC14_Subtitle09
+		#IGC14_Subtitle10
+		#IGC14_Subtitle11
+		#IGC14_Subtitle12
+
+
+	IGC15 Momma Boss Battle intro
+		#IGC15_Subtitle01
+		#IGC15_Subtitle02
+		#IGC15_Subtitle03
+		#IGC15_Subtitle04
+		#IGC15_Subtitle05
+		#IGC15_Subtitle06
+		#IGC15_Subtitle07
+		#IGC15_Subtitle08
+		#IGC15_Subtitle09
+
+
+	IGC16 Momma Boss Battle complete
+		#IGC16_Subtitle01
+		#IGC16_Subtitle02
+		#IGC16_Subtitle03
+		#IGC16_Subtitle04
+		#IGC16_Subtitle05
+		#IGC16_Subtitle06
+
+
+	IGC18 Meet Lisa in Theatre Auditorium
+		#IGC18_Subtitle01
+		#IGC18_Subtitle02
+		#IGC18_Subtitle03
+		#IGC18_Subtitle04
+		#IGC18_Subtitle05
+		#IGC18_Subtitle06
+		#IGC18_Subtitle07
+		#IGC18_Subtitle08
+		#IGC18_Subtitle09
+		#IGC18_Subtitle10
+		#IGC18_Subtitle11
+		#IGC18_Subtitle12
+		#IGC18_Subtitle13
+		#IGC18_Subtitle14
+		#IGC18_Subtitle15
+		#IGC18_Subtitle16
+		#IGC18_Subtitle17
+		#IGC18_Subtitle18
+		#IGC18_Subtitle19
+
+	IGC20 Caliban Boss Battle complete
+		#IGC20_Subtitle01
+		#IGC20_Subtitle02
+
+	IGC21 Find Key after Theatre complete
+		#IGC21_Subtitle01
+		#IGC21_Subtitle02
+
+	IGC24 Travis drops in on Lisa
+		#IGC24_Subtitle01
+		#IGC24_Subtitle02
+		#IGC24_Subtitle03
+		#IGC24_Subtitle04
+		#IGC24_Subtitle05
+		#IGC24_Subtitle06
+
+	IGC26 Sad Daddy Boss Battle intro
+		#IGC26_Subtitle01
+		#IGC26_Subtitle02
+		#IGC26_Subtitle03
+		#IGC26_Subtitle04
+		#IGC26_Subtitle05
+		#IGC26_Subtitle06
+		#IGC26_Subtitle07
+		#IGC26_Subtitle08
+		#IGC26_Subtitle09
+		#IGC26_Subtitle10
+		#IGC26_Subtitle11
+		#IGC26_Subtitle12
+		#IGC26_Subtitle13
+		#IGC26_Subtitle14
+		#IGC26_Subtitle15
+		#IGC26_Subtitle16
+		#IGC26_Subtitle17
+
+	IGC27 Sad Daddy Boss Battle Complete
+		#IGC27_Subtitle01
+		#IGC27_Subtitle02
+		#IGC27_Subtitle03
+		#IGC27_Subtitle04
+		#IGC27_Subtitle05
+		#IGC27_Subtitle06
+		#IGC27_Subtitle06
+		#IGC27_Subtitle07
+		#IGC27_Subtitle08
+		#IGC27_Subtitle09
+		#IGC27_Subtitle10
+
+	IGC28 Wake up in Hospital Basement
+		#IGC28_Subtitle01
+
+	IGC29 Meet Alessa in Hospital Basement
+		Part A
+			#IGC29_Subtitle01
+		Part B
+			#IGC29_Subtitle02
+			#IGC29_Subtitle03
+
+	IGC30 Meet Alessa in Hospital Basement
+		#IGC30_Subtitle01
+		#IGC30_Subtitle02
+		#IGC30_Subtitle04
+		#IGC30_Subtitle05
+		#IGC30_Subtitle06
+		#IGC30_Subtitle07
+		#IGC30_Subtitle08
+		#IGC30_Subtitle09
+		#IGC30_Subtitle10
+		#IGC30_Subtitle11
+		#IGC30_Subtitle12
+		#IGC30_Subtitle13
+		#IGC30_Subtitle14
+
+	Enter Cult FMV
+		#CultFMV_Subtitle04
+		#CultFMV_Subtitle05
+		#CultFMV_Subtitle06
+		#CultFMV_Subtitle07
+		#CultFMV_Subtitle08
+		#CultFMV_Subtitle10
+		#CultFMV_Subtitle11
+		#CultFMV_Subtitle12
+		#CultFMV_Subtitle13
+		#CultFMV_Subtitle14
+		#CultFMV_Subtitle15
+		#CultFMV_Subtitle16
+		#CultFMV_Subtitle17
+		#CultFMV_Subtitle18
+		#CultFMV_Subtitle19
+		#CultFMV_Subtitle20
+		#CultFMV_Subtitle21
+
+
+	Bad Ending FMV
+		#TableFMV_Subtitle01
+		#TableFMV_Subtitle02
+		#TableFMV_Subtitle03
+		#TableFMV_Subtitle06
+		#TableFMV_Subtitle07
+		#TableFMV_Subtitle08
+		#TableFMV_Subtitle09
+
+	Good ending FMV
+		#BirthFMV_Subtitle01
+		#BirthFMV_Subtitle02
+		#BirthFMV_Subtitle03
+		#BirthFMV_Subtitle04
+		#BirthFMV_Subtitle05
+		#BirthFMV_Subtitle06
+		#BirthFMV_Subtitle07
+		#BirthFMV_Subtitle08
+		#BirthFMV_Subtitle09
+		#BirthFMV_Subtitle10
+		#BirthFMV_Subtitle11
+		#BirthFMV_Subtitle12
+
+	UFO Ending FMV
+		#UFO_IGC_Subtitle01
+		#UFO_IGC_Subtitle02
+		#UFO_IGC_Subtitle03
+		#UFO_IGC_Subtitle04
+		#UFO_IGC_Subtitle05
+		#UFO_IGC_Subtitle06
+		#UFO_IGC_Subtitle07
+		#UFO_IGC_Subtitle08
+		#UFO_IGC_Subtitle09
+		#UFO_IGC_Subtitle10
+		#UFO_IGC_Subtitle11
+		#UFO_IGC_Subtitle12
+		#UFO_IGC_Subtitle13

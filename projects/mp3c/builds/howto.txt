@@ -1,0 +1,45 @@
+This document describes how to building patch with Visual Studio 2008.
+
+1. Download the Qt 4 source code from official site. Patcher developed with Qt version 4.8.2 so recommended
+   to use it.
+
+2. To reduce the size of the completed patch, you must specify an option for enable function-level linking
+   when Qt will be builded. To do this, open the file mkspec/win32-msvc2008/qmake.conf in Qt sources directory
+   and append the /Gy compiler option to the QMAKE_CFLAGS variable. The result should look something like this:
+   
+   QMAKE_CFLAGS            = -nologo -Zm200 -Zc:wchar_t- /Gy
+
+   In the patcher configuration used the /OPT:REF option, which in combination with the /Gy option in Qt
+   libraries would reduce total target file size by removing unused code and data.
+   
+3. Configure Qt sources so as to minimize libraries size and use static linkage. To do this, run the
+   Visual Studio 2008 Command Prompt and go to Qt sources root directory. You can use following command line:
+   
+   cd C:\dev\qt\4.8.2
+   configure.exe -arch windows -platform win32-msvc2008 -opensource -release -static -no-exceptions
+                 -no-qt3support -nomake examples -nomake demos -nomake tools -nomake translations
+                 -nomake docs -no-accessibility -no-libtiff -no-phonon -no-phonon-backend
+                 -no-multimedia -no-webkit -no-script -no-scripttools -no-declarative -no-openssl
+
+4. Next, build libraries using nmake. In Visual Studio 2008 Command Prompt type "nmake" and press enter
+   to start building.
+
+5. Download and install Python, 7-Zip and Subversion (can be installed with TortoiseSVN).
+   Congratulations, the environment for patch building is prepared!
+   
+6. For build a patch, execute script build.py from "scripts" directory with parameter --action=buildpatch.
+   If you want build in release configuration, add also '--release' parameter, otherwise you will get the
+   internal patch build. Note that build.py must be executed with "scripts" working directory. Also note
+   that the PATH system variable must contains the path to the builded earlier Qt binaries. If you use
+   several Qt versions, you can change this variable only during building. For example, this can create a
+   batch file with the following contents:
+   
+   @echo off
+   set PATH=C:\dev\qt\4.8.2\bin;%PATH%
+   pushd scripts
+   python.exe build.py --action=buildpatch --release
+   popd
+
+   That's all. To build the patch run the created batch file. After this in the "builds" directory (in "testing" or
+   "release" subfolder, depending on build type) you can find the builded patch file and the it's compressed version
+   (with a build number in the file name in the case of internal build).

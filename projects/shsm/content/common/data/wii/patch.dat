@@ -1,0 +1,26 @@
+; Wii / PAL / SHLPA4
+
+segment .text1 80004000-800066DF 00000100
+segment .data1 800066E0-8000673F 003D5A00
+segment .data2 80006740-8000679F 003D5B00
+segment .text2 800067A0-803D9A5F 000027E0
+segment .data3 803D9A60-803D9E5F 003D5B60
+segment .data4 803D9E60-803D9E7F 003D5F60
+segment .data5 803D9E80-803E057F 003D5F80
+segment .data6 803E0580-8045911F 003DC680
+segment .data7 805284A0-8052AE9F 00455220
+segment .data8 8052D3A0-80531E5F 00457C20
+
+messages messages.bin
+
+; 0x803DA090 (0x003D6190 in file) — default settings: 
+; array of {const char* optName, int value}
+
+; enable subtitles by default
+803DA0E4: int 1
+
+; Relocate password string to 0x803F82B8, ptr hi
+8016A320: word 0x82B8
+
+; Write translated version of password
+803F82B8: utf8 @password, 0x48

@@ -1,0 +1,60 @@
+# This information for mapping language-specific files to one file.
+# This will help reduce archives size.
+
+# Strings
+Strings.Fre Strings.Eng
+Strings.Ita Strings.Eng
+Strings.Ger Strings.Eng
+Strings.Spa Strings.Eng
+Strings.Jap Strings.Eng
+
+# Boot strings
+BootStrings.Fre BootStrings.Eng
+BootStrings.Ita BootStrings.Eng
+BootStrings.Ger BootStrings.Eng
+BootStrings.Spa BootStrings.Eng
+BootStrings.Jap BootStrings.Eng
+
+# Font
+FontJAP FontEUR
+
+# Splash Screen A
+1445185E 813E6943
+762FC08D 813E6943
+6FC8221A 813E6943
+9E8D6528 813E6943
+55B4E3B6 813E6943
+1445185E 813E6943
+70EDFBE8 813E6943
+6824367B 813E6943
+FF4CACE6 813E6943
+
+# Splash Screen B
+01AC9138 7E571DA5
+1E356599 7E571DA5
+2F732B0E 7E571DA5
+5A04C86B 7E571DA5
+4636EC5D 7E571DA5
+F97EA4AB 7E571DA5
+EFE878F5 7E571DA5
+1031A440 7E571DA5
+
+# Nunchuk is required
+E7C81E82 9A4B51B1
+2AFFB915 9A4B51B1
+68ECDDB0 9A4B51B1
+288636E3 9A4B51B1
+BF1798C6 9A4B51B1
+E5A9AC2E 9A4B51B1
+D6543E70 9A4B51B1
+06AD63DB 9A4B51B1
+
+# Psychology Warning
+D4028FE9 146A13F9
+42E77C88 146A13F9
+505ADC5B 146A13F9
+3169B5C5 146A13F9
+8591B622 146A13F9
+
+# Other version of psychology warning
+5C61E9AB 146A13F9

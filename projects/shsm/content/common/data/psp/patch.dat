@@ -1,0 +1,11 @@
+; PSP / PAL / ULES-01352
+
+segment .text   00000000-00321798 00000074
+segment .rodata 00322550-00340DD8 003225C4
+segment .data   00340E00-003AB328 00340E74
+
+; 0x00328DA8 (0x00328E1C in file) — default settings: 
+; array of {const char* optName, int value}
+
+; enable subtitles by default
+00328DFC: int 1

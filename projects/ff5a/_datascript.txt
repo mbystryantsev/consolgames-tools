@@ -1,0 +1,248 @@
+;addspace - добавить блоки для данных; x-y - от 
+;clrspace - очистить блоки для данных
+;destfile - конечный файл
+;workdir  - рабочая папка
+;ptrdef   - разница смещений
+;chain    - начало цепочки
+;stream   - начало потока
+;end      - конец потока/цепочки
+;file     - файл
+
+align 	 4
+;workdir  D:\_job\FF5\
+ptrsize  4
+ptrdef   $F8000000
+addspace 36DD54-3B6073, 70AE60-7FFFFF
+; 3ED9B0-3F0425 (fonts) 
+destfile "Final Fantasy V.gba"
+
+;14488C - font lengths
+;word 183 @offs: 14488C, 14488E, 144890
+word $D58D @offs: 14488C, 14488E, 144890
+
+
+; bl 083ED9B0h
+word $F31B, $FA6A @offs: D24D8
+file data\asm\text_out.gba	 @offs: 3ED9B0 ;
+
+
+; --- Заставляем кириллицу собственно кириллицей и выводиться :)
+
+
+; вот из-за этой части виснет:
+;;;; bne 0801CF70h
+;;;word $D104 		  @offs: 1CF64
+; неудачно, поэтому будет b 0801CF70h
+word $E004 @offs: 1CF64
+
+; bl 083EDAB0h
+word $F3D0, $FD9E @offs: 1CF70
+file data\asm\ansi_rus.gba   @offs: 3EDAB0 ;
+; --------------------------------------------------------------
+
+; --- Убираем надпись Health and Safety ----
+word $46C0, $46C0 @offs: C4D54
+; ------------------------------------------
+
+; --- Вставляем интрошку ------
+file data\intro\intro.gba @offs: 3EDB00
+file data\intro\intro.lzhuff @ptrs: 3EDB00
+file data\intro\intro.gbapal @ptrs: 3EDB04
+; устанавливаем точку входа
+word $B6C2, $EA0F @offs: 0  ; bl 083EDB10
+; затемняем экран
+word 0 @offs: 1B44
+
+
+;file data\asm\black_screen.gba @offs: 3EDA00
+;word $F328, $FE54 @offs: C4D54
+; -----------------------------
+
+file russian.msg   		 @ptrs: 6342C, 72258, D231C
+file data\fonts\font1_RUS.fnt @ptrs: 63430, D38EC, D4648
+file data\fonts\font2_RUS.fnt @ptrs: 90844, D38F4, D4650
+file data\fonts\font3_RUS.fnt @ptrs: D38E0, D463C
+
+file data\logo\res\logo.map @offs: 2608B4
+file data\logo\res\logo.lz  @ptrs: C12A8
+
+file data\logo\res\logo2.map @offs: 2618CC
+file data\logo\res\logo2.lz  @ptrs: C12C8
+
+file data\logo\res\logo3.map @offs: 25E2C4
+file data\logo\res\logo3.lz  @ptrs: C12D0
+
+file data\logo\res\title.map @offs: 26A204
+file data\logo\res\title.lz  @ptrs: 5DB08, C2874
+
+file data\logo\res\present.map @offs: 2636A0
+file data\logo\res\present.lz  @ptrs: 5E888
+
+file data\logo\res\mplayer.chr.lz @ptrs: 132D70, 132D74
+file data\logo\res\mplayer.map.lz @ptrs: 132D7C
+;
+
+file data\menu\res\press.lz @ptrs: C2D0C
+file data\menu\res\press.oam @offs: 264100
+word $5C @offs: 264054 ; pointer ^^
+word $A8 @offs: C2D14  ; количество копируемых данных
+
+word $00 @offs: 263EAE ; убираем надпись внизу
+;file data\void_tiles.lz @ptrs: C1750, C2CD8
+
+file data\menu\res\menu.lz  @ptrs: C2D40
+file data\menu\res\menu.oam @ptrs: 144230
+
+
+
+; ----------------
+; - Надписи -
+; ----------------
+
+; Equip
+word 6011 @offs: 12C3E0 ; "Надеть" вместо "Экипировка" в менюшке экипировки
+word 208  @offs: 12C3DA ; X "Экипировка" в меню экипировки
+;word 10  @offs: 12C3DC ; Y ^
+word 267  @offs: 12C460 ; Убираем "Экипировка Вес"
+word 128  @offs: 12C46A ; Сдвигаем "Вес" влево
+word 6012 @offs: 12C604 ; Экипировка на "Носит" в выборе профессии
+
+; X-координаты описаний предметов
+byte 5 @offs: 42992, 42EEA,  42F42, 42F0C, 42EB8, 42E60,  3FE86,  51C9A, 527CC, 528AE, 52856, 51D82, 52878, 52824, 3FC72 ; Последние - в Equip и Shop
+
+; X-координаты описаний магии
+byte 5 @offs: 4948E,  51D38 ; 8
+
+; Y, на кого применить? [default: 8]
+byte 4 @offs: 12C52C, 12C670
+
+; Добавление строки для названия локации
+byte 157 @offs: 4B1D8, 74A0A ; X
+byte 93  @offs: 4B1CC, 749FC ; Y
+word 19, 11, 11, 8 @offs: 12FD34 ; Clear rect in load game menu
+
+; Доступно: Всё в статусе
+; byte 157 @offs: 4D5C4 ; X
+; byte 96 @offs: 4D5B8 ; Y
+
+; Уровень умения
+byte 216 @offs: 39528
+
+; После Can/must be used two-handed, Full power from back
+byte 57 @offs: 42F20, 5288C ; В менюшке + в магазине
+
+; Профессии X
+word 212 @offs: 12C5FE
+
+; 12C60C - ID ":" в "Надеть:". Чтобы убрать:
+word 267 @offs: 12C60C
+
+; 12C1CC - ID "Команда" в выборе профессии
+word 267 @offs: 12C1CC
+
+; 12C1C4 - ID "Профессии" в выборе профессии, заменяем на "Команда"
+word 4383 @offs: 12C1C4
+
+; 12C1D4 - ID "Умения", заменяем на "Умение", добавленное в конце
+word 6009 @offs: 12C1D4
+
+; 12C868, 12C450 - ID "Магия" в "Магия Защита". Заменяем на "Маг. защита"
+word 6010 @offs: 12C868, 12C450
+
+; 12C870, 12C458 - ID "Защита" в "Магия Защита", убираем
+word 267 @offs: 12C870, 12C458
+
+; Продолжить быстрое сохранение?, Y
+byte 40  @offs: 74DCC
+
+; Меняем "Двуручное" и "Атакует из заднего ряда" местами.
+word 3230 @offs: 42ED8, 52844
+word 3229 @offs: 42ED0, 5283C
+
+; ---- Экраны ---- ;
+
+; Фиксим экран работ, чтобы влезло "Профессии".
+file data\screen\res\job_screen.map @ptrs: 1448D0
+
+; ---- Тайлы ---- ;
+
+file data\tiles\tiles_pub_inn.lz @ptrs: 708D20
+file data\tiles\tiles_inn_inside.lz @ptrs: 708D1C
+
+; ---- STAFF FONT ---- ;
+
+file data\fonts\staff_font_rus.chr @ptrs: C7700
+file data\fonts\staff_font_small_rus.chr @ptrs: C6AB4
+
+; ---- STAFF TEXT ---- ;
+file data\staff\staff1.bin @ptrs: C6AA8
+file data\staff\staff2.bin @ptrs: C7748
+file data\staff\staff3.bin @ptrs: C775C
+
+; ---- Поправляем менюшку вещей в бою ---- ;
+
+file data\asm\battle_items.GBA @offs: 969BA
+
+; Позиция курсора в меню боя
+; byte 40 @offs: 9BB60
+
+; Позиция имени монстра, X
+; byte 8 @offs: 9938A
+
+; Позиция количества монстров, X
+byte 90 @offs: 993BC ; 78
+
+; Здоровье персонажей, X
+; byte 164 @offs: 986E0 ; 160
+
+; Позиция имени умения (атаки) относительно окна, X
+; byte 8 @offs: 976BA, 9767C
+
+; Расширяем менюшку
+word 8  @offs: 709660 ; Ширина
+;byte 5  @offs: 709664 ; X
+
+; Сдвигаем имена персонажей
+byte 116 @offs: 9538A ; 108
+
+; Злые чары, X второго столбика
+byte 80 @offs: 96B8A ; 88
+
+; Указатель на второй столбик, X
+byte 80 @offs: 7096E7 ; 88
+
+; После расширения менюшки боя сдвигаем остальные
+word 8  @offs: 709680 ; [original: 7, 26, 14, 4]
+word 22 @offs: 7096A4 ; [original: 21, 26, 6, 2]
+word 22 @offs: 132778 ; Будем надеяться, что это именна та менюшка...
+
+
+; Графика менюшек
+file data\screen\res\battle_screens.map @ptrs: 1448BC
+
+; miss
+file data\menu\res\miss.chr @ptrs: 888AC
+
+; ---- THE END ---- ;
+
+; Блики
+byte 0 @offs: 27080B, 270817 ; выставляем размеры тайлов 32x32
+file data\logo\res\the_end_shine.lz @ptrs: A0C50
+
+; Сама картинка
+file data\logo\res\the_end.map @offs: 270574
+file data\logo\res\the_end.lz  @ptrs: A0C38
+
+
+; ---- ВВОД ИМЕНИ ---- ;
+file data\name_input.bin @offs: 12FB24
+; Правим позиции спрайта указателя и символов :)
+word $4C, $58, $64, $70, $7C @offs: 12FB06
+
+
+;Example:
+;chain @ptrs: xxxx, xxxx, xxxx 
+; fimage logo.bmp, 4, 320, 240
+; lz
+; huffman
+;end

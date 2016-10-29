@@ -1,0 +1,8 @@
+platform         = <wii|ps2|psp>
+game             = <memories|origins>
+discId           = <game id like SHLPA4 or SLES_55569>
+executablePath   = <path to main executable like /main.dol or /SLES_555.69>
+embededArcOffset = <offset in main executable of embeded archive (starts with EMBEDED signature, boot.arc for memories and embeded.arc for origins)>
+arcHeadersOffset = <(memories only!) offset in main executable of embeded .arc headers copy (starts with EMBEDED signature)>
+executablePatch  = <filename of executable patch>
+files            = <files to replace in image (optional)>

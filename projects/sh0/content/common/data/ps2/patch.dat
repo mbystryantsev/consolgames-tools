@@ -1,0 +1,40 @@
+; PS2 / PAL / SLES-55147
+
+segment .text   00100000-0032A434 00001000
+segment .data   00338780-00689704 00239780
+segment .rodata 00689800-006B3368 0058A800
+segment .sdata  006B3900-006B4308 005B4900
+
+space 0x006A2540-0x006A2A68
+
+messages messages_ps2.bin
+
+; ==============================
+; Disable language select screen
+; ==============================
+
+; Auto-press X in language menu
+00151F1C: int 0x24020001 ; li $v1, 1 
+
+; Switch off language menu rendering
+001518B0, 00151DB8: int 0 ; nop 
+
+; Disable navigation to prevent switching language
+; in between menu displaying and accepting
+00151EA4: int 0x24100000 ; li $s0, 0
+
+; ==============================
+; System messages
+; ==============================
+
+; Disable strings "decoding"
+001D7C60: int 0 ; nop
+
+; Language name
+0033EFB0, 0033EFC4, 0033EFD8, 0033EFEC, 0033F000, 0033F014, 0033F028: string sysmsg_language
+
+; Controller message
+0033EFC0, 0033EFD4, 0033EFE8, 0033EFFC, 0033F010, 0033F024, 0033F038: string sysmsg_controller
+
+; Map other languages to English
+0033EFC8, 0033EFDC, 0033EFF0, 0033F004, 0033F018, 0033F02C: int 0x006A2530, 0x006A2538

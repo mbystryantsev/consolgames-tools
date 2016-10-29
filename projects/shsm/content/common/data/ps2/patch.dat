@@ -1,0 +1,16 @@
+; PS2 / PAL / SLES_55569
+
+segment .text             00100000-00432410 00001000
+segment .vutext           00432410-00443D80 00333410
+segment .data             00443D80-00539A80 00344D80
+segment .vudata           00539A80-00539B40 0043AA80
+segment .rodata           00539B80-005954B0 0043AB80
+segment .gcc_except_table 00595500-00595610 00496500
+segment .lit4             00595680-005958C8 00496680
+segment .sdata            00595900-00596050 00496900
+
+; 0x005586C8 (0x004596C8 in file) — default settings: 
+; array of {const char* optName, int value}
+
+; enable subtitles by default
+0055871C: int 1
