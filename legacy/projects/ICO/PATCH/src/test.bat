@@ -1,0 +1,1 @@
+UPX\upx.exe -9 SH0Patch.exe -oSH0Patch_UPX.exe

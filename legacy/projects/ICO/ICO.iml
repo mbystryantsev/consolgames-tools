@@ -1,0 +1,39 @@
+[SYS]
+VERSION=1.00
+MEDIA=CD
+TARGET=PS2
+DISCVERSION=1.00
+DATE=2008/09/08-17:39:43
+[/SYS]
+
+[CUE]
+DISCNAME="SCUS-97113                      "
+PRODUCER="ICO                             "
+COPYRIGHT="ICO TEAM                        "
+CREATIONDATE=20080908
+PSTYPE=2
+DISCCODE=02
+#Track   Index   Time        Form        Control        LBN
+ 00      00      00:20:00    CDROM2_0    DATA           
+ 01      00      00:00:00    CDROM2_0    DATA           
+ 01      01      00:02:00    CDROM2_3    DATA           0
+ AA      01      60:13:23    CDROM2_0    DATA           270848
+[/CUE]
+
+[LOC]
+# the number of entries: 13
+#Start   End      Mode Fno Path
+0        23       2.1  0   "ICO.ims"
+24       24       2.1  0   "_ICO\IMAGE\SYSTEM.CNF"
+25       2701     2.1  0   "_ICO\IMAGE\SCUS_971.13"
+2702     2800     2.1  0   "_ICO\IMAGE\IOPRP224.IMG"
+2801     2804     2.1  0   "_ICO\IMAGE\SIO2MAN.IRX"
+2805     2826     2.1  0   "_ICO\IMAGE\PADMAN.IRX"
+2827     2869     2.1  0   "_ICO\IMAGE\MCMAN.IRX"
+2870     2873     2.1  0   "_ICO\IMAGE\MCSERV.IRX"
+2874     2886     2.1  0   "_ICO\IMAGE\LIBSD.IRX"
+2887     2897     2.1  0   "_ICO\IMAGE\SNDN2DRV.IRX"
+2898     265575   2.1  0   "_ICO\RUS\DATA.DF"
+265576   265577   2.1  0   "_ICO\RUS\README.TXT"
+265578   270697   2.1  0   "_ICO\IMAGE\LDUMMY"
+[/LOC]
