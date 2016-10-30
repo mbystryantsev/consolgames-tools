@@ -134,14 +134,14 @@ begin
   MSize:=0;
   GetMem(TBuf,$80000);
   Size:=RoundBy(FF8_InsertText(Text,ID,TBuf),4);
-    //SaveFile('D:\_job\FF8\Test\Testing.MSG',TBuf,Size);
+    //SaveFile('FF8\Test\Testing.MSG',TBuf,Size);
   GetMem(Buf,FSize-Files[8].Size+Size);
   P:=Buf;
   WB:=Addr(P^); Inc(WB,$30); B:=FBuf; Inc(B,$30);
   For n:=0 To 7 do Inc(MSize,Files[n].Size);
   FSize:=MSize+Size;
   Move(B^,WB^,MSize);
-  //  SaveFile('D:\_job\FF8\Test\Testing.MSG',Buf,MSize+$30);
+  //  SaveFile('FF8\Test\Testing.MSG',Buf,MSize+$30);
   Inc(B,MSize+Files[8].Size);
   Inc(WB,MSize);
   Move(TBuf^,WB^,Size);
@@ -158,7 +158,7 @@ begin
   Move(Buf^,FBuf^,FSize);
   FreeMem(Buf);
   Reinit;
-    //SaveFile('D:\_job\FF8\Test\Testing.DAT',Buf,FSize);
+    //SaveFile('FF8\Test\Testing.DAT',Buf,FSize);
 end;
 
 {Procedure TFF8Dat.InsertCDText(Toc: TFF8LBA;  const F: TFF8Files; B: TFF8CDB);
@@ -227,7 +227,7 @@ begin
   PtrDef:=Ptrs[0]-$30;
   Move(Pointer(DWord(FBuf)+$30)^,FName,8);
   Reinit;
-  //SaveFile('D:\_job\FF8\Test\DAT',FBuf,FSize);
+  //SaveFile('FF8\Test\DAT',FBuf,FSize);
 end;
 
 Procedure TFF8Dat.LoadFromFile(FileName: String; Compression: Boolean = True);

@@ -99,7 +99,7 @@ begin
   SaveFile(oFile,Buf2,Size);
   WriteLn(Format('File %s builded!',[ExtractFileName(oFile)]));
   //ReallocMem(Buf,Pos);
-  //SaveFile('F:\Temp\U\1',Buf,Pos);
+  //SaveFile('Temp\U\1',Buf,Pos);
 end;        *)
 
 Type

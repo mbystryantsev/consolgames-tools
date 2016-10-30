@@ -30,13 +30,13 @@
     <USERDEFINES value="_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_RTLDLL;USEPACKAGES"/>
     <MAINSOURCE value="extract.bpf"/>
-    <INCLUDEPATH value="D:\_job\Programming\SH2;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
-    <LIBPATH value="D:\_job\Programming\SH2;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
+    <LIBPATH value="$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-src_suffix cpp -D_DEBUG -ID:\_job\Programming\SH2 -I$(BCB)\include 
+    <IDLCFLAGS value="-src_suffix cpp -D_DEBUG -ISH2 -I$(BCB)\include 
       -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -boa"/>
     <CFLAG1 value="-Od -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -r- -a8 -b- -k -y -v -vi- -tWC 
       -tWM -c"/>
@@ -109,7 +109,7 @@ Item0=_DEBUG
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=-e  F:\_job\SH2\arc_test\ F:\_job\SH2\arc_test\extract\
+RunParams=-e  SH2\arc_test\ SH2\arc_test\extract\
 Launcher=
 UseLauncher=0
 DebugCWD=

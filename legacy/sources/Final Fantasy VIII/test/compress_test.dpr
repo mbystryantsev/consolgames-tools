@@ -16,7 +16,7 @@ var
   Dat: TFF8Dat;
 begin
   Dat := TFF8Dat.Create;
-  Dat.LoadFromFile('F:\_job\FF8\Dat\bghoke_2.dat');
+  Dat.LoadFromFile('_job\FF8\Dat\bghoke_2.dat');
   //Dat.ExportFileToFile(dfMSD, 'bghoke_2.msd');
   //Dat.ImportFile(TDatFileType(0), nil, 0);
   Dat.SaveToFile('Cutted.dat');
@@ -24,7 +24,7 @@ begin
   Dat.Free;
 
   Exit;
-  AssignFile(F, 'F:\BOOT.BIN'{'compress_test.dpr'});
+  AssignFile(F, 'BOOT.BIN'{'compress_test.dpr'});
   Reset(F, 1);
   Len := FileSize(F);
   GetMem(Buf, Len);

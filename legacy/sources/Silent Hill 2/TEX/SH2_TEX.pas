@@ -251,7 +251,7 @@ begin
     FPalCount := FPalette.Header.phPalCount;
     LoadTexPalette;
   end;
-  //FDIB.SaveToFile('C:\Test.bmp');
+  //FDIB.SaveToFile('Test.bmp');
   {$IFDEF PNG}
   DIB2PNG;
   {$ENDIF}
@@ -271,7 +271,7 @@ begin
 
 
   (*
-  Assign(F, 'C:\gsmem.bin');
+  Assign(F, 'gsmem.bin');
   Rewrite(F, 1);
   BlockWrite(F, gsmem, sizeof(gsmem));
   CloseFile(F);
@@ -295,7 +295,7 @@ begin
   end;
 
   (*
-  Assign(F, 'C:\ps2pal.bin');
+  Assign(F, 'ps2pal.bin');
   Rewrite(F, 1);
   BlockWrite(F, FPS2Palette, sizeof(FPS2Palette));
   CloseFile(F);

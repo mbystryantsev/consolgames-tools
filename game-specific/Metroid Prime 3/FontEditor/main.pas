@@ -1802,7 +1802,7 @@ begin
         Pointer(LongWord(Pixels) + LongWord(Width * Height * CharList[i].Layer + Width * CharList[i].Rect.Top + Width * j + CharList[i].Rect.Left))^,
         CharList[i].W);
   end;
-  //SaveLayersToBitmap('F:\Test.bmp', Pixels, LayerCount);
+  //SaveLayersToBitmap('Test.bmp', Pixels, LayerCount);
   GetMem(ImageData, FontData.TexHeader.Width * FontData.TexHeader.Height * LayerCount div 4);
   If FontData.ColorCount > 2 Then
     EncodeImage(Pixels, ImageData, FontData.TexHeader.Width, FontData.TexHeader.Height)
@@ -1950,7 +1950,7 @@ begin
       //S2 := b;
       //List.Add(Format('%s %s %d', [S1, S2, c]));
     end;
-    //List.SaveToFile('F:\Test.txt');
+    //List.SaveToFile('Test.txt');
     //List.Free; 
 
     Stream.Free;
@@ -2024,7 +2024,7 @@ begin
   ExportFontDialog.FileName := ChangeFileExt(ExtractFileName(FFileName), '.FONT');
   If not ExportFontDialog.Execute Then Exit;
   ExportFont(ExportFontDialog.FileName);
-  //ExportFont('F:\TEST.FONT');
+  //ExportFont('TEST.FONT');
 end;
 
 procedure TMainForm.EditKerningActionExecute(Sender: TObject);

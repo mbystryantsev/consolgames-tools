@@ -409,11 +409,11 @@ begin
   If FBigEndian and (FTexType = 0) Then
   begin
     TGAFlip;
-    //targa.SaveTGA('C:\test360_.tga',FTGA.Width,FTGA.Height,FTGA.Data);
+    //targa.SaveTGA('test360_.tga',FTGA.Width,FTGA.Height,FTGA.Data);
     SwizzleData(FTGA.Data,FTGA.Width,FTGA.Height);
     TGASetWH(FWidth,FHeight);
     TGAFlip;
-    //targa.SaveTGA('C:\test360.tga',FTGA.Width,FTGA.Height,FTGA.Data);
+    //targa.SaveTGA('test360.tga',FTGA.Width,FTGA.Height,FTGA.Data);
   end;
 
   FDIB.BitCount := FTGA.BPP;

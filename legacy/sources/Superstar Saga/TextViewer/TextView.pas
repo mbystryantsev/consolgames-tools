@@ -214,7 +214,7 @@ begin
   If n = TabControl.RowCount Then
     TabControl.Tabs.Add(ExtractFileName(Documents.TextFiles[n]^.FileName));
 
-  //Documents.TextFiles[n].GameText.LoadTable('D:\_job\Mario&Luidgy\data\tables\Table_Ru.tbl'); 
+  //Documents.TextFiles[n].GameText.LoadTable('Mario&Luidgy\data\tables\Table_Ru.tbl'); 
   TabControl.TabIndex := n;
   TabControlChange(Sender);
 end;

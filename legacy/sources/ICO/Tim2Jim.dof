@@ -90,7 +90,7 @@ MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
 [Directories]
-OutputDir=F:\_ICO\Utils
+OutputDir=_ICO\Utils
 UnitOutputDir=
 PackageDLLOutputDir=
 PackageDCPOutputDir=
@@ -104,7 +104,7 @@ RunParams=text_1_n.tm2 text_1_n.jim
 HostApplication=
 Launcher=
 UseLauncher=0
-DebugCWD=F:\_ICO
+DebugCWD=_ICO
 [Language]
 ActiveLang=
 ProjectLang=
@@ -139,4 +139,4 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlOutputDirectorry]
 Count=1
-Item0=F:\_ICO\Utils
+Item0=_ICO\Utils

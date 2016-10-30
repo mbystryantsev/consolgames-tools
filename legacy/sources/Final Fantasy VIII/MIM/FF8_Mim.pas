@@ -160,7 +160,7 @@ begin
   //For n := 0 To 255 do
   //  Move(Pointer(DWord(P) + Pos + (n * W))^, FTiles4.ScanLine[n]^, W);
 
-  //FTiles4.SaveToFile('C:\test.bmp');
+  //FTiles4.SaveToFile('test.bmp');
 
   PS2ToPalettes;
   Stream.Free;

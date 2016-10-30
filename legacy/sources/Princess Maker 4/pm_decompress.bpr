@@ -30,18 +30,13 @@
     <USERDEFINES value=""/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL;USEPACKAGES"/>
     <MAINSOURCE value="pm_decompress.bpf"/>
-    <INCLUDEPATH value="&quot;D:\_job\Programming\Princess Maker 4&quot;;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
-    <LIBPATH value="&quot;D:\_job\Programming\Princess Maker 4&quot;;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;&quot;D:\Program Files\Borland\CBuilder6\Projects&quot;;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
+    <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9"/>
+    <LIBPATH value="$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib"/>
     <WARNINGS value="-w-par"/>
     <OTHERFILES value=""/>
   </MACROS>
   <OPTIONS>
-    <IDLCFLAGS value="-I&quot;D:\_job\Programming\Princess Maker 4&quot; 
-      -ID:\_job\Programming\FVTFantasy\engine\render 
-      -ID:\_job\Programming\FVTFantasy\engine\program 
-      -I&quot;D:\Program Files\Borland\CBuilder6\Projects&quot; -IF:\_job\SHSM\code\map 
-      -I$(BCB)\include -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -src_suffix 
-      cpp -boa"/>
+    <IDLCFLAGS value="-I$(BCB)\include -I$(BCB)\include\vcl -I$(BCB)\Source\Indy9 -src_suffix cpp -boa"/>
     <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl60.csm -Hc -Vx -Ve -X- -a8 -b- -k- -vi -tWC -tWM- -c"/>
     <PFLAGS value="-$Y- -$L- -$D- -$A8 -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -93,17 +88,13 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=4
-Item0=D:\_job\Programming\Princess Maker 4;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
-Item1=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
-Item2=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
-Item3=$(BCB)\include;$(BCB)\include\vcl
+Count=2
+Item0=$(BCB)\include;$(BCB)\include\vcl;$(BCB)\Source\Indy9
+Item1=$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=3
-Item0=D:\_job\Programming\Princess Maker 4;D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
-Item1=D:\_job\Programming\FVTFantasy\engine\render;D:\_job\Programming\FVTFantasy\engine\program;D:\Program Files\Borland\CBuilder6\Projects;F:\_job\SHSM\code\map;$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
-Item2=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
+Count=1
+Item0=$(BCB)\Source\Indy9;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -115,8 +106,8 @@ Item0=_DEBUG
 
 [HistoryLists\hlFinalOutputDir]
 Count=2
-Item0=F:\_job\Princess Maker 4\
-Item1=F:\_job\Princess Maker 4
+Item0=_job\Princess Maker 4\
+Item1=_job\Princess Maker 4
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

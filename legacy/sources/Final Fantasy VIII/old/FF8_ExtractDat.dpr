@@ -26,7 +26,7 @@ var InFolder,OutFolder, TextFile, OptFile, TableFile, Key: String; n: Integer; M
   List: TStringList; L: TFF8LBA; CD, r: Integer; S, Line: String;
 begin
 
-  FF8_LoadLBA('F:\_job\FF8\Dat\DAT.LIST', L);
+  FF8_LoadLBA('FF8\Dat\DAT.LIST', L);
   List := TStringList.Create;
   For CD := 1 to 4 do
   begin
@@ -49,7 +49,7 @@ begin
     List.Add(');');
     List.Add('');  
   end;
-  List.SaveToFile('F:\_job\FF8\dat_names.txt'); 
+  List.SaveToFile('FF8\dat_names.txt'); 
   List.Free;
 
   Exit;
@@ -62,8 +62,8 @@ begin
   begin
     InFolder  := ParamStr(2);
     OutFolder := ParamStr(3);
-    //InFolder := 'F:\_job\FF8\';
-    //OutFolder := 'F:\_job\FF8\Dat\';
+    //InFolder := 'FF8\';
+    //OutFolder := 'FF8\Dat\';
     If InFolder[Length(InFolder)]   <> '\' Then  InFolder :=  InFolder + '\';
     If OutFolder[Length(OutFolder)] <> '\' Then OutFolder := OutFolder + '\';
     If not DirectoryExists(InFolder) Then
@@ -94,10 +94,10 @@ begin
     TextFile  := ParamStr(4);
     OptFile   := ParamStr(5);
 
-    //InFolder  := 'F:\_job\FF8\Dat\';
-    //TableFile := 'D:\_job\FF8\Table_En.TBL';
-    //TextFile  := 'D:\_job\FF8\Test.txt';
-    //OptFile   := 'D:\_job\FF8\Test.idx';
+    //InFolder  := 'FF8\Dat\';
+    //TableFile := 'FF8\Table_En.TBL';
+    //TextFile  := 'FF8\Test.txt';
+    //OptFile   := 'FF8\Test.idx';
 
     MText := TGameTextSet.Create(@FCreateError);
     MText.LoadTable(TableFile);

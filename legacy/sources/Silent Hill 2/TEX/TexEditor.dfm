@@ -2190,7 +2190,7 @@ object MainForm: TMainForm
     Top = 64
   end
   object OpenPictureDialog: TOpenDialog
-    FileName = 'C:\p_letterm16.tm2'
+    FileName = 'p_letterm16.tm2'
     Filter = 'All supported files|*.bmp;*.tga;*.tm2;*.png'
     Left = 40
     Top = 64

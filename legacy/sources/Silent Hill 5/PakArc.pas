@@ -409,9 +409,9 @@ end;
 
 procedure TPakForm.Button1Click(Sender: TObject);
 begin
-  Assets.LoadFromFile('E:\Games\silent hill homecoming\Engine\assets_pc_b.xml');
-  //Assets.LoadFromFile('D:\assets_xenon_b.xml');
-  Assets.LoadPaks('E:\Games\silent hill homecoming\Engine\pak\pc');
+  Assets.LoadFromFile('Engine\assets_pc_b.xml');
+  //Assets.LoadFromFile('assets_xenon_b.xml');
+  Assets.LoadPaks('Engine\pak\pc');
   //Assets.SetFiles(@SetFilesProgr);
   DrawFolders(Assets);
 end;
@@ -508,7 +508,7 @@ begin
   Exit;
   ShowMessage(IntToStr(SizeOf(SmallInt)));
   List:=TStringList.Create;
-  PAK.Open('E:\Games\silent hill homecoming\Engine\pak\pc\M01_NIGHTMARE.PAK');
+  PAK.Open('Engine\pak\pc\M01_NIGHTMARE.PAK');
   List.Add(Format('%40s %8.8s %8.8s %8.8s %8.8s %4.4s-%4.4s %8.8s',
     ['Name','Flags','CSize','Offset','PSize','P_ID',
     'ExID','Size']));
@@ -516,7 +516,7 @@ begin
     List.Add(Format('%40s %.8x %.8x %.8x %.8x %.4x-%.4x %.8x',
     [pfName,pfFlags,pfCSize,pfOffset,pfPSize,pfPakID,
     pfExID,pfSize]));
-  List.SaveToFile('C:\Test.txt'); 
+  List.SaveToFile('Test.txt'); 
 
 end;
 

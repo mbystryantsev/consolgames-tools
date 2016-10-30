@@ -175,7 +175,7 @@ begin
   
 
   Exit;
-  AssignFile(F,'D:\ct_font01.SYT');
+  AssignFile(F,'ct_font01.SYT');
   Reset(F,1);
   Size:=FileSize(F) - $80;
   Seek(F,0);
@@ -187,14 +187,14 @@ begin
   H.Width  := 128;
   H.Height := 128;
   SYT.SwizzleData(H.Data,H.Width,H.Height);
-  AssignFile(F,'D:\ct_font01_new.SYT');
+  AssignFile(F,'ct_font01_new.SYT');
   Rewrite(F,1);
   Seek(F,0);
   BlockWrite(F,Hdr,SizeOf(Hdr));
   BlockWrite(F,H.Data^,H.Width*H.Height*4);
   CloseFile(F);
 
-  SYT.LoadFromFile('D:\ct_font01_new.SYT');
+  SYT.LoadFromFile('ct_font01_new.SYT');
   ShowImage;
 
 end;

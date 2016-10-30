@@ -145,7 +145,7 @@ var DIB: TDIB; m,n,LX,RX: Integer; Color: T24bppColor; List: TStringList;
 begin
   DIB := TDIB.Create;
   List:=TStringList.Create;
-  DIB.LoadFromFile('D:\shv_fontcento03 copy.bmp');
+  DIB.LoadFromFile('shv_fontcento03 copy.bmp');
   Color:=T24bppColor(DIB.ScanLine[0]^);
   For m:=0 to 3 do
   begin
@@ -157,7 +157,7 @@ begin
       [$C0+m*16+n,LX,RX,180+m*36,180+m*36+36]));
     end;
   end;
-  List.SaveToFile('C:\List.txt');
+  List.SaveToFile('List.txt');
   DIB.Free;
   List.Free;
 end;

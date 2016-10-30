@@ -170,12 +170,12 @@ var MText, DText: TGameTextSet; SR: TSearchRec; Buf: Pointer; n,Size: Integer; F
     A: Array[Byte] of Byte; C: PWideChar;
     MsgDir, TableFile, TextFile, OptFile: String;
 //const
-  //MsgDir       = 'D:\_job\Chrono\msg_original\big\';
-  //ChMsgDir     = 'D:\_job\Chrono\rom_data\data\msg\big\';
-  //TableFile    = 'D:\_job\Chrono\big.tbl';
-  //RusTableFile = 'D:\_job\Chrono\big_rus.tbl';
-  //OutputFile   = 'D:\_job\Chrono\big.txt';
-  //DataFile     = 'D:\_job\Chrono\big_data.txt';
+  //MsgDir       = 'Chrono\msg_original\big\';
+  //ChMsgDir     = 'Chrono\rom_data\data\msg\big\';
+  //TableFile    = 'Chrono\big.tbl';
+  //RusTableFile = 'Chrono\big_rus.tbl';
+  //OutputFile   = 'Chrono\big.txt';
+  //DataFile     = 'Chrono\big_data.txt';
 begin
 //      0       1   2    3     4    5
 // TextExtract key dir table text [opt]

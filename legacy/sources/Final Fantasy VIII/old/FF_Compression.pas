@@ -216,7 +216,7 @@ begin
   Inc(Integer(Pos),{FFiles[ID].Size}ZipSize);
   //Pos:=FFiles[ID].GZipPos; Inc(Integer(Pos),ZipSize);
   Move(TBuf^,Pos^,BSize);
-        //SaveFile('F:\_FF7\_LZ\Test\FBuf',FBuf,FSize);
+        //SaveFile('_FF7\_LZ\Test\FBuf',FBuf,FSize);
   LoadFromBuf(FBuf,FSize,True);
 end;
 
@@ -363,7 +363,7 @@ begin
   Result:=DWord(WPos)-DWord(WBuf);
   ReallocMem(WBuf,Result);// FreeMem(Buf); Buf:=WBuf;
 
-//List.SaveToFile('D:\_job\FF8\Test\OR.TXT');
+//List.SaveToFile('FF8\Test\OR.TXT');
 //List.Free;
 end;
 
@@ -384,7 +384,7 @@ begin
     UB:=WB; Inc(WB); UB^:=0;
     For u:=0 to 7 do
     begin
-      //SaveFile('F:\_FF7\RUS\MD1STIN.Stream',WBuf,Integer(WB)-Integer(WBuf)+1);
+      //SaveFile('_FF7\RUS\MD1STIN.Stream',WBuf,Integer(WB)-Integer(WBuf)+1);
       If Integer(B)-Integer(Buf)+1>Size{+1!} Then Break;
       PosMax:=Integer(B)-Integer(Buf){+18};
       If PosMax>level Then PosMax:=level;
@@ -466,10 +466,10 @@ begin
   ReallocMem(WBuf,Result);
   //Buf:=WBuf;
   //FreeMem(WBuf);
-  //SaveFile('F:\_FF7\RUS\MD1STIN.Stream',Buf,Size);
-  //SaveFile('F:\_FF7\RUS\MD1STIN.PackedStream',WBuf,Result);
+  //SaveFile('_FF7\RUS\MD1STIN.Stream',Buf,Size);
+  //SaveFile('_FF7\RUS\MD1STIN.PackedStream',WBuf,Result);
 
-//List.SaveToFile('D:\_job\FF8\Test\CM.TXT');
+//List.SaveToFile('FF8\Test\CM.TXT');
 //List.Free;
 end;
 
