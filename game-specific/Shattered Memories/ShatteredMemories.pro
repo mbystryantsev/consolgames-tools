@@ -17,6 +17,7 @@ SUBDIRS = \
 	TextureConv \
 	Patcher \
 	CmiTool \
+	FontTool \
 	ExecutablePatcher \
 	externals/core \
 	externals/WiiStreams \
