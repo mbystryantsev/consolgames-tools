@@ -624,7 +624,8 @@ bool PatcherProcessor::replaceFiles(const QStringList& resourcesPaths)
 	foreach (const QString& filename, m_info.files)
 	{
 		const QString baseName = QFileInfo(filename).fileName();
-		std::tr1::shared_ptr<Stream> stream = fileSource.fileByName(baseName.toStdString(), DummyFileAccessor());
+		DummyFileAccessor fileAccessor;
+		std::tr1::shared_ptr<Stream> stream = fileSource.fileByName(baseName.toStdString(), fileAccessor);
 		if (stream.get() == NULL || stream->size() <= 0)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputFileToReplace;

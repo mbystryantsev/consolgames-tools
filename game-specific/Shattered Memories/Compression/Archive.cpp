@@ -326,11 +326,13 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		
 		if (m_names.find(record->hash) != m_names.end())
 		{
-			stream = fileSource.fileByName(m_names.find(record->hash)->second, FileAccessor(m_stream, *record));
+			FileAccessor accessor(m_stream, *record);
+			stream = fileSource.fileByName(m_names.find(record->hash)->second, accessor);
 		}
 		if (stream.get() == NULL)
 		{
-			stream = fileSource.file(record->hash, FileAccessor(m_stream, *record));
+			FileAccessor accessor(m_stream, *record);
+			stream = fileSource.file(record->hash, accessor);
 		}
 
 		if (stream.get() == NULL)
@@ -474,7 +476,8 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 bool Archive::rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList, const MergeMap& mergeMap)
 {
-	return rebuild(outFile, DirectoriesFileSource(dirList), mergeMap);
+	DirectoriesFileSource fileSource(dirList);
+	return rebuild(outFile, fileSource, mergeMap);
 }
 
 shared_ptr<Stream> Archive::openFile(const std::string& filename)
