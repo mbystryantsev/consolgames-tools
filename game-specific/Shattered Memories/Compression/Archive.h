@@ -52,14 +52,14 @@ public:
 	{
 	friend class Archive;
 	public:
-		virtual std::tr1::shared_ptr<Consolgames::Stream> open() override;
+		virtual std::shared_ptr<Consolgames::Stream> open() override;
 
 	private:
 		FileAccessor(Consolgames::Stream* stream, const Archive::FileRecord& record);
 
 	private:
 		Consolgames::Stream* m_stream;
-		std::tr1::shared_ptr<Consolgames::Stream> m_fileStream;
+		std::shared_ptr<Consolgames::Stream> m_fileStream;
 		const Archive::FileRecord m_record;
 	};
 
@@ -100,8 +100,8 @@ public:
 	bool extractFiles(const std::wstring& outDir, const std::set<uint32>& fileList = std::set<uint32>());
 	bool rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap = MergeMap());
 	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList, const MergeMap& mergeMap = MergeMap());
-	std::tr1::shared_ptr<Consolgames::Stream> openFile(const std::string& filename);
-	std::tr1::shared_ptr<Consolgames::Stream> openFile(uint32 fileHash);
+	std::shared_ptr<Consolgames::Stream> openFile(const std::string& filename);
+	std::shared_ptr<Consolgames::Stream> openFile(uint32 fileHash);
 
 	void setNames(const std::list<std::string>& names);
 
@@ -148,7 +148,7 @@ private:
 
 private:
 	Consolgames::Stream* m_stream;
-	std::auto_ptr<Consolgames::Stream> m_fileStreamHolder;
+	std::unique_ptr<Consolgames::Stream> m_fileStreamHolder;
 	std::vector<FileRecord> m_fileRecords;
 	std::map<uint32, const FileRecord*> m_fileRecordsMap;
 	Header m_header;

@@ -18,25 +18,24 @@
 
 using namespace Consolgames;
 using namespace std;
-using namespace tr1;
 
 namespace ShatteredMemories
 {
 
-static std::auto_ptr<DiscImage> imageForPlatform(PatcherProcessor::Platform platform)
+static std::unique_ptr<DiscImage> imageForPlatform(PatcherProcessor::Platform platform)
 {
 	switch (platform)
 	{
 	case PatcherProcessor::platformWii:
-		return std::auto_ptr<DiscImage>(new WiiDiscImage());
+		return std::unique_ptr<DiscImage>(new WiiDiscImage());
 	case PatcherProcessor::platformPS2:
-		return std::auto_ptr<DiscImage>(new PS2DiscImage());
+		return std::unique_ptr<DiscImage>(new PS2DiscImage());
 	case PatcherProcessor::platformPSP:
-		return std::auto_ptr<DiscImage>(new PSPDiscImage());
+		return std::unique_ptr<DiscImage>(new PSPDiscImage());
 	}
 
 	ASSERT(!"Invalid platform!");
-	return std::auto_ptr<DiscImage>();
+	return std::unique_ptr<DiscImage>();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -264,7 +263,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.04);
 
-		auto_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeRead));
+		unique_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
@@ -313,7 +312,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener, 0.01);
 
-		auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
+		unique_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
@@ -369,7 +368,7 @@ bool PatcherProcessor::rebuildArchives(const QString& outPath, const QStringList
 		ArchiveProgressNotifier listener;
 		m_progressNotifier.setCurrentNotifier(&listener);
 
-		auto_ptr<Stream> pakStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
+		unique_ptr<Stream> pakStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = RebuildArchives_UnableToOpenFileInImage;
@@ -417,7 +416,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 	const CompoundProgressNotifier::ProgressGuard guard(m_progressNotifier);
 	const QDir dir(arcPath);
 
-	auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
+	unique_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 	if (executableStream.get() == NULL)
 	{
 		m_errorCode = ReplaceArchives_UnableToOpenExecutable;
@@ -468,7 +467,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 	{
 		DLOG << "Replacing ui.arc...";
 
-		auto_ptr<Stream> arcStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
+		unique_ptr<Stream> arcStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenArcForReplace;
@@ -611,9 +610,9 @@ bool PatcherProcessor::replaceFiles(const QStringList& resourcesPaths)
 
 	class DummyFileAccessor : public FileSource::FileAccessor
 	{
-		virtual std::tr1::shared_ptr<Stream> open() override
+		virtual std::shared_ptr<Stream> open() override
 		{
-			return std::tr1::shared_ptr<Stream>();
+			return std::shared_ptr<Stream>();
 		}
 	};
 
@@ -625,7 +624,7 @@ bool PatcherProcessor::replaceFiles(const QStringList& resourcesPaths)
 	{
 		const QString baseName = QFileInfo(filename).fileName();
 		DummyFileAccessor fileAccessor;
-		std::tr1::shared_ptr<Stream> stream = fileSource.fileByName(baseName.toStdString(), fileAccessor);
+		std::shared_ptr<Stream> stream = fileSource.fileByName(baseName.toStdString(), fileAccessor);
 		if (stream.get() == NULL || stream->size() <= 0)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputFileToReplace;
@@ -633,7 +632,7 @@ bool PatcherProcessor::replaceFiles(const QStringList& resourcesPaths)
 			return false;
 		}
 
-		std::auto_ptr<Stream> imageFileStream(m_image->openFile(filename.toStdString(), Stream::modeWrite));
+		std::unique_ptr<Stream> imageFileStream(m_image->openFile(filename.toStdString(), Stream::modeWrite));
 		if (imageFileStream.get() == NULL)
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenFileToReplace;
@@ -666,7 +665,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 
 	DLOG << "Checking " << m_info.embededArcName << "...";
 	{
-		auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
+		unique_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 		if (executableStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenExecutable;
@@ -713,7 +712,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 	{
 		DLOG << "Checking ui.arc...";
 
-		auto_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
+		unique_ptr<Stream> pakStream(m_image->openFile(m_info.uiArcContainer.toStdString(), Stream::modeReadWrite));
 		if (pakStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;
@@ -767,7 +766,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 
 		if (m_info.game == gameShatteredMemories)
 		{
-			auto_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
+			unique_ptr<Stream> executableStream(m_image->openFile(m_info.executablePath.toStdString(), Stream::modeRead));
 			if (executableStream.get() == NULL)
 			{
 				m_errorCode = CheckArchives_UnableToOpenExecutable;
@@ -794,7 +793,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 			}
 		}
 
-		auto_ptr<Stream> arcStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
+		unique_ptr<Stream> arcStream(m_image->openFile(m_info.mainArcPath.toStdString(), Stream::modeRead));
 		if (arcStream.get() == NULL)
 		{
 			m_errorCode = CheckArchives_UnableToOpenArchive;

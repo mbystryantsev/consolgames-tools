@@ -29,25 +29,25 @@ static QString hashToStr(quint32 hash)
 	return QString::number(hash, 16).toUpper().rightJustified(8, '0');
 }
 
-static std::auto_ptr<TextureDictionaryParser> makeTextureParserForPlatform(Platform platform)
+static std::unique_ptr<TextureDictionaryParser> makeTextureParserForPlatform(Platform platform)
 {
 	switch (platform)
 	{
 	case Wii:
-		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserWii());
+		return std::unique_ptr<TextureDictionaryParser>(new TextureDictionaryParserWii());
 	case PS2:
-		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserPS2());
+		return std::unique_ptr<TextureDictionaryParser>(new TextureDictionaryParserPS2());
 	case PSP:
-		return std::auto_ptr<TextureDictionaryParser>(new TextureDictionaryParserPSP());
+		return std::unique_ptr<TextureDictionaryParser>(new TextureDictionaryParserPSP());
 	}
 
-	return std::auto_ptr<TextureDictionaryParser>();
+	return std::unique_ptr<TextureDictionaryParser>();
 }
 
 bool parseDictionary(Stream& stream, const QString& name, QTextStream& csv, Platform platform = Wii)
 {
 	ASSERT(stream.opened());
-	std::auto_ptr<TextureDictionaryParser> dictParser = makeTextureParserForPlatform(platform);
+	std::unique_ptr<TextureDictionaryParser> dictParser = makeTextureParserForPlatform(platform);
 	ASSERT(dictParser.get() != NULL);
 
 	dictParser->open(&stream);

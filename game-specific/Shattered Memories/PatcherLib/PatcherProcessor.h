@@ -147,10 +147,10 @@ private:
 private:
 	
 	PatchInfo m_info;
-	std::auto_ptr<DiscImage> m_image; 
+	std::unique_ptr<DiscImage> m_image; 
 	ErrorCode m_errorCode;
 	QString m_errorData;
-	std::auto_ptr<ExecutablePatcher> m_exePatcher;
+	std::unique_ptr<ExecutablePatcher> m_exePatcher;
 	CompoundProgressNotifier m_progressNotifier;
 };
 

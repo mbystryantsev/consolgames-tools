@@ -3,7 +3,7 @@
 #include <PatcherController.h>
 #include <QDir>
 
-std::auto_ptr<Configurator> Configurator::s_instance;
+std::unique_ptr<Configurator> Configurator::s_instance;
 
 static const QString s_resourcesPath = ":/patchdata/";
 

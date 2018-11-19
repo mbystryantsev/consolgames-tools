@@ -5,7 +5,6 @@
 
 using namespace Consolgames;
 using namespace std;
-using namespace tr1;
 
 namespace ShatteredMemories
 {
@@ -55,7 +54,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& ac
 	return m_primarySource->file(hash, accessor);
 }
 
-std::tr1::shared_ptr<Consolgames::Stream> PatcherTexturesFileSource::fileByName(const std::string& name, FileAccessor& accessor)
+std::shared_ptr<Consolgames::Stream> PatcherTexturesFileSource::fileByName(const std::string& name, FileAccessor& accessor)
 {
 	// TODO: Unify
 

@@ -57,7 +57,7 @@ private:
 private:
 	bool m_started;
 
-	std::auto_ptr<PatcherWorker> m_workerPtr;
+	std::unique_ptr<PatcherWorker> m_workerPtr;
 	PatcherWorker* m_worker;
 	QThread m_workerThread;
 	QList<QByteArray> m_steps;

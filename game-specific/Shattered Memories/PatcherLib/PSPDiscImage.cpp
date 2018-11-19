@@ -18,7 +18,7 @@ std::string PSPDiscImage::loadDiscId()
 		return std::string();
 	}
 
-	std::auto_ptr<Stream> file(m_image.openFile(paramSfoPath));
+	std::unique_ptr<Stream> file(m_image.openFile(paramSfoPath));
 	if (file.get() == NULL || !file->opened() || file->size() > 1024)
 	{
 		return std::string();

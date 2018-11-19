@@ -27,7 +27,7 @@ public:
 	class DataSource
 	{
 	public:
-		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index) = 0;
+		virtual std::shared_ptr<Consolgames::Stream> getAt(int index) = 0;
 		virtual int partCount() const = 0;
 		virtual PartInfo partInfoAt(int index) const = 0;
 		virtual ~DataSource()
@@ -36,7 +36,7 @@ public:
 	};
 
 public:
-	OnFlyPatchStream(std::tr1::shared_ptr<Consolgames::Stream> stream, std::tr1::shared_ptr<DataSource> dataSource);
+	OnFlyPatchStream(std::shared_ptr<Consolgames::Stream> stream, std::shared_ptr<DataSource> dataSource);
 
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
@@ -47,9 +47,9 @@ public:
 	virtual bool atEnd() const override;
 
 private:
-	std::tr1::shared_ptr<Consolgames::Stream> m_stream;
-	std::tr1::shared_ptr<DataSource> m_patchDataSource;
-	std::tr1::shared_ptr<Consolgames::Stream> m_currentPartStream;
+	std::shared_ptr<Consolgames::Stream> m_stream;
+	std::shared_ptr<DataSource> m_patchDataSource;
+	std::shared_ptr<Consolgames::Stream> m_currentPartStream;
 	PartInfo m_currentPartInfo;
 	int m_currentPartIndex;
 };

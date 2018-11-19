@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 			return -1;
 		}
 			   
-		std::tr1::shared_ptr<QtFileStream> fontStream(new QtFileStream(fontFile, QIODevice::ReadOnly));
+		std::shared_ptr<QtFileStream> fontStream(new QtFileStream(fontFile, QIODevice::ReadOnly));
 		
 		if (!fontStream->opened())
 		{
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 			return -1;
 		}
 
-		std::tr1::shared_ptr<QtFileStream> inStream(new QtFileStream(inFile, QIODevice::ReadOnly));
+		std::shared_ptr<QtFileStream> inStream(new QtFileStream(inFile, QIODevice::ReadOnly));
 
 		if (!inStream->opened())
 		{

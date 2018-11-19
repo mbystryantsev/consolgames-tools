@@ -37,8 +37,8 @@ public:
 	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase,
 		Consolgames::Stream::ByteOrder streamsByteOrder, bool isOrigins);
 
-	virtual std::tr1::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
-	virtual std::tr1::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
+	virtual std::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
+	virtual std::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
 
 private:
 	class TextureDataSource : public OnFlyPatchStream::DataSource
@@ -46,14 +46,14 @@ private:
 	public:
 		TextureDataSource(const QString& path, const QList<TextureDatabase::TextureInfo>& textures);
 
-		virtual std::tr1::shared_ptr<Consolgames::Stream> getAt(int index) override;
+		virtual std::shared_ptr<Consolgames::Stream> getAt(int index) override;
 		virtual int partCount() const override;
 		virtual OnFlyPatchStream::PartInfo partInfoAt(int index) const override;
 
 	private:
 		const QString m_path;
 		QList<PartInfoRecord> m_partInfo;
-		std::tr1::shared_ptr<QtFileStream> m_cachedFile;
+		std::shared_ptr<QtFileStream> m_cachedFile;
 	};
 
 private:

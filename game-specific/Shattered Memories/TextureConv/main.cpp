@@ -344,20 +344,20 @@ static Arguments parseArgs(int argc, char *argv[])
 	return result;
 }
 
-static auto_ptr<TextureCodec> codecForPlatform(Platform platform)
+static unique_ptr<TextureCodec> codecForPlatform(Platform platform)
 {
 	switch (platform)
 	{
 	case platformWii:
-		return auto_ptr<TextureCodec>(new WiiTextureCodec());
+		return unique_ptr<TextureCodec>(new WiiTextureCodec());
 	case platformPS2:
-		return auto_ptr<TextureCodec>(new PS2TextureCodec());
+		return unique_ptr<TextureCodec>(new PS2TextureCodec());
 	case  platformPSP:
-		return auto_ptr<TextureCodec>(new PSPTextureCodec());
+		return unique_ptr<TextureCodec>(new PSPTextureCodec());
 	}
 
 	ASSERT(!"Unknown platform!");
-	return auto_ptr<TextureCodec>();
+	return unique_ptr<TextureCodec>();
 }
 
 
@@ -415,7 +415,7 @@ static bool decodeTexture(Stream& stream, const string& destPath, bool decodeMip
 
 	const Platform platform = platformFromSignature(header.platformSignature);
 	
-	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
+	unique_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
 	{
 		cout << "Platform unknown or not supported yet.";
@@ -487,7 +487,7 @@ static bool decodeTexture(const string& inputPath, const string& destPath, bool 
 
 static bool encodeTexture(const string& filename, const string& destFile, Platform platform, const char* formatStr, const char* paletteFormatStr, int mipmaps, int customWidth, int customHeight)
 {
-	auto_ptr<TextureCodec> codec = codecForPlatform(platform);
+	unique_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
 	{
 		cout << "Platform is unknown." << endl;
@@ -508,7 +508,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		return false;
 	}
 
-	std::auto_ptr<nv::Image> image(new nv::Image());
+	std::unique_ptr<nv::Image> image(new nv::Image());
 
 	if (!image->load(filename.c_str()))
 	{
@@ -527,7 +527,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		}
 
 		nv::FloatImage floatImage(image.get());
-		std::auto_ptr<nv::FloatImage> resizedImage(floatImage.resize(nv::BoxFilter(), customWidth, customHeight, nv::FloatImage::WrapMode_Mirror));
+		std::unique_ptr<nv::FloatImage> resizedImage(floatImage.resize(nv::BoxFilter(), customWidth, customHeight, nv::FloatImage::WrapMode_Mirror));
 		image.reset(resizedImage->createImage());
 	}
 
@@ -606,7 +606,7 @@ static std::string extractPart(const std::string& str, int part)
 
 static bool extractTextures(Platform platform, const std::string& csvFile, const std::string& inputDir, const std::string& outputDir, const vector<string>& formats = vector<string>(), bool skipExistingTextures = false)
 {
-	std::auto_ptr<TextureCodec> codec = codecForPlatform(platform);
+	std::unique_ptr<TextureCodec> codec = codecForPlatform(platform);
 	if (codec.get() == NULL)
 	{
 		std::cout << "Unsupported platform!" << std::endl;
@@ -722,7 +722,7 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 		return false;
 	}
 
-	std::auto_ptr<FileStream> textureStream;
+	std::unique_ptr<FileStream> textureStream;
 
 	std::set<std::string> convertedTextures;
 

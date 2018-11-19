@@ -56,7 +56,7 @@ public:
 	static QString platformName(Platform platform);
 
 private:
-	static std::auto_ptr<Configurator> s_instance;
+	static std::unique_ptr<Configurator> s_instance;
 
 	Game m_game;
 	QSet<Platform> m_availablePlatforms;

@@ -16,7 +16,7 @@ public:
 	};
 
 public:
-	FontStreamRebuilder(std::tr1::shared_ptr<Consolgames::Stream> stream, std::tr1::shared_ptr<Consolgames::Stream> fontStream, Consolgames::Stream::ByteOrder byteOrder, Version version);
+	FontStreamRebuilder(std::shared_ptr<Consolgames::Stream> stream, std::shared_ptr<Consolgames::Stream> fontStream, Consolgames::Stream::ByteOrder byteOrder, Version version);
 
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
@@ -30,8 +30,8 @@ private:
 	void cacheMetaInfo(const DataStreamParser::SegmentInfo& segmentInfo, const DataStreamParser::MetaInfo& metaInfo);
 
 private:
-	std::tr1::shared_ptr<Consolgames::Stream> m_stream;
-	std::tr1::shared_ptr<Consolgames::Stream> m_fontStream;
+	std::shared_ptr<Consolgames::Stream> m_stream;
+	std::shared_ptr<Consolgames::Stream> m_fontStream;
 	QByteArray m_bufferedData;
 	bool m_inFont;
 	bool m_finalized;

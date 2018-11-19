@@ -206,7 +206,7 @@ int DXTCodec::encodeDXT1(const void* src, void* dest, int width, int height, int
     unsigned char* destBytes = static_cast<unsigned char*>(dest);
     nv::BoxFilter filter;
 	
-	std::auto_ptr<nv::Image> image(new nv::Image());
+	std::unique_ptr<nv::Image> image(new nv::Image());
 	image->allocate(width, height);
 	const nv::Color32* colors = static_cast<const nv::Color32*>(src);
 	for (uint line = 0; line < image->height(); line++)
@@ -223,7 +223,7 @@ int DXTCodec::encodeDXT1(const void* src, void* dest, int width, int height, int
 		int mipmapDataSize = 0;
 		if (width < s_minMipmapSide || height < s_minMipmapSide)
 		{
-			std::auto_ptr<nv::Image> canvas(new nv::Image());
+			std::unique_ptr<nv::Image> canvas(new nv::Image());
 			canvas->allocate(mipmapWidth, mipmapHeight);
 			canvas->fill(nv::Color32(255, 255, 255));
 			copyRect(*image.get(), *canvas.get(), Rect(0, 0, width, height), 0, 0);
@@ -246,7 +246,7 @@ int DXTCodec::encodeDXT1(const void* src, void* dest, int width, int height, int
 		height /= 2;
 
 		nv::FloatImage floatImage(image.get());
-		std::auto_ptr<nv::FloatImage> resizedFloatImage(floatImage.resize(filter, width, height, nv::FloatImage::WrapMode_Mirror));   
+		std::unique_ptr<nv::FloatImage> resizedFloatImage(floatImage.resize(filter, width, height, nv::FloatImage::WrapMode_Mirror));   
 		image.reset(resizedFloatImage->createImage());
 	}
 

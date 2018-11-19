@@ -20,7 +20,7 @@ public:
 
 private:
 	largesize_t m_size;
-	std::auto_ptr<Consolgames::Stream> m_streamHolder;
+	std::unique_ptr<Consolgames::Stream> m_streamHolder;
 };
 
 }

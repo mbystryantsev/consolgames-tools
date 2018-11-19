@@ -72,7 +72,7 @@ private:
 	MetaInfo m_currentMetaInfo;
 	SegmentInfo m_currentSegmentInfo;
 	Consolgames::Stream* m_stream;
-	std::auto_ptr<Consolgames::Stream> m_streamHolder;
+	std::unique_ptr<Consolgames::Stream> m_streamHolder;
 	uint32 m_segmentSize;
 	uint32 m_position;
 	uint32 m_nextItemPosition;

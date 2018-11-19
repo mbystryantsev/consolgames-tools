@@ -61,10 +61,10 @@ void FontStreamRebuilderTests::shatteredMemoriesTest()
 	QFETCH(Stream::ByteOrder, byteOrder);
 	QFETCH(FontStreamRebuilder::Version, version);
 
-	std::tr1::shared_ptr<QtFileStream> stream(new QtFileStream(sourceName, QIODevice::ReadOnly));
+	std::shared_ptr<QtFileStream> stream(new QtFileStream(sourceName, QIODevice::ReadOnly));
 	QVERIFY(stream->opened());
 
-	std::tr1::shared_ptr<QtFileStream> fontStream(new QtFileStream("data/Font", QIODevice::ReadOnly));
+	std::shared_ptr<QtFileStream> fontStream(new QtFileStream("data/Font", QIODevice::ReadOnly));
 	QVERIFY(fontStream->opened());
 
 	FontStreamRebuilder rebuilder(stream, fontStream, byteOrder, version);

@@ -9,7 +9,6 @@
 #include <functional>
 
 using namespace std;
-using namespace tr1;
 using namespace Consolgames;
 
 LOG_CATEGORY("ShatteredMemories.Archive");
@@ -572,7 +571,7 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 		return m_fileStream;
 	}
 
-	auto_ptr<PartStream> pakStream(new PartStream(m_stream, m_record.offset, m_record.storedSize));
+	unique_ptr<PartStream> pakStream(new PartStream(m_stream, m_record.offset, m_record.storedSize));
 	ASSERT(pakStream->opened());
 
 	VERIFY(pakStream->seek(0, Stream::seekSet) == 0);

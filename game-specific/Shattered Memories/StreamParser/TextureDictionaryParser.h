@@ -35,7 +35,7 @@ public:
 	virtual const char* paletteFormatToString(int format) const = 0;
 
 private:
-	std::auto_ptr<Consolgames::Stream> m_streamHolder;
+	std::unique_ptr<Consolgames::Stream> m_streamHolder;
 };
 
 }
