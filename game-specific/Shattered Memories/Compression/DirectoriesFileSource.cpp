@@ -66,7 +66,7 @@ shared_ptr<Consolgames::Stream> DirectoriesFileSource::openFile(const std::wstri
 	if (FileStream::fileExists(path))
 	{
 		shared_ptr<Stream> streamPtr(new FileStream(path, Stream::modeRead));
-		if (streamPtr->opened())
+		if (streamPtr->isOpen())
 		{
 			return streamPtr;
 		}

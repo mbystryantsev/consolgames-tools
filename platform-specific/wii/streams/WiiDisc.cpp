@@ -1511,7 +1511,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 
 	FileStream inStream(filename.data(), Stream::modeRead);
 
-	if (!inStream.opened())
+	if (!inStream.isOpen())
 	{
 		DLOG << "Error opening file";
 		ASSERT(0);

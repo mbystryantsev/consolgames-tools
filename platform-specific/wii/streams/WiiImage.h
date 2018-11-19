@@ -67,7 +67,7 @@ private:
 
 public:
 	bool open(const std::wstring& filename, Stream::OpenMode mode);
-	bool opened() const;
+	bool isOpen() const;
 	void close();
 	bool readHeader();
 	bool checkAndLoadKey(bool loadCrypto);

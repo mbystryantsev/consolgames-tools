@@ -24,7 +24,7 @@ public:
 	virtual largesize_t write(const void* buf, largesize_t size) override;
 	virtual offset_t seek(offset_t offset, SeekOrigin origin) override;
 	virtual offset_t size() const override;
-	virtual bool opened() const override;
+	virtual bool isOpen() const override;
 	virtual bool atEnd() const override;
 	OpenMode openMode() const;
 	static bool fileExists(const char *path);

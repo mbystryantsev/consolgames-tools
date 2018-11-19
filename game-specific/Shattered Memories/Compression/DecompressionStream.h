@@ -13,7 +13,7 @@ public:
 	virtual largesize_t read(void* buf, largesize_t size) override;
 	virtual largesize_t write(const void* buf, largesize_t size) override;
 	virtual offset_t size() const override;
-	virtual bool opened() const override;
+	virtual bool isOpen() const override;
 	virtual bool atEnd() const override;
 
 	void holdStream();

@@ -46,7 +46,7 @@ static bool compareStreams(Stream* s1, Stream* s2)
 static void dumpStream(const QString& filename, Stream* stream)
 {
 	QtFileStream file(filename, QIODevice::WriteOnly);
-	QVERIFY(file.opened());
+	QVERIFY(file.isOpen());
 
 	while (!stream->atEnd())
 	{
@@ -62,15 +62,15 @@ void FontStreamRebuilderTests::shatteredMemoriesTest()
 	QFETCH(FontStreamRebuilder::Version, version);
 
 	std::shared_ptr<QtFileStream> stream(new QtFileStream(sourceName, QIODevice::ReadOnly));
-	QVERIFY(stream->opened());
+	QVERIFY(stream->isOpen());
 
 	std::shared_ptr<QtFileStream> fontStream(new QtFileStream("data/Font", QIODevice::ReadOnly));
-	QVERIFY(fontStream->opened());
+	QVERIFY(fontStream->isOpen());
 
 	FontStreamRebuilder rebuilder(stream, fontStream, byteOrder, version);
 
 	QtFileStream expected(expectedName, QIODevice::ReadOnly);
-	QVERIFY(expected.opened());
+	QVERIFY(expected.isOpen());
 	
 	bool success = compareStreams(&rebuilder, &expected);
 

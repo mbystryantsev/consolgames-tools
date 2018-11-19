@@ -12,7 +12,7 @@ public:
 	WiiDiscImage();		
 
 	virtual bool open(const std::wstring& filename, Consolgames::Stream::OpenMode mode) override;
-	virtual bool opened() const override;
+	virtual bool isOpen() const override;
 	virtual void close() override;
 	virtual Consolgames::Stream* openFile(const std::string& filename, Consolgames::Stream::OpenMode mode) override;
 	virtual bool writeData(offset_t offset, Consolgames::Stream* stream, largesize_t size) override;

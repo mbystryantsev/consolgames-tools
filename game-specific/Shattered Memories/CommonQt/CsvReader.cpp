@@ -17,7 +17,7 @@ CsvReader::CsvReader(const QString& filename)
 	}
 }
 
-bool CsvReader::opened()
+bool CsvReader::isOpen()
 {
 	return (m_file.isOpen() && m_header.size() > 0);
 }

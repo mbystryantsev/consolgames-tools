@@ -64,7 +64,7 @@ bool Archive::open()
 {
 	ASSERT(!m_opened);
 
-	if (!m_stream->opened())
+	if (!m_stream->isOpen())
 	{
 		return false;
 	}
@@ -206,7 +206,7 @@ bool Archive::extractFile(const FileRecord& record, Consolgames::Stream* stream)
 	}
 
 	DecompressionStream zlibStream(m_stream, record.decompressedSize);
-	if (!zlibStream.opened())
+	if (!zlibStream.isOpen())
 	{
 		DLOG << "Unable to open zlib stream!";
 		return false;
@@ -225,7 +225,7 @@ bool Archive::extractFile(const FileRecord& record, Consolgames::Stream* stream)
 bool Archive::extractFile(const FileRecord& record, const std::wstring& path)
 {
 	FileStream stream(path, Stream::modeWrite);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		DLOG << "Unable to open output file!";
 		return false;
@@ -259,7 +259,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	ProgressGuard guard(*this, m_fileRecords.size());
 
 	FileStream file(outFile, FileStream::modeWrite);
-	if (!file.opened())
+	if (!file.isOpen())
 	{
 		return false;
 	}
@@ -358,7 +358,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 			else
 			{
 				CompressionStream zlibStream(&file);
-				ASSERT(zlibStream.opened());				
+				ASSERT(zlibStream.isOpen());				
 				while (!stream->atEnd())
 				{
 					zlibStream.writeStream(stream.get(), 0x80000);
@@ -572,7 +572,7 @@ shared_ptr<Stream> Archive::FileAccessor::open()
 	}
 
 	unique_ptr<PartStream> pakStream(new PartStream(m_stream, m_record.offset, m_record.storedSize));
-	ASSERT(pakStream->opened());
+	ASSERT(pakStream->isOpen());
 
 	VERIFY(pakStream->seek(0, Stream::seekSet) == 0);
 

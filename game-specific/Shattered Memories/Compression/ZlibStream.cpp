@@ -49,7 +49,7 @@ offset_t ZlibStream::seek(offset_t offset, SeekOrigin origin)
 
 offset_t ZlibStream::position() const 
 {
-	ASSERT(opened());
+	ASSERT(isOpen());
 	
 	return m_zStream.total_out;
 }

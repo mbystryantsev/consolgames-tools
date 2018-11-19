@@ -17,7 +17,7 @@ Archive::Archive(Stream* stream, Stream* slesStream, uint32 offsetsAddr, int fil
 
 void Archive::parseOffsets(Stream* slusStream, uint32 offsetsAddr, int fileCount)
 {
-	if (slusStream == NULL || !slusStream->opened())
+	if (slusStream == NULL || !slusStream->isOpen())
 	{
 		return;
 	}

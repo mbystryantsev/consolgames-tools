@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	}
 
 	FileStream executable(argv[2], Stream::modeWrite);
-	if (!executable.opened())
+	if (!executable.isOpen())
 	{
 		std::cout << "Unable to open executable file!" << std::endl;
 		return -1;

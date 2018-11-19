@@ -21,7 +21,7 @@ std::string PS2DiscImage::loadDiscId()
 	}
 
 	const std::unique_ptr<Stream> file(m_image.openFile("SYSTEM.CNF"));
-	if (file.get() == NULL || !file->opened() || file->size() > 1024)
+	if (file.get() == NULL || !file->isOpen() || file->size() > 1024)
 	{
 		return std::string();
 	}

@@ -209,7 +209,7 @@ static Archive::MergeMap loadMergeMap(const QString& path)
 	Archive::MergeMap map;
 
 	QtFileStream stream(path, QIODevice::ReadOnly);
-	if (stream.opened())
+	if (stream.isOpen())
 	{
 		if ((stream.size() % 8) != 0)
 		{
@@ -438,7 +438,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		}
 
 		QtFileStream stream(dir.absoluteFilePath(m_info.embededArcName), QIODevice::ReadOnly);
-		if (!stream.opened())
+		if (!stream.isOpen())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
 			m_errorData = m_info.embededArcName;
@@ -490,7 +490,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		maxSize = maxSize - (maxSize % arc.alignment());
 
 		QtFileStream stream(dir.absoluteFilePath(QString::fromStdString(Hash::toString(Hash::calc("ui.arc")))), QIODevice::ReadOnly);
-		if (!stream.opened())
+		if (!stream.isOpen())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
 			m_errorData = "ui.arc";
@@ -537,7 +537,7 @@ bool PatcherProcessor::replaceArchives(const QString& arcPath)
 		}
 
 		QtFileStream stream(dir.absoluteFilePath(QFileInfo(m_info.mainArcPath).fileName()), QIODevice::ReadOnly);
-		if (!stream.opened())
+		if (!stream.isOpen())
 		{
 			m_errorCode = ReplaceArchives_UnableToOpenInputPak;
 			m_errorData = m_info.mainArcPath;
@@ -693,7 +693,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 		PartStream embededArcStream(executableStream.get(), executableStream->position(), embededArcInfo.contentSize);
 
 		QtFileStream resultArcSream(dir.absoluteFilePath(m_info.embededArcName), QIODevice::ReadOnly);
-		if (!resultArcSream.opened())
+		if (!resultArcSream.isOpen())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
 			m_errorData = m_info.embededArcName;
@@ -737,7 +737,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 		}
 
 		QtFileStream resultArcSream(dir.absoluteFilePath(QString::fromStdString(Hash::toString(Hash::calc("ui.arc")))), QIODevice::ReadOnly);
-		if (!resultArcSream.opened())
+		if (!resultArcSream.isOpen())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
 			m_errorData = "ui.arc";
@@ -757,7 +757,7 @@ bool PatcherProcessor::checkArchives(const QString& arcPath)
 	DLOG << "Checking " << mainArcName << "...";
 	{
 		QtFileStream resultArcSream(dir.absoluteFilePath(mainArcName), QIODevice::ReadOnly);
-		if (!resultArcSream.opened())
+		if (!resultArcSream.isOpen())
 		{
 			m_errorCode = CheckArchives_UnableToOpenResultArchive;
 			m_errorData = mainArcName;

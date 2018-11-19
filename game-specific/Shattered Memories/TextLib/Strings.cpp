@@ -65,7 +65,7 @@ static QString decodeTag(const ushort*& data)
 MessageSet Strings::importMessages(const QString& filename)
 {
 	QtFileStream stream(filename, QIODevice::ReadOnly);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		return MessageSet();
 	}
@@ -304,7 +304,7 @@ static QString encodeString(const QString& text)
 bool Strings::exportMessages(const MessageSet& messageSet, const QString& filename)
 {
 	QtFileStream stream(filename, QIODevice::WriteOnly);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		DLOG << stream.file().errorString();
 		return false;

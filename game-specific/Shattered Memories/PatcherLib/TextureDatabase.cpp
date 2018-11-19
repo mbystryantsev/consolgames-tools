@@ -14,7 +14,7 @@ ShatteredMemories::TextureDatabase TextureDatabase::fromCSV(const QString& filen
 	TextureDatabase db;
 
 	CsvReader reader(filename);
-	ASSERT(reader.opened());
+	ASSERT(reader.isOpen());
 
 	ASSERT(reader.header().contains("fileHash") || reader.header().contains("fileName"));
 	ASSERT(reader.header().contains("textureName"));

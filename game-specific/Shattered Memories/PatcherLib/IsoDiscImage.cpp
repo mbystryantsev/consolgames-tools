@@ -23,9 +23,9 @@ bool IsoDiscImage::open(const std::wstring& filename, Stream::OpenMode mode)
 	return true;
 }
 
-bool IsoDiscImage::opened() const 
+bool IsoDiscImage::isOpen() const 
 {
-	return m_image.opened();
+	return m_image.isOpen();
 }
 
 void IsoDiscImage::close()

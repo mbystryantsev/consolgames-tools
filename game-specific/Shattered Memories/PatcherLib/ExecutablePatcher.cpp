@@ -354,7 +354,7 @@ bool ExecutablePatcher::loadMessages(const QString& filename)
 	};
 
 	QtFileStream stream(path, QIODevice::ReadOnly);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		DLOG << "Unable to open messages file";
 		return false;

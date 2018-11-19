@@ -13,7 +13,7 @@ namespace Origins
 bool Map::open(const std::wstring& filename)
 {
 	FileStream stream(filename, Stream::modeRead);
-	if (stream.opened())
+	if (stream.isOpen())
 	{
 		return open(&stream);
 	}
@@ -24,7 +24,7 @@ bool Map::open(const std::wstring& filename)
 bool Map::open(const std::string& filename)
 {
 	FileStream stream(filename, Stream::modeRead);
-	if (stream.opened())
+	if (stream.isOpen())
 	{
 		return open(&stream);
 	}
@@ -139,7 +139,7 @@ bool Map::save(const std::string& filename)
 	}
 
 	FileStream mapFile(filename, Stream::modeWrite);
-	if (!mapFile.opened())
+	if (!mapFile.isOpen())
 	{
 		return false;
 	}

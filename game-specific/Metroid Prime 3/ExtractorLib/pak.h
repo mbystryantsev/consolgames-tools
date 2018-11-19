@@ -167,7 +167,7 @@ public:
 		const std::set<ResType>& types = std::set<ResType>(),
 		const std::map<Hash,Hash>& mergeMap = std::map<Hash,Hash>());
 
-	bool opened() const;
+	bool isOpen() const;
 	int fileCount() const;
 	void setProgressHandler(IPakProgressHandler* handler);
 

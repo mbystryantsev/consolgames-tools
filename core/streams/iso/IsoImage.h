@@ -23,7 +23,7 @@ public:
 	virtual bool readSector(unsigned char* buffer, int lba) override;
 
 	bool open(const std::wstring& filename, Stream::OpenMode mode);
-	bool opened() const;
+	bool isOpen() const;
 	void close();
 	largesize_t size() const;
 	bool seekToFile(const char *filename);

@@ -16,9 +16,9 @@ bool WiiDiscImage::open(const std::wstring& filename, Stream::OpenMode mode)
 	return m_image.open(filename, mode);
 }
 
-bool WiiDiscImage::opened() const 
+bool WiiDiscImage::isOpen() const 
 {
-	return m_image.opened();
+	return m_image.isOpen();
 }
 
 void WiiDiscImage::close()

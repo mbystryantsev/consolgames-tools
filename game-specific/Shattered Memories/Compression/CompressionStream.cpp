@@ -21,9 +21,9 @@ largesize_t CompressionStream::read(void*, largesize_t)
 
 largesize_t CompressionStream::write(const void* buf, largesize_t size)
 {
-	ASSERT(opened());
+	ASSERT(isOpen());
 
-	if (!opened() || m_finished)
+	if (!isOpen() || m_finished)
 	{
 		return 0;
 	}
@@ -67,9 +67,9 @@ offset_t CompressionStream::size() const
 	return (m_opened || m_finished) ? m_zStream.total_out : -1;
 }
 
-bool CompressionStream::opened() const 
+bool CompressionStream::isOpen() const 
 {
-	return m_zlibStream->opened();
+	return m_zlibStream->isOpen();
 }
 
 bool CompressionStream::atEnd() const 

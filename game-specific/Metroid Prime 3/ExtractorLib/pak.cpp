@@ -358,7 +358,7 @@ bool PakArchive::open(Stream* pak)
 bool PakArchive::open(const std::wstring& filename)
 {
 	m_fileStream.reset(new FileStream(filename, Stream::modeRead));
-	if (!m_fileStream->opened())
+	if (!m_fileStream->isOpen())
 	{
 		return false;
 	}
@@ -380,7 +380,7 @@ std::string PakArchive::findName(const Hash& hash) const
 
 bool PakArchive::extract(const std::wstring& outDir, const std::set<ResType>& types, bool useNames)
 {
-	if (!opened())
+	if (!isOpen())
 	{
 		return false;
 	}
@@ -417,7 +417,7 @@ bool PakArchive::extract(const std::wstring& outDir, const std::set<ResType>& ty
 			}
 		  
 			FileStream stream(path, Stream::modeWrite);
-			if (!stream.opened())
+			if (!stream.isOpen())
 			{
 				return false;
 			}
@@ -565,7 +565,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 bool PakArchive::rebuild(const std::wstring& destName, const std::vector<std::wstring>& inputDirs, const std::set<ResType>& types, const std::map<Hash,Hash>& mergeMap)
 {
 	FileStream stream(destName, Stream::modeWrite);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		return false;
 	}
@@ -606,7 +606,7 @@ bool PakArchive::stopRequested()
 	return false;
 }
 
-bool PakArchive::opened() const
+bool PakArchive::isOpen() const
 {
 	return (m_stream != NULL);
 }

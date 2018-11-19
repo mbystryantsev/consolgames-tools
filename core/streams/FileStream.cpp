@@ -160,7 +160,7 @@ offset_t FileStream::size() const
 #endif
 }
 
-bool FileStream::opened() const
+bool FileStream::isOpen() const
 {
 #ifdef USE_WINDOWS_FILES
 	return (m_handle != INVALID_HANDLE_VALUE);

@@ -118,7 +118,7 @@ void WiiImageTests::writeFileTest()
 	QVERIFY(file.get() != NULL);
 
 	FileStream testFile("testdata/World_replace.txt", Stream::modeRead);
-	QVERIFY(testFile.opened());
+	QVERIFY(testFile.isOpen());
 	QCOMPARE(testFile.size(), file->size());
 
 	QCOMPARE(file->writeStream(&testFile, testFile.size()), testFile.size());

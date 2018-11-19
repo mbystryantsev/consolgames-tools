@@ -19,7 +19,7 @@ public:
 	virtual offset_t position() const override;
 	virtual void flush() override;
 	virtual largesize_t size() const override;
-	virtual bool opened() const override;
+	virtual bool isOpen() const override;
 	virtual bool atEnd() const override;
 
 	QFile& file();

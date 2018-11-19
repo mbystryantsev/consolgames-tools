@@ -151,7 +151,7 @@ shared_ptr<Stream> PatcherTexturesFileSource::TextureDataSource::getAt(int index
 	
 	shared_ptr<Stream> stream = m_cachedFile;
 
-	ASSERT(stream->opened());
+	ASSERT(stream->isOpen());
 
 	const int platformSignature = stream->readUInt32();
 	const int formatId = stream->readUInt32();

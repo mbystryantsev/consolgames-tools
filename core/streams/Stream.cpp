@@ -145,7 +145,7 @@ void Stream::writeInt(int value)
 	writeUInt32(static_cast<uint32>(value));
 }
 
-bool Stream::opened() const
+bool Stream::isOpen() const
 {
 	return true;
 }

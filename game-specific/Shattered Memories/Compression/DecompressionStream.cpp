@@ -16,9 +16,9 @@ DecompressionStream::DecompressionStream(Consolgames::Stream* zlibStream, larges
 
 largesize_t DecompressionStream::read(void* buf, largesize_t size)
 {
-	ASSERT(opened());
+	ASSERT(isOpen());
 
-	if (!opened() || m_finished)
+	if (!isOpen() || m_finished)
 	{
 		return 0;
 	}
@@ -73,9 +73,9 @@ offset_t DecompressionStream::size() const
 	return m_size;
 }
 
-bool DecompressionStream::opened() const 
+bool DecompressionStream::isOpen() const 
 {
-	return m_zlibStream->opened();
+	return m_zlibStream->isOpen();
 }
 
 bool DecompressionStream::atEnd() const 

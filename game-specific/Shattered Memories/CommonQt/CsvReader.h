@@ -10,7 +10,7 @@ class CsvReader
 {
 public:
 	CsvReader(const QString& filename);
-	bool opened();
+	bool isOpen();
 	QMap<QString, QString> readLine();
 	const QStringList& header() const;
 

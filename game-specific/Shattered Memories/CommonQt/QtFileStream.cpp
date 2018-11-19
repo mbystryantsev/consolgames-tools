@@ -52,7 +52,7 @@ offset_t QtFileStream::size() const
 	return m_file.size();
 }
 
-bool QtFileStream::opened() const 
+bool QtFileStream::isOpen() const 
 {
 	return m_file.isOpen();
 }

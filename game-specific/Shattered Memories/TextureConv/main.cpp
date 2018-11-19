@@ -476,7 +476,7 @@ static bool decodeTexture(Stream& stream, const string& destPath, bool decodeMip
 static bool decodeTexture(const string& inputPath, const string& destPath, bool decodeMipmap)
 {
 	FileStream stream(inputPath, Stream::modeRead);
-	if (!stream.opened())
+	if (!stream.isOpen())
 	{
 		cout << "Unable to open file!" << endl;
 		return false;
@@ -560,7 +560,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 	}
 
 	FileStream file(destFile, Stream::modeWrite);
-	if (!file.opened())
+	if (!file.isOpen())
 	{
 		cout << "Error saving file!" << endl;
 		return false;
@@ -780,7 +780,7 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 			textureStream.reset(new FileStream(filename, Stream::modeRead));
 		}
 
-		if (!textureStream->opened())
+		if (!textureStream->isOpen())
 		{
 			std::cout << "Unable to open file: " << fileName << std::endl;
 			return false;

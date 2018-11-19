@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 			   
 		std::shared_ptr<QtFileStream> fontStream(new QtFileStream(fontFile, QIODevice::ReadOnly));
 		
-		if (!fontStream->opened())
+		if (!fontStream->isOpen())
 		{
 			std::cerr << "Unable to open font file!" << std::endl;
 			return -1;
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 
 		std::shared_ptr<QtFileStream> inStream(new QtFileStream(inFile, QIODevice::ReadOnly));
 
-		if (!inStream->opened())
+		if (!inStream->isOpen())
 		{
 			std::cerr << "Unable to open input FontEUR stream!";
 			return -1;
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 
 		QtFileStream outStream(outFile, QIODevice::WriteOnly);
 
-		if (!outStream.opened())
+		if (!outStream.isOpen())
 		{
 			std::cerr << "Unable to open output FontEUR file!" << std::endl;
 			return -1;

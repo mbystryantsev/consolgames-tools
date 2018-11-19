@@ -56,7 +56,7 @@ void WiiImage::setProgressHandler(IProgressHandler* handler)
 bool WiiImage::open(const std::wstring& filename, Stream::OpenMode mode)
 {
 	m_stream.reset(new FileStream(filename, mode));
-	if (!m_stream->opened())
+	if (!m_stream->isOpen())
 	{
 		return false;
 	}
@@ -71,9 +71,9 @@ bool WiiImage::open(const std::wstring& filename, Stream::OpenMode mode)
 	return parseImage();
 }
 
-bool WiiImage::opened() const
+bool WiiImage::isOpen() const
 {
-	return m_stream->opened();
+	return m_stream->isOpen();
 }
 
 bool WiiImage::readHeader()
@@ -538,9 +538,9 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 	uint8 bootBin[0x440];
 
 	FileStream inStream(filename.data(), Stream::modeRead);
-	ASSERT(inStream.opened());
+	ASSERT(inStream.isOpen());
 
-	if (!inStream.opened())
+	if (!inStream.isOpen())
 	{
 		return false;
 	}

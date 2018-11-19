@@ -333,7 +333,7 @@ largesize_t WiiFileStream::size() const
 	return m_fileSize;
 }
 
-bool WiiFileStream::opened() const
+bool WiiFileStream::isOpen() const
 {
 	return m_stream != NULL;
 }

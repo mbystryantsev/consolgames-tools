@@ -9,7 +9,7 @@ using namespace Consolgames;
 bool TextureDictionaryParser::open(const std::wstring& filename)
 {
 	m_streamHolder.reset(new FileStream(filename, Stream::modeRead));
-	if (!m_streamHolder->opened())
+	if (!m_streamHolder->isOpen())
 	{
 		return false;
 	}

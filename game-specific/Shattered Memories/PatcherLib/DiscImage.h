@@ -31,7 +31,7 @@ public:
 	virtual ~DiscImage(){}
 
 	virtual bool open(const std::wstring& filename, Consolgames::Stream::OpenMode mode) = 0;
-	virtual bool opened() const = 0;
+	virtual bool isOpen() const = 0;
 	virtual void close() = 0;
 	virtual Consolgames::Stream* openFile(const std::string& filename, Consolgames::Stream::OpenMode mode) = 0;
 	virtual bool writeData(offset_t offset, Consolgames::Stream* stream, largesize_t size) = 0;

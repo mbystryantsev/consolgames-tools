@@ -19,7 +19,7 @@ bool IsoImage::open(const std::wstring& filename, Stream::OpenMode mode)
 {
 	m_streamHolder.reset(new FileStream(filename, mode));
 	m_stream = m_streamHolder.get();
-	if (!m_stream->opened())
+	if (!m_stream->isOpen())
 	{
 		close();
 		return false;
@@ -29,9 +29,9 @@ bool IsoImage::open(const std::wstring& filename, Stream::OpenMode mode)
 	return true;
 }
 
-bool IsoImage::opened() const
+bool IsoImage::isOpen() const
 {
-	return (m_stream != NULL && m_stream->opened());
+	return (m_stream != NULL && m_stream->isOpen());
 }
 
 void IsoImage::close()

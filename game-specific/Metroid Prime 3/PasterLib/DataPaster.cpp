@@ -95,7 +95,7 @@ bool DataPaster::rebuildPaks(const QStringList& pakArchives, const std::vector<s
 		QtPakArchive pak;
 		pak.setProgressHandler(m_pakProgressHandler);
 		pak.open(file.get());
-		if (!pak.opened())
+		if (!pak.isOpen())
 		{
 			DLOG << "Unable to parse pak: " << pakName;
 			m_errorCode = RebuildPaks_UnableToParsePak;
@@ -131,7 +131,7 @@ bool DataPaster::patchMainDol(const QString& inputDir, const QString& outDir)
 
 	{
 		QtFileStream outFile(outDir + "/main.dol", QIODevice::WriteOnly);
-		if (!outFile.opened())
+		if (!outFile.isOpen())
 		{
 			DLOG << "Unable to open temp file: main.dol";
 			m_errorCode = PatchMainDol_UnableToOpenTempFile;
@@ -179,7 +179,7 @@ bool DataPaster::patchMainDol(const QString& inputDir, const QString& outDir)
 	}
 
 	QtFileStream dolFile(outDir + "/main.dol", QIODevice::ReadOnly);
-	if (!dolFile.opened())
+	if (!dolFile.isOpen())
 	{
 		DLOG << "Unable to open temp file: main.dol";
 		m_errorCode = PatchMainDol_UnableToOpenTempFile;
@@ -225,7 +225,7 @@ bool DataPaster::replacePaks(const QStringList& pakArchives, const QString& inpu
 		}
 
 		FileStream inputFile(filename.toStdWString(), Stream::modeRead);	
-		if (!inputFile.opened())
+		if (!inputFile.isOpen())
 		{
 			DLOG << "Unable to open input pak: " << pakName;
 			m_errorCode = ReplacePaks_UnableToOpenInputPak;
@@ -337,7 +337,7 @@ bool DataPaster::checkData(const QStringList& pakArchives, const QStringList& in
 				}
 
 				QtFileStream file(resultName, QIODevice::ReadOnly);
-				if (!file.opened())
+				if (!file.isOpen())
 				{
 					DLOG << "Unable to open file!";
 					m_errorCode = CheckData_UnableToOpenFile;
@@ -410,7 +410,7 @@ bool DataPaster::checkPaks(const QStringList& pakArchives, const QString& paksDi
 		}
 
 		QtFileStream resultPakFile(paksDir + QDir::separator() + pakName, QIODevice::ReadOnly);
-		if (!resultPakFile.opened())
+		if (!resultPakFile.isOpen())
 		{
 			DLOG << "CheckData: Opening result pak failed: " << pakName;
 			m_errorCode = CheckPaks_UnableToOpenResultPak;

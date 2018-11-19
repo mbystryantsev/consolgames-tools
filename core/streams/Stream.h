@@ -53,7 +53,7 @@ public:
 	virtual offset_t position() const = 0;
 	virtual void flush() = 0;
 	virtual largesize_t size() const = 0;
-	virtual bool opened() const;
+	virtual bool isOpen() const;
 	virtual bool atEnd() const = 0;
 
 	virtual largesize_t readStream(Stream *stream, largesize_t size);

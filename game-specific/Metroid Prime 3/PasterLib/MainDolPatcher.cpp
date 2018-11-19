@@ -41,11 +41,11 @@ static const quint32 s_ptrDiff = 0x80003F20;
 bool MainDolPatcher::open(const QString& filename)
 {
 	m_fileStream.reset(new QtFileStream(filename, QIODevice::ReadWrite));
-	if (m_fileStream->opened())
+	if (m_fileStream->isOpen())
 	{
 		m_fileStream->setByteOrder(Stream::orderBigEndian);
 	}
-	return m_fileStream->opened();
+	return m_fileStream->isOpen();
 }
 
 static QStringList loadMessages(const QString& filename)
@@ -124,7 +124,7 @@ bool MainDolPatcher::patchStrings(const QString& messagesFilename)
 bool MainDolPatcher::patchCompressedItem(const QString& filename, quint32 offset, quint32 size, quint32 originalSize)
 {
 	QtFileStream file(filename, QIODevice::ReadOnly);
-	if (!file.opened())
+	if (!file.isOpen())
 	{
 		return false;
 	}

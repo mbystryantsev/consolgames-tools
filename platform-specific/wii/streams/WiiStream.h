@@ -65,7 +65,7 @@ public:
 	virtual offset_t tell() const override;
 	virtual void flush() override;
 	virtual largesize_t size() const override;
-	virtual bool opened() const override;
+	virtual bool isOpen() const override;
 
 	ImageFileStream* findFile(const char* filename);
 

@@ -46,7 +46,7 @@ static std::unique_ptr<TextureDictionaryParser> makeTextureParserForPlatform(Pla
 
 bool parseDictionary(Stream& stream, const QString& name, QTextStream& csv, Platform platform = Wii)
 {
-	ASSERT(stream.opened());
+	ASSERT(stream.isOpen());
 	std::unique_ptr<TextureDictionaryParser> dictParser = makeTextureParserForPlatform(platform);
 	ASSERT(dictParser.get() != NULL);
 
@@ -79,7 +79,7 @@ bool parseStream(Stream& stream, const QString& name, QTextStream& csv, Platform
 {
 	DataStreamParser parser(platform == Wii ? Stream::orderBigEndian : Stream::orderLittleEndian);
 
-	ASSERT(stream.opened());
+	ASSERT(stream.isOpen());
 	parser.open(&stream);
 
 	bool atLeastOneParsed = false;
@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
 
 		QtFileStream stream(dir.absoluteFilePath(file), QIODevice::ReadOnly);
 		//QtFileStream stream(dir.absoluteFilePath("01CCE413.BIN"), QIODevice::ReadOnly);
-		ASSERT(stream.opened());
+		ASSERT(stream.isOpen());
 
 // 		if (stream.readUInt32() == 0xE0FFD8FF)
 // 		{
