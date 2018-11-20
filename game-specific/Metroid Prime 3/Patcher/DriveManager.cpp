@@ -1,5 +1,6 @@
 #include "DriveManager.h"
 #include <QDir>
+#include <Windows.h>
 
 QList<QChar> DriveManager::usbDriveList()
 {

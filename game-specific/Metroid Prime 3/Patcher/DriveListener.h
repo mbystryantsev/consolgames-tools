@@ -1,6 +1,7 @@
 #pragma once
 #include <QUuid>
 #include <QWidget>
+#include <windows.h>
 
 class DriveListener : public QWidget
 {

@@ -2,6 +2,7 @@
 #include "PatchWizard.h"
 #include <QAbstractButton>
 #include <QMessageBox>
+#include <Windows.h>
 
 QHash<QString,QString> ProgressPage::s_locInfo;
 

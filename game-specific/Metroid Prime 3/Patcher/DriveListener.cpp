@@ -1,5 +1,6 @@
 #include "DriveListener.h"
 #include <dbt.h>
+#include <windows.h>
 
 DriveListener::DriveListener(QWidget* parent)
 	: QWidget(parent)
@@ -17,7 +18,7 @@ void DriveListener::registerDeviceNotification()
 	notificationFilter.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
 	notificationFilter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
 	notificationFilter.dbcc_classguid  = m_uid;
-	m_handle = RegisterDeviceNotification(winId(), &notificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE);
+	m_handle = RegisterDeviceNotification(reinterpret_cast<HANDLE>(winId()), &notificationFilter, DEVICE_NOTIFY_WINDOW_HANDLE);
 	ASSERT(m_handle != NULL);
 }
 
@@ -42,7 +43,7 @@ bool DriveListener::winEvent(MSG* message, long* result)
 					{
 						if (volume->dbcv_unitmask & (1 << i))
 						{
-							const QChar letter = QChar::fromAscii('A' + i);
+							const QChar letter = QChar::fromLatin1('A' + i);
 							letterList << letter;
 							DLOG << "Drive state changed: " << letter;
 						}

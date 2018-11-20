@@ -1,6 +1,6 @@
 include(../Corruption.pri)
 
-QT += core gui
+QT += core gui widgets
 CONFIG -= flat
 isEmpty(NO_PRECOMPILED_HEADER){
 	CONFIG += precompile_header
@@ -23,6 +23,9 @@ RESOURCES = \
 	resources/Patcher.qrc \
 	patchdata.qrc \
 
+# TODO: Use separate directories for intermediate files
+SOURCES -= pch.h.cpp
+	
 RC_FILE = Patcher.rc
  
 TEMPLATE = app
