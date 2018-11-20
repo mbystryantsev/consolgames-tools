@@ -1,6 +1,5 @@
 QT -= gui
-QT += core
-CONFIG += qtestlib
+QT += core testlib
 TEMPLATE = app
 
 SOURCES = *.cpp

@@ -2,6 +2,7 @@
 #include <MetroidFont.h>
 #include <QImage>
 #include <QWheelEvent>
+#include <gl/GL.h>
 
 ScriptViewWidget::ScriptViewWidget(QWidget* parent) : QGLWidget(parent), m_renderer(this)
 {

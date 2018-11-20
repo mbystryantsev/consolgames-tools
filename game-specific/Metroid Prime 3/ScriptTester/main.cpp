@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QByteArray>
 #include <QPair>
+#include <QDataStream>
 #include <iostream>
 
 void printUsage()

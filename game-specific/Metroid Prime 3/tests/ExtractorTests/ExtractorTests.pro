@@ -1,7 +1,6 @@
 QT -= gui
-QT += core
+QT += core testlib
 TEMPLATE = app
-CONFIG += qtestlib
 
 SOURCES = *.cpp
 HEADERS = *.h

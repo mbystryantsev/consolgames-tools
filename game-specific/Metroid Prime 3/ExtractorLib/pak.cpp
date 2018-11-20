@@ -137,7 +137,7 @@ uint32 PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkM
 	std::vector<uint8> compressionBuffer(MAX_LZO_SIZE(cChunk));
 	while (size > 0)
 	{
-		int chunk = min(cChunk, size);
+		int chunk = std::min(cChunk, size);
 		lzo_uint lzoChunk = 0;
 		uint16 lzoChunkStored = 0;
 		size -= chunk;

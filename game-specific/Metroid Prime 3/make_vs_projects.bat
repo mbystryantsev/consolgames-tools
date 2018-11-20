@@ -1,2 +1,2 @@
 @echo off
-qmake.exe -spec win32-msvc2008 -r -tp vc Corruption.pro
+qmake.exe -spec win32-msvc -r -tp vc Corruption.pro

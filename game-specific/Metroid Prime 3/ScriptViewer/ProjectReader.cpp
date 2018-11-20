@@ -61,7 +61,7 @@ void ProjectReader::initVariables()
 	m_variables.clear();
 	m_scripts.clear();
 
-	m_variables["PWD"] << QFileInfo(m_file.fileName()).absolutePath().toAscii();
+	m_variables["PWD"] << QFileInfo(m_file.fileName()).absolutePath().toLatin1();
 }
 
 void ProjectReader::setVariable(const QByteArray& context, const QByteArray& name, const ValueList& values)

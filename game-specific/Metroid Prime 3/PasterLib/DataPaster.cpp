@@ -445,7 +445,7 @@ static int s2c(int size)
 
 bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Stream* stream2, bool ignoreSize) const
 {
-	largesize_t size = min(stream1->size(), stream2->size());
+	largesize_t size = std::min(stream1->size(), stream2->size());
 	ProgressHandlerHolder holder(m_pakProgressHandler, s2c(size));
 
 	if (!ignoreSize && stream1->size() != stream2->size())
@@ -470,7 +470,7 @@ bool DataPaster::compareStreams(Consolgames::Stream* stream1, Consolgames::Strea
 			return false;
 		}
 
-		const largesize_t toRead = min(chunk, size);
+		const largesize_t toRead = std::min<largesize_t>(chunk, size);
 		size -= chunk;
 
 		const largesize_t readed1 = stream1->read(&data1[0], toRead);

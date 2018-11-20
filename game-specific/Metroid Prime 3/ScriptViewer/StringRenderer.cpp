@@ -2,6 +2,7 @@
 #include <core.h>
 #include <ValueHolder.h>
 #include <qgl.h>
+#include <gl/GL.h>
 
 QHash<QString,StringRenderer::TagType> StringRenderer::s_tagsInfo;
 

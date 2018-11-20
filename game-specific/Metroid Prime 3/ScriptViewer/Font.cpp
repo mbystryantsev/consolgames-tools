@@ -1,5 +1,6 @@
 #include "Font.h"
 #include <QImage>
+#include <gl/GL.h>
 
 using namespace Consolgames;
 
