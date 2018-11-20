@@ -1,5 +1,5 @@
-#include <Color.h>
 #include "MapCommon.h"
+#include <Color.h>
 #include <pnglite.h>
 #include <Image.h>
 
