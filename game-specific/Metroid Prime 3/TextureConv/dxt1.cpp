@@ -1,13 +1,13 @@
 #include "dxt1.h"
+#include <memory>
+#include <iostream>
+#include <fstream>
 #include <BlockDXT.h>
 #include <ColorBlock.h>
 #include <Filter.h>
 #include <Image.h>
 #include <FloatImage.h>
 #include <QuickCompressDXT.h>
-#include <memory>
-#include <iostream>
-#include <fstream>
 
 template <typename T, typename DT>
 static inline void copy(const T src, DT dest, int count)
@@ -195,6 +195,7 @@ int DXTCodec::encodeDXT1(void* src, void* dest, int width, int height, int mipma
     int size = 0;
 
 	image->allocate(width, height);
+	memcpy(image->pixels(), src, width * height * sizeof(nv::Color32));
 
     while (mipmaps > 0)
     {

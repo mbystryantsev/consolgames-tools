@@ -18,6 +18,9 @@ SUBDIRS = \
 	externals/WiiStreams \
 	externals/pnglite \
 	externals/zlib \
+	externals/libpng \
+	externals/libjpeg \
+	externals/libimagequant \
 	externals/nvtt \
 	tests/ScriptTesterTests \
 	tests/ExtractorTests \

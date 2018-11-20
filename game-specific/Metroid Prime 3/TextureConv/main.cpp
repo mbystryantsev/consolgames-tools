@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 namespace
 {
@@ -69,8 +70,8 @@ int calcEncodedSize(int w, int h, int m)
 		m--;
 		w /= 2;
 		h /= 2;
-		w = max(w, 32);
-		h = max(h, 32);
+		w = std::max(w, 32);
+		h = std::max(h, 32);
 	}
 	return s;
 }

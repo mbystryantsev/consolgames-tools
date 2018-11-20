@@ -24,6 +24,9 @@ INCLUDEPATH += \
 	$$PWD/../../core/classes \
 	$$EXTERNALS/zlib \
 	$$EXTERNALS/pnglite \
+	$$EXTERNALS/libpng \
+	$$EXTERNALS/libjpeg \
+	$$EXTERNALS/libimagequant \
 	$$EXTERNALS/nvidia-texture-tools/project/vc9 \
 	$$EXTERNALS/nvidia-texture-tools/src \
 	$$EXTERNALS/nvidia-texture-tools/src/nvcore \
@@ -41,5 +44,9 @@ QMAKE_LIBDIR += \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
+	$$PWD/externals/libpng/$$CONFIG_NAME \
+	$$PWD/externals/libjpeg/$$CONFIG_NAME \
+	$$PWD/externals/libimagequant/$$CONFIG_NAME \
 	$$PWD/externals/nvtt/$$CONFIG_NAME \
+	$$PWD/../../libs \
 	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \

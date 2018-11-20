@@ -1,5 +1,6 @@
 QT -= core gui
-CONFIG += static flat
+CONFIG += static
+CONFIG -= flat
 TEMPLATE = lib
 DEFINES += _SCL_SECURE_NO_WARNINGS
 
@@ -102,8 +103,10 @@ INCLUDEPATH += \
 	$$NVTTDIR/nvmath \
 	$$NVTTDIR/nvtt \
 	$$NVTTDIR/nvtt/squish \
+	$$NVTTDIR_BASE/extern/poshlib \
 
-QMAKE_CXXFLAGS += /wd4100 /wd4189
+QMAKE_CXXFLAGS_WARN_ON -= -w34100
+QMAKE_CXXFLAGS += /wd4100 /wd4189 /wd4244 
 QMAKE_LFFLAGS += /wd4221
 
 QMAKE_LIBDIR += \
