@@ -25,4 +25,6 @@ SUBDIRS = \
 	externals/zlib \
 	externals/nvtt \
 	externals/libjpeg \
+	externals/libpng \
+	externals/libimagequant \
 	tests/PatcherLibTests \

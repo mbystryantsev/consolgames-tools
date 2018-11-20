@@ -44,8 +44,10 @@ INCLUDEPATH += \
 	$$EXTERNALS/pnglite \
 	$$EXTERNALS/zlib \
 	$$PWD/externals/libjpeg \
+	$$PWD/externals/libpng \
 	$$EXTERNALS/libjpeg \
-	$$EXTERNALS/imagequant \
+	$$EXTERNALS/libpng \
+	$$EXTERNALS/libimagequant \
 
 QMAKE_LIBDIR += \
 	$$PWD/Common/$$CONFIG_NAME \
@@ -60,6 +62,8 @@ QMAKE_LIBDIR += \
 	$$PWD/externals/WiiStreams/$$CONFIG_NAME \
 	$$PWD/externals/nvtt/$$CONFIG_NAME \
 	$$PWD/externals/libjpeg/$$CONFIG_NAME \
+	$$PWD/externals/libpng/$$CONFIG_NAME \
+	$$PWD/externals/libimagequant/$$CONFIG_NAME \
 	$$PWD/../../libs \
 	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \
 

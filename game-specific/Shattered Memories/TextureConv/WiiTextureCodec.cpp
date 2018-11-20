@@ -1,11 +1,11 @@
+#include <vector>
+#include <algorithm>
 #include <Color.h>
 #include "WiiTextureCodec.h"
 #include "WiiSwizzling.h"
 #include "dxt1.h"
 #include "Quantize.h"
 #include <WiiFormats.h>
-#include <vector>
-#include <algorithm>
 
 using namespace ShatteredMemories;
 using namespace Consolgames;

@@ -1,3 +1,7 @@
+#include <memory>
+#include <iostream>
+#include <fstream>
+
 #include "dxt1.h"
 #include <BlockDXT.h>
 #include <ColorBlock.h>
@@ -9,10 +13,6 @@
 #include <squish/colourset.h>
 #include <squish/fastclusterfit.h>
 #include <squish/weightedclusterfit.h>
-
-#include <memory>
-#include <iostream>
-#include <fstream>
 
 const int DXTCodec::s_minMipmapSide = 8;
 

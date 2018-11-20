@@ -1,3 +1,8 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <set>
+
 #include <Image.h>
 #include <FloatImage.h>
 #include <Filter.h>
@@ -10,10 +15,6 @@
 #include <core.h>
 #include <pnglite.h>
 #include <jpeglib.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <set>
 
 static const int s_pngInitCode = png_init(0, 0);
 static const int c_defaultJpegQuality = 86;
