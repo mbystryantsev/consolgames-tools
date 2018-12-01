@@ -10,20 +10,20 @@ struct FillInfo
 {
 	int rows[c_tilesPerLine];
 	int cols[c_tilesPerLine];
-	uint64 canvasRows[c_tilesPerLine][c_tilesCanvasWidthHeight];
-	uint64 canvasCols[c_tilesPerLine][c_tilesCanvasWidthHeight];
+	uint64_t canvasRows[c_tilesPerLine][c_tilesCanvasWidthHeight];
+	uint64_t canvasCols[c_tilesPerLine][c_tilesCanvasWidthHeight];
 };
 
-inline static uint32 tileIndex(int x, int y)
+inline static uint32_t tileIndex(int x, int y)
 {
 	return y * c_tilesCanvasWidthHeight + x;
 }
 
-inline static uint64 tileValueHorizontal(uint8* canvas, int x, int y, int line)
+inline static uint64_t tileValueHorizontal(uint8_t* canvas, int x, int y, int line)
 {
-	uint64 result = 0;
+	uint64_t result = 0;
 
-	const uint8* p = canvas + (y + line) * c_tilesCanvasWidthHeight + x;
+	const uint8_t* p = canvas + (y + line) * c_tilesCanvasWidthHeight + x;
 	for (int i = 0; i < c_tileWidthHeight; i++)
 	{
 		result <<= 4;
@@ -33,11 +33,11 @@ inline static uint64 tileValueHorizontal(uint8* canvas, int x, int y, int line)
 	return result;
 }
 
-inline static uint64 tileValueVertical(uint8* canvas, int x, int y, int col)
+inline static uint64_t tileValueVertical(uint8_t* canvas, int x, int y, int col)
 {
-	uint64 result = 0;
+	uint64_t result = 0;
 
-	const uint8* p = canvas + y * c_tilesCanvasWidthHeight + x + col;
+	const uint8_t* p = canvas + y * c_tilesCanvasWidthHeight + x + col;
 	for (int i = 0; i < c_tileWidthHeight; i++)
 	{
 		result <<= 4;
@@ -48,7 +48,7 @@ inline static uint64 tileValueVertical(uint8* canvas, int x, int y, int col)
 	return result;
 }
 
-static void calcPrefix(const uint8* pattern, int patternSize, char* prefix)
+static void calcPrefix(const uint8_t* pattern, int patternSize, char* prefix)
 {
 	prefix[0] = 0;
 	int k = 0;
@@ -66,22 +66,22 @@ static void calcPrefix(const uint8* pattern, int patternSize, char* prefix)
 	}
 }
 
-static void copyRect(const uint8* image, int width, int, int tileX, int tileY, uint8* canvas, int canvasX, int canvasY)
+static void copyRect(const uint8_t* image, int width, int, int tileX, int tileY, uint8_t* canvas, int canvasX, int canvasY)
 {
 	for (int y = 0; y < c_tileWidthHeight; y++)
 	{
-		uint8* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
-		const uint8* imagePixels = image + (tileY + y) * width + tileX;
+		uint8_t* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
+		const uint8_t* imagePixels = image + (tileY + y) * width + tileX;
 		std::copy(imagePixels, imagePixels + c_tileWidthHeight, canvasPixels);
 	}
 }
 
-static bool compareTile(int compareWidth, int compareHeight, uint8* canvas, int canvasX, int canvasY, const uint8* image, int width, int, int tileX, int tileY)
+static bool compareTile(int compareWidth, int compareHeight, uint8_t* canvas, int canvasX, int canvasY, const uint8_t* image, int width, int, int tileX, int tileY)
 {
 	for (int y = 0; y < compareHeight; y++)
 	{
-		const uint8* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
-		const uint8* imagePixels = image + (tileY + y) * width + tileX;
+		const uint8_t* canvasPixels = canvas + (canvasY + y) * c_tilesCanvasWidthHeight + canvasX;
+		const uint8_t* imagePixels = image + (tileY + y) * width + tileX;
 		if (!std::equal(canvasPixels, canvasPixels + compareWidth, imagePixels))
 		{
 			return false;
@@ -111,7 +111,7 @@ struct TilePlaceInfo
 	int weight;
 };
 
-static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, uint8* image, int width, int height, int tileX, int tileY)
+static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8_t* canvas, uint8_t* image, int width, int height, int tileX, int tileY)
 {
 	TilePlaceInfo result;
 
@@ -165,12 +165,12 @@ static TilePlaceInfo findBestTilePlace(const FillInfo& fillInfo, uint8* canvas, 
 
 struct TileInfo
 {
-	uint32* index;
+	uint32_t* index;
 	int x;
 	int y;
 };
 
-static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillInfo, uint8* canvas, uint8* image, int width, int height)
+static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillInfo, uint8_t* canvas, uint8_t* image, int width, int height)
 {
 	TilePlaceInfo bestPlace;
 	int bestTileIndex = -1;
@@ -212,11 +212,11 @@ static bool placeBestSuitableTile(std::vector<TileInfo>& tiles, FillInfo& fillIn
 	return false;
 }
 
-static bool isEmptyTile(uint8* image, int width, int, int tileX, int tileY)
+static bool isEmptyTile(uint8_t* image, int width, int, int tileX, int tileY)
 {
 	for (int y = 0; y < c_tileWidthHeight; y++)
 	{
-		const uint8* imagePixels = image + (tileY + y) * width + tileX;
+		const uint8_t* imagePixels = image + (tileY + y) * width + tileX;
 		for (int x = 0; x < c_tileWidthHeight; x++)
 		{
 			if (*imagePixels++ != 0)
@@ -229,13 +229,13 @@ static bool isEmptyTile(uint8* image, int width, int, int tileX, int tileY)
 	return true;
 }
 
-bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int width, int height, uint8* canvas, uint32* palette, uint32* indices)
+bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int width, int height, uint8_t* canvas, uint32_t* palette, uint32_t* indices)
 {
 	const int tileCount = (width * height) / (c_tileWidthHeight * c_tileWidthHeight);
 
 	std::fill_n(indices, tileCount, c_nullTileIndex);
 
-	std::vector<uint8> indexedImage(width * height);
+	std::vector<uint8_t> indexedImage(width * height);
 	
 	if (!quantize(pixels, width, height, &indexedImage[0], palette, true))
 	{
@@ -245,7 +245,7 @@ bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int w
 	std::vector<TileInfo> tiles;
 	tiles.reserve(tileCount);
 
-	uint32* tileIndex = indices;
+	uint32_t* tileIndex = indices;
 	for (int y = 0; y < height; y += c_tileWidthHeight)
 	{
 		for (int x = 0; x < width; x += c_tileWidthHeight)
@@ -276,9 +276,9 @@ bool RowColMapEncoder::encodeLayer(FillInfo& fillInfo, const void* pixels, int w
 	return true;
 }
 
-bool RowColMapEncoder::encodeLayers(void* tilesCanvas, const void* layer1Pixels, const void* layer0Pixels, uint32* layer1Palette, uint32* layer0Palette, uint32* layer1Indices, uint32* layer0Indices)
+bool RowColMapEncoder::encodeLayers(void* tilesCanvas, const void* layer1Pixels, const void* layer0Pixels, uint32_t* layer1Palette, uint32_t* layer0Palette, uint32_t* layer1Indices, uint32_t* layer0Indices)
 {
-	std::vector<uint8> canvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);
+	std::vector<uint8_t> canvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);
 
 	FillInfo fillInfo;
 	std::fill_n(fillInfo.cols, 32, 0);
@@ -291,7 +291,7 @@ bool RowColMapEncoder::encodeLayers(void* tilesCanvas, const void* layer1Pixels,
 		return false;
 	}
 
-	std::vector<uint8> canvas4bpp(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
+	std::vector<uint8_t> canvas4bpp(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
 	indexed8ToIndexed4(&canvas[0], &canvas4bpp[0], c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);		
 	swizzle4(&canvas4bpp[0], tilesCanvas, c_tilesCanvasWidthHeight, c_tilesCanvasWidthHeight);
 

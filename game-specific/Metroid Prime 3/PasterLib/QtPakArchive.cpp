@@ -20,7 +20,7 @@ std::wstring QtPakArchive::findFile(const std::vector<std::wstring>& inputDirs, 
 	return std::wstring();
 }
 
-uint32 QtPakArchive::storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8 flags)
+uint32_t QtPakArchive::storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8_t flags)
 {
 	QtFileStream inputStream(QString::fromStdWString(filename));
 	return PakArchive::storeFile(&inputStream, stream, isPacked, isTexture, flags);

@@ -19,11 +19,11 @@ bool TextureDictionaryParserPSP::fetch()
 {
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 
-	const uint32 pos = m_stream->position(); 
+	const uint32_t pos = m_stream->position(); 
 
 	m_stream->skip(0x10);
 
-	const uint32 size = m_stream->readUInt32();
+	const uint32_t size = m_stream->readUInt32();
 
 	if (size == 0)
 	{
@@ -36,8 +36,8 @@ bool TextureDictionaryParserPSP::fetch()
 	m_currentMetaInfo.height = m_stream->readUInt16();
 	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt8();
 	m_currentMetaInfo.mipmapCount = m_stream->readUInt8();
-	const uint8 textureFormat = m_stream->readUInt8();
-	const uint8 paletteFormat = m_stream->readUInt8();
+	const uint8_t textureFormat = m_stream->readUInt8();
+	const uint8_t paletteFormat = m_stream->readUInt8();
 
 	if (m_currentMetaInfo.mipmapCount != 1)
 	{
@@ -101,7 +101,7 @@ bool TextureDictionaryParserPSP::fetch()
 	}
 	else
 	{
-		const uint32 expectedRasterSize = size - paletteSize - 0xC4;
+		const uint32_t expectedRasterSize = size - paletteSize - 0xC4;
 		if (m_currentMetaInfo.rasterSize != expectedRasterSize)
 		{
 			DLOG << "WARNING: Unexpected raster size!";
@@ -140,8 +140,8 @@ bool TextureDictionaryParserPSP::initSegment()
 	}
 	m_streamSize = m_stream->readUInt32();
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
+	const uint32_t unk1 = m_stream->readUInt32();
+	const uint32_t unk2 = m_stream->readUInt32();
 
 	return true;
 }

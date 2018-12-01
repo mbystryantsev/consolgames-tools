@@ -16,9 +16,9 @@ LOG_CATEGORY("ShatteredMemories.Archive");
 namespace ShatteredMemories
 {
 
-const uint32 Archive::s_defaultAlignment = 0x800;
+const uint32_t Archive::s_defaultAlignment = 0x800;
 
-uint32 Archive::FileRecord::originalSize() const
+uint32_t Archive::FileRecord::originalSize() const
 {
 	return (decompressedSize == 0 ? storedSize : decompressedSize);
 }
@@ -107,7 +107,7 @@ bool Archive::open()
 	{
 		if (m_originsMode)
 		{
-			const uint32 nameOffset = m_stream->readUInt();
+			const uint32_t nameOffset = m_stream->readUInt();
 
 			ASSERT(nameOffset < namesBuf.size());
 			const char* name = &namesBuf[nameOffset];
@@ -142,12 +142,12 @@ bool Archive::open()
 	return true;
 }
 
-bool Archive::extractFiles(const std::string& outDir, const std::set<uint32>& fileList)
+bool Archive::extractFiles(const std::string& outDir, const std::set<uint32_t>& fileList)
 {
 	return extractFiles(strToWStr(outDir), fileList);	
 }
 
-bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32>& fileList)
+bool Archive::extractFiles(const std::wstring& outDir, const std::set<uint32_t>& fileList)
 {
 	ProgressGuard guard(*this, fileList.empty() ? m_fileRecords.size() : fileList.size());
 
@@ -248,7 +248,7 @@ void Archive::setNames(const std::list<std::string>& names)
 	}
 }
 
-uint32 Archive::alignSize(uint32 size) const
+uint32_t Archive::alignSize(uint32_t size) const
 {
 	size += m_alignment - 1;
 	return size - (size % m_alignment);
@@ -270,11 +270,11 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	const int recordSize = 16;
 	const int headerSize = m_originsMode ? 20 : 16;
 	const int magicMarkerSize = m_hasMagicMarker ? 16 : 0;
-	uint32 position = alignSize(m_fileRecords.size() * recordSize + headerSize + magicMarkerSize);
+	uint32_t position = alignSize(m_fileRecords.size() * recordSize + headerSize + magicMarkerSize);
 
 	int processed = 0;
-	std::map<uint32, FileRecord*> recordsMap;
-	std::set<uint32> badRecords;
+	std::map<uint32_t, FileRecord*> recordsMap;
+	std::set<uint32_t> badRecords;
 	for (std::vector<FileRecord>::const_iterator record = m_fileRecords.begin(); record != m_fileRecords.end(); record++)
 	{
 		//DLOG << "[" << (processed + 1) << "/" << m_fileRecords.size() << "] " << Hash::toString(record->hash);
@@ -291,7 +291,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 		if (!mergeMap.empty() && mergeMap.find(record->hash) != mergeMap.end())
 		{
-			const uint32 targetHash = mergeMap.find(record->hash)->second;
+			const uint32_t targetHash = mergeMap.find(record->hash)->second;
 			if (m_fileRecordsMap.find(targetHash) == m_fileRecordsMap.end())
 			{
 				DLOG << "Archive does not contain target file for mapping: " << Hash::toString(targetHash);
@@ -348,7 +348,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 				m_stream->seek(record->offset, Stream::seekSet);
 				while (!stream->atEnd())
 				{
-					newRecord.storedSize += static_cast<uint32>(file.writeStream(stream.get(), 0x80000));
+					newRecord.storedSize += static_cast<uint32_t>(file.writeStream(stream.get(), 0x80000));
 					if (stopRequested())
 					{
 						return false;
@@ -368,8 +368,8 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 					}
 				}
 				zlibStream.finish();
-				newRecord.storedSize = static_cast<uint32>(zlibStream.size());
-				newRecord.decompressedSize = static_cast<uint32>(zlibStream.processedSize());
+				newRecord.storedSize = static_cast<uint32_t>(zlibStream.size());
+				newRecord.decompressedSize = static_cast<uint32_t>(zlibStream.processedSize());
 			}
 		}
 
@@ -381,8 +381,8 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 	}
 
 	// Write SH0 names
-	const uint32 namesPosition = position;
-	uint32 namesSize = 0;
+	const uint32_t namesPosition = position;
+	uint32_t namesSize = 0;
 	if (m_originsMode)
 	{
 		file.seek(namesPosition, Stream::seekSet);
@@ -399,17 +399,17 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 
 	if (!m_originsMode && file.size() != file.size() % m_alignment)
 	{
-		file.seek(alignSize(static_cast<uint32>(file.size())) - 1, Stream::seekSet);
+		file.seek(alignSize(static_cast<uint32_t>(file.size())) - 1, Stream::seekSet);
 		file.writeUInt8(0);
 	}
 
 	// Resolve mapping
 	for (MergeMap::const_iterator it = mergeMap.begin(); it != mergeMap.end(); it++)
 	{
-		const uint32 sourceHash = it->first;
+		const uint32_t sourceHash = it->first;
 		if (m_fileRecordsMap.find(sourceHash) != m_fileRecordsMap.end())
 		{
-			const uint32 targetHash = it->second;
+			const uint32_t targetHash = it->second;
 			FileRecord* sourceRecord = recordsMap[sourceHash];
 			const FileRecord* targetRecord = recordsMap[targetHash];
 			sourceRecord->offset = targetRecord->offset;
@@ -443,7 +443,7 @@ bool Archive::rebuild(const std::wstring& outFile, FileSource& fileSource, const
 		file.writeUInt32(m_header.reserved);
 	}
 
-	uint32 nameOffset = 0;
+	uint32_t nameOffset = 0;
 	for (std::vector<FileRecord>::const_iterator record = entryList.begin(); record != entryList.end(); record++)
 	{
 		if (m_originsMode)
@@ -484,7 +484,7 @@ shared_ptr<Stream> Archive::openFile(const std::string& filename)
 	return openFile(Hash::calc(filename.c_str()));
 }
 
-shared_ptr<Stream> Archive::openFile(uint32 fileHash)
+shared_ptr<Stream> Archive::openFile(uint32_t fileHash)
 {
 	if (m_fileRecordsMap.find(fileHash) == m_fileRecordsMap.end())
 	{
@@ -530,12 +530,12 @@ bool Archive::stopRequested()
 	return false;
 }
 
-uint32 Archive::alignment() const
+uint32_t Archive::alignment() const
 {
 	return m_alignment;
 }
 
-Archive::FileInfo Archive::fileInfo(uint32 hash) const
+Archive::FileInfo Archive::fileInfo(uint32_t hash) const
 {
 	if (m_fileRecordsMap.find(hash) == m_fileRecordsMap.end())
 	{

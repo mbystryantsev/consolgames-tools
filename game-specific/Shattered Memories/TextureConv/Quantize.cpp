@@ -6,10 +6,10 @@
 
 void convertIndexed4ToRGBA(const void* indexed4Data, int count, const void* palette, void* dest)
 {
-	const uint32* pal = static_cast<const uint32*>(palette);
+	const uint32_t* pal = static_cast<const uint32_t*>(palette);
 
-	const uint8* src = static_cast<const uint8*>(indexed4Data);
-	uint32* dst = static_cast<uint32*>(dest);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed4Data);
+	uint32_t* dst = static_cast<uint32_t*>(dest);
 	for (int i = 0; i < count; i += 2)
 	{
 		*dst++ = pal[*src & 0xF];
@@ -20,10 +20,10 @@ void convertIndexed4ToRGBA(const void* indexed4Data, int count, const void* pale
 
 void convertIndexed8ToRGBA(const void* indexed8Data, int count, const void* palette, void* dest)
 {
-	const uint32* pal = static_cast<const uint32*>(palette);
+	const uint32_t* pal = static_cast<const uint32_t*>(palette);
 
-	const uint8* src = static_cast<const uint8*>(indexed8Data);
-	uint32* dst = static_cast<uint32*>(dest);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed8Data);
+	uint32_t* dst = static_cast<uint32_t*>(dest);
 	for (int i = 0; i < count; i++)
 	{
 		*dst++ = pal[*src++];
@@ -32,14 +32,14 @@ void convertIndexed8ToRGBA(const void* indexed8Data, int count, const void* pale
 
 void indexed8to4(const void* source, void* dest, int count)
 {
-	const uint8* src = static_cast<const uint8*>(source);
-	uint8* dst = static_cast<uint8*>(dest);
+	const uint8_t* src = static_cast<const uint8_t*>(source);
+	uint8_t* dst = static_cast<uint8_t*>(dest);
 
 	const int rasterSize = count / 2;
 	for (int i = 0; i < rasterSize; i++)
 	{
-		const uint8 c1 = *src++;
-		const uint8 c2 = *src++;
+		const uint8_t c1 = *src++;
+		const uint8_t c2 = *src++;
 		ASSERT(c1 < 16 && c2 < 16);
 		*dst++ = (c1 & 0xF) | (c2 << 4);
 	}

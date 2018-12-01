@@ -19,24 +19,24 @@ bool TextureDictionaryParserPS2::fetch()
 {
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 
-	const uint32 pos = m_stream->position(); 
+	const uint32_t pos = m_stream->position(); 
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
-	const uint32 unk5 = m_stream->readUInt32();
-	const uint32 unk6 = m_stream->readUInt32();
-	const uint32 size = m_stream->readUInt32();
-	const uint32 unk8 = m_stream->readUInt32();
+	const uint32_t unk1 = m_stream->readUInt32();
+	const uint32_t unk2 = m_stream->readUInt32();
+	const uint32_t unk5 = m_stream->readUInt32();
+	const uint32_t unk6 = m_stream->readUInt32();
+	const uint32_t size = m_stream->readUInt32();
+	const uint32_t unk8 = m_stream->readUInt32();
 
 	if (size == 0)
 	{
 		return false;
 	}
 
-	const uint32 unk9 = m_stream->readUInt32();
-	const uint32 unk10 = m_stream->readUInt32();
-	const uint32 unk11 = m_stream->readUInt32();
-	const uint32 ps2Signature = m_stream->readUInt32();
+	const uint32_t unk9 = m_stream->readUInt32();
+	const uint32_t unk10 = m_stream->readUInt32();
+	const uint32_t unk11 = m_stream->readUInt32();
+	const uint32_t ps2Signature = m_stream->readUInt32();
 
 	if (ps2Signature != 0x325350)
 	{
@@ -44,10 +44,10 @@ bool TextureDictionaryParserPS2::fetch()
 		return false;
 	}
 
-	const uint32 unk13 = m_stream->readUInt32();
-	const uint32 unk14 = m_stream->readUInt32();
-	const uint32 stringLen = m_stream->readUInt32();
-	const uint32 unk16 = m_stream->readUInt32();
+	const uint32_t unk13 = m_stream->readUInt32();
+	const uint32_t unk14 = m_stream->readUInt32();
+	const uint32_t stringLen = m_stream->readUInt32();
+	const uint32_t unk16 = m_stream->readUInt32();
 
 	char name[0x41] = {};
 	m_stream->read(name, stringLen);
@@ -61,7 +61,7 @@ bool TextureDictionaryParserPS2::fetch()
 	m_currentMetaInfo.height = m_stream->readUInt32();
 	m_currentMetaInfo.bitsPerPixel = m_stream->readUInt32();
 	m_currentMetaInfo.mipmapCount = 1;
-	const uint32 unk17 = m_stream->readUInt32();
+	const uint32_t unk17 = m_stream->readUInt32();
 
 	int paletteTotalSize = 0;
 	if (m_currentMetaInfo.bitsPerPixel == 4)
@@ -107,7 +107,7 @@ bool TextureDictionaryParserPS2::fetch()
 	}
 	else
 	{
-		const uint32 expectedRasterSize = size - paletteTotalSize - stringLen - ((unk17 & 0xFF0000) == 0 ? 0xB0 : 0x100);
+		const uint32_t expectedRasterSize = size - paletteTotalSize - stringLen - ((unk17 & 0xFF0000) == 0 ? 0xB0 : 0x100);
 		if (m_currentMetaInfo.rasterSize != expectedRasterSize)
 		{
 			DLOG << "WARNING: Unexpected raster size!";
@@ -146,8 +146,8 @@ bool TextureDictionaryParserPS2::initSegment()
 	}
 	m_streamSize = m_stream->readUInt32();
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
+	const uint32_t unk1 = m_stream->readUInt32();
+	const uint32_t unk2 = m_stream->readUInt32();
 
 	return true;
 }

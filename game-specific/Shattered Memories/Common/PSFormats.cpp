@@ -5,7 +5,7 @@
 namespace ShatteredMemories
 {
 
-const uint32 PSFormats::encodedRasterSize(ImageFormat format, int width, int height)
+const uint32_t PSFormats::encodedRasterSize(ImageFormat format, int width, int height)
 {
 	if (format == imageFormatIndexed4)
 	{

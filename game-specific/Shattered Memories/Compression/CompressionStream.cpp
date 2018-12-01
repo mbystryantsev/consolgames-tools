@@ -3,7 +3,7 @@
 namespace ShatteredMemories
 {
 
-static const uint16 s_modifiedHeader = 0xDA78;
+static const uint16_t s_modifiedHeader = 0xDA78;
 
 CompressionStream::CompressionStream(Consolgames::Stream* zlibStream, int compressionLevel)
 	: ZlibStream(zlibStream)
@@ -51,7 +51,7 @@ largesize_t CompressionStream::write(const void* buf, largesize_t size)
 		{
 			// Fix header
 			ASSERT(m_zStream.total_out >= sizeof(s_modifiedHeader));
-			*reinterpret_cast<uint16*>(&m_buf[0]) = s_modifiedHeader;
+			*reinterpret_cast<uint16_t*>(&m_buf[0]) = s_modifiedHeader;
 		}
 
 		const uInt outSize = lastAvailOut - m_zStream.avail_out;

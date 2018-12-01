@@ -9,17 +9,17 @@ LOG_CATEGORY("WiiImage")
 
 #pragma pack(push, 1)
 
-typedef uint8 HashData[20];
-typedef uint8 ClusterData[SIZE_CLUSTER_DATA];
+typedef uint8_t HashData[20];
+typedef uint8_t ClusterData[SIZE_CLUSTER_DATA];
 
 struct SHA1Hash
 {
 	HashData hash;
-	uint8& operator[](int index)
+	uint8_t& operator[](int index)
 	{
 		return hash[index];
 	}
-	const uint8& operator[](int index) const
+	const uint8_t& operator[](int index) const
 	{
 		return hash[index];
 	}
@@ -28,11 +28,11 @@ struct SHA1Hash
 struct ClusterHeader
 {
 	HashData h0[31];
-	uint8 _padding0[20];
+	uint8_t _padding0[20];
 	HashData h1[8];
-	uint8 _padding1[32];
+	uint8_t _padding1[32];
 	HashData h2[8];
-	uint8 _padding2[32];
+	uint8_t _padding2[32];
 };
 
 #pragma pack(pop)
@@ -108,7 +108,7 @@ bool WiiImage::readHeader()
 
 bool WiiImage::checkAndLoadKey(bool loadCrypto)
 {
-	static const uint8 key[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
+	static const uint8_t key[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
 
 	if (!loadCrypto)
 	{
@@ -146,9 +146,9 @@ bool WiiImage::checkAndLoadKey(bool loadCrypto)
 
 bool WiiImage::loadParitions()
 {
-	uint8 buffer[16];
-	uint64 part_tbl_offset;
-	uint64 chan_tbl_offset;
+	uint8_t buffer[16];
+	uint64_t part_tbl_offset;
+	uint64_t chan_tbl_offset;
 	
 	io_read(buffer, 16, 0x40000);
 	m_partitionCount = be32(buffer);
@@ -160,8 +160,8 @@ bool WiiImage::loadParitions()
 	DLOG << "Number of channels: " << m_channelCount;
 	DLOG << "Total number of partitions: " << m_generalPartitionCount;
 
-	part_tbl_offset = static_cast<uint64>(be32(&buffer[4])) * 4;
-	chan_tbl_offset = static_cast<uint64>(be32(&buffer[12])) * 4;
+	part_tbl_offset = static_cast<uint64_t>(be32(&buffer[4])) * 4;
+	chan_tbl_offset = static_cast<uint64_t>(be32(&buffer[12])) * 4;
 
 	DLOG << "Partition table offset: " << part_tbl_offset;
 	DLOG << "Channel table offset: " << chan_tbl_offset;
@@ -220,12 +220,12 @@ bool WiiImage::loadParitions()
 		markAsUsed(m_partitions[i].offset, 0x8000);
 
 		io_read (buffer, 8, m_partitions[i].offset + 0x2b8);
-		m_partitions[i].dataOffset = (uint64)(be32 (buffer)) << 2;
-		m_partitions[i].dataSize = (uint64)(be32 (&buffer[4])) << 2;
+		m_partitions[i].dataOffset = (uint64_t)(be32 (buffer)) << 2;
+		m_partitions[i].dataSize = (uint64_t)(be32 (&buffer[4])) << 2;
 
 		// now get the H3 offset
 		io_read (buffer, 4, m_partitions[i].offset + 0x2b4);
-		m_partitions[i].h3_offset = (uint64)(be32 (buffer)) << 2 ;
+		m_partitions[i].h3_offset = (uint64_t)(be32 (buffer)) << 2 ;
 
 		DLOG << "Partition " << i << " data offset: " << HEX << m_partitions[i].dataOffset;
 		DLOG << "partition " << i << " data size: " << HEX << m_partitions[i].dataSize;
@@ -246,16 +246,16 @@ bool WiiImage::loadParitions()
 		m_partitions[i].cached_block = 0xffffffff;
 
 
-		uint8 title_key[16];
+		uint8_t title_key[16];
 		memset(title_key, 0, 16);
 		io_read(title_key, 16, m_partitions[i].offset + 0x1bf);
 
-		uint8 iv[16];
+		uint8_t iv[16];
 		memset(iv, 0, 16);
 		io_read(iv, 8, m_partitions[i].offset + 0x1dc);
 
 
-		uint8 partition_key[16];
+		uint8_t partition_key[16];
 		AES_cbc_encrypt (title_key, partition_key, 16, &m_key, iv, AES_DECRYPT);
 		memcpy(m_partitions[i].title_key, partition_key, 16);
 		AES_set_decrypt_key(partition_key, 128, &m_partitions[i].key);
@@ -283,13 +283,13 @@ void WiiImage::loadTmd(int partition)
 	TmdSigType sigType = SIG_UNKNOWN;
 
 	offset_t offset = m_partitions[partition].offset;
-	uint8 buffer[64];
+	uint8_t buffer[64];
 
 	io_read(buffer, 16, offset + 0x2A4);
 
-	uint32 tmdSize  = be32(buffer);
+	uint32_t tmdSize  = be32(buffer);
 	offset_t tmdOffset   = be32(&buffer[4]) * 4;
-	uint32 certSize = be32(&buffer[8]);
+	uint32_t certSize = be32(&buffer[8]);
 	offset_t certOffset  = be32(&buffer[12]) * 4;
 
 	// TODO: ninty way?
@@ -382,14 +382,14 @@ void WiiImage::loadTmd(int partition)
 }
 
 
-uint32 WiiImage::parse_fst_and_save(uint8 *fst, const char* names, int i, int part)
+uint32_t WiiImage::parse_fst_and_save(uint8_t *fst, const char* names, int i, int part)
 {
 	const char* name = names + (be32 (fst + 12 * i) & 0x00ffffff);
-	uint32 size = be32(fst + 12 * i + 8);
+	uint32_t size = be32(fst + 12 * i + 8);
 
 	if (i == 0)
 	{
-		uint32 j = 0;
+		uint32_t j = 0;
 		// directory so need to go through the directory entries
 		for (j = 1; j < size; )
 		{
@@ -403,7 +403,7 @@ uint32 WiiImage::parse_fst_and_save(uint8 *fst, const char* names, int i, int pa
 	{
 		//_mkdir(name);
 		//_chdir(name);
-		uint32 j = 0;
+		uint32_t j = 0;
 		for (j = i + 1; j < size; )
 		{
 			j = parse_fst_and_save(fst, names, j, part);
@@ -417,7 +417,7 @@ uint32 WiiImage::parse_fst_and_save(uint8 *fst, const char* names, int i, int pa
 	}
 	else
 	{
-		uint32 offset = be32(fst + 12 * i + 4);
+		uint32_t offset = be32(fst + 12 * i + 4);
 		if (m_partitions[part].header.isWii())
 		{
 			offset *= 4;
@@ -432,9 +432,9 @@ uint32 WiiImage::parse_fst_and_save(uint8 *fst, const char* names, int i, int pa
 
 void WiiImage::saveDecryptedFile(const std::wstring& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt)
 {
-	uint32 block = static_cast<uint32>(offset / 0x7C00);
-	uint32 cacheOffset = static_cast<uint32>(offset % 0x7C00);
-	uint64 cacheSize = 0;
+	uint32_t block = static_cast<uint32_t>(offset / 0x7C00);
+	uint32_t cacheOffset = static_cast<uint32_t>(offset % 0x7C00);
+	uint64_t cacheSize = 0;
 
 	unsigned char cBuffer[0x8000];
 
@@ -507,16 +507,16 @@ largesize_t WiiImage::io_read_part(void* ptr, largesize_t size, int partition, o
 		return io_read(ptr, size, m_partitions[partition].offset + offset);
 	}
 
-	uint32 block = static_cast<uint32>(offset / 0x7C00ULL);
-	uint32 cache_offset = static_cast<uint32>(offset % 0x7C00ULL);
-	uint32 cache_size = 0;
+	uint32_t block = static_cast<uint32_t>(offset / 0x7C00ULL);
+	uint32_t cache_offset = static_cast<uint32_t>(offset % 0x7C00ULL);
+	uint32_t cache_size = 0;
 	unsigned char* dst = static_cast<unsigned char*>(ptr);
 
 	while (size)
 	{
 		decryptBlock(partition, block);
 
-		cache_size = static_cast<uint32>(size);
+		cache_size = static_cast<uint32_t>(size);
 		if (cache_size + cache_offset > 0x7c00)
 		{
 			cache_size = 0x7c00 - cache_offset;
@@ -530,12 +530,12 @@ largesize_t WiiImage::io_read_part(void* ptr, largesize_t size, int partition, o
 		block++;
 	}
 
-	return static_cast<uint32>(dst - reinterpret_cast<unsigned char*>(ptr));
+	return static_cast<uint32_t>(dst - reinterpret_cast<unsigned char*>(ptr));
 }
 
-bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition, offset_t offset, largesize_t size, int fstReference)
+bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32_t partition, offset_t offset, largesize_t size, int fstReference)
 {
-	uint8 bootBin[0x440];
+	uint8_t bootBin[0x440];
 
 	FileStream inStream(filename.data(), Stream::modeRead);
 	ASSERT(inStream.isOpen());
@@ -562,8 +562,8 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 			if (fstReference > 0)
 			{
 				// normal file so change the FST.BIN
-				std::vector<uint8> fstData(m_partitions[partition].header.fstSize);
-				//uint8 * pFSTBin = (unsigned char *) calloc(m_partitions[partition].header.fstSize, 1);
+				std::vector<uint8_t> fstData(m_partitions[partition].header.fstSize);
+				//uint8_t * pFSTBin = (unsigned char *) calloc(m_partitions[partition].header.fstSize, 1);
 
 				io_read_part(&fstData[0], m_partitions[partition].header.fstSize, partition, m_partitions[partition].header.fstOffset);
 
@@ -571,7 +571,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 				fstReference = fstReference * 0x0c;
 
 				// update the length for the file
-				store32(&fstData[0] + fstReference + 0x08L , static_cast<uint32>(imageSize));
+				store32(&fstData[0] + fstReference + 0x08L , static_cast<uint32_t>(imageSize));
 
 				// write out the FST.BIN
 				wii_write_data_file(partition, m_partitions[partition].header.fstOffset, &fstData[0], m_partitions[partition].header.fstSize);
@@ -598,8 +598,8 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 					{
 						imageSize += 4 - (imageSize % 4);
 					}
-					store32(&bootBin[0x428], static_cast<uint32>(imageSize >> 2));
-					store32(&bootBin[0x42C], static_cast<uint32>(imageSize >> 2));
+					store32(&bootBin[0x428], static_cast<uint32_t>(imageSize >> 2));
+					store32(&bootBin[0x42C], static_cast<uint32_t>(imageSize >> 2));
 					// now write it out
 					wii_write_data_file(partition, 0, &bootBin[0], 0x440);
 
@@ -690,7 +690,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 		{
 			// normal one - so read out the fst and change the values for the relevant pointer
 			// before writing it out
-			std::vector<uint8> fstData(m_partitions[partition].header.fstSize);
+			std::vector<uint8_t> fstData(m_partitions[partition].header.fstSize);
 
 			io_read_part(&fstData[0], m_partitions[partition].header.fstSize, partition, m_partitions[partition].header.fstOffset);
 
@@ -698,9 +698,9 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 			fstReference = fstReference * 0x0c;
 
 			// update the offset for this file
-			store32(&fstData[0] + fstReference + 0x04L, static_cast<uint32>(freeSpaceStart >> 2));
+			store32(&fstData[0] + fstReference + 0x04L, static_cast<uint32_t>(freeSpaceStart >> 2));
 			// update the length for the file
-			store32(&fstData[0] + fstReference + 0x08L , static_cast<uint32>(imageSize));
+			store32(&fstData[0] + fstReference + 0x08L , static_cast<uint32_t>(imageSize));
 
 			// write out the FST.BIN
 			wii_write_data_file(partition, m_partitions[partition].header.fstOffset, &fstData[0], m_partitions[partition].header.fstSize);
@@ -726,9 +726,9 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 				}
 
 				// update the settings for the FST.BIN entry
-				store32(bootBin + 0x424L, uint32 (freeSpaceStart >> 2));
-				store32(bootBin + 0x428L, (uint32)(imageSize >> 2));
-				store32(bootBin + 0x42CL, (uint32)(imageSize >> 2));
+				store32(bootBin + 0x424L, uint32_t (freeSpaceStart >> 2));
+				store32(bootBin + 0x428L, (uint32_t)(imageSize >> 2));
+				store32(bootBin + 0x42CL, (uint32_t)(imageSize >> 2));
 
 				// now write it out
 				wii_write_data_file(partition, 0, bootBin, 0x440);
@@ -743,7 +743,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 				io_read_part(bootBin, 0x440, partition, 0);
 
 				// update the settings for the main.dol entry
-				store32(bootBin + 0x420L, uint32 (freeSpaceStart >> 2));
+				store32(bootBin + 0x420L, uint32_t (freeSpaceStart >> 2));
 
 				// now write it out
 				wii_write_data_file(partition, 0, bootBin, 0x440);
@@ -762,8 +762,8 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 
 				// check to see what we have to move
 				// by calculating the amount of extra data we are trying to stuff in
-				const uint32 nExtraData = static_cast<uint32>(imageSize - m_partitions[partition].appldrSize);
-				const uint32 nExtraDataBlocks = 1 + static_cast<uint32>((imageSize - m_partitions[partition].appldrSize) / 0x7c00);
+				const uint32_t nExtraData = static_cast<uint32_t>(imageSize - m_partitions[partition].appldrSize);
+				const uint32_t nExtraDataBlocks = 1 + static_cast<uint32_t>((imageSize - m_partitions[partition].appldrSize) / 0x7c00);
 
 				// check to see if we have that much free at the end of the area
 				// or do we need to try and overwrite
@@ -786,7 +786,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 					}
 					
 					// "just" need to move main.dol
-					std::vector<uint8> mainDolData(m_partitions[partition].header.dolSize);
+					std::vector<uint8_t> mainDolData(m_partitions[partition].header.dolSize);
 
 					io_read_part(&mainDolData[0], m_partitions[partition].header.dolSize, partition, m_partitions[partition].header.dolOffset);
 
@@ -806,7 +806,7 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 						io_read_part(bootBin, 0x440, partition, 0);
 
 						// update the settings for the boot.BIN entry
-						store32(bootBin + 0x420L, static_cast<uint32>(freeSpaceStart >> 2));
+						store32(bootBin + 0x420L, static_cast<uint32_t>(freeSpaceStart >> 2));
 
 						// now write it out
 						wii_write_data_file(partition, 0, bootBin, 0x440);
@@ -840,10 +840,10 @@ bool WiiImage::loadDecryptedFile(const std::wstring& filename, uint32 partition,
 
 bool WiiImage::wii_trucha_signing(int partition)
 {
-	uint8 hash[20];
+	uint8_t hash[20];
 
-	const uint32 size = m_partitions[partition].tmdSize;
-	std::vector<uint8> buffer(size);
+	const uint32_t size = m_partitions[partition].tmdSize;
+	std::vector<uint8_t> buffer(size);
 
 	readDirect(m_partitions[partition].offset + m_partitions[partition].tmdOffset, &buffer[0], size);
 
@@ -853,7 +853,7 @@ bool WiiImage::wii_trucha_signing(int partition)
 	/* SHA-1 brute force */
 	hash[0] = 1;
 
-	for (uint32 val = 0; val <= ULONG_MAX && hash[0] != 0x00; val++)
+	for (uint32_t val = 0; val <= ULONG_MAX && hash[0] != 0x00; val++)
 	{
 		/* Modify TMD "reserved" field */
 		memcpy(&buffer[0x19A], &val, sizeof(val));
@@ -891,9 +891,9 @@ bool WiiImage::writeDirect(offset_t offset, const void* data, largesize_t size)
 	return true;
 }
 
-void WiiImage::store32(void* data, uint32 value)
+void WiiImage::store32(void* data, uint32_t value)
 {
-	uint8* p = reinterpret_cast<uint8*>(data);
+	uint8_t* p = reinterpret_cast<uint8_t*>(data);
 	p[0] = (value >> 24) & 0xFF;
 	p[1] = (value >> 16) & 0xFF;
 	p[2] = (value >>  8) & 0xFF;
@@ -901,7 +901,7 @@ void WiiImage::store32(void* data, uint32 value)
 }
 
 
-const uint8 WiiImage::s_truchaSignature[256] =
+const uint8_t WiiImage::s_truchaSignature[256] =
 {
 	0x57, 0x61, 0x4E, 0x69, 0x4E, 0x4B, 0x6F, 0x4B,
 	0x4F, 0x57, 0x61, 0x53, 0x48, 0x65, 0x52, 0x65,
@@ -984,7 +984,7 @@ int WiiImage::findDataPartitionIndex() const
 
 bool WiiImage::parseImage()
 {
-	uint8 buffer[0x440];
+	uint8_t buffer[0x440];
 
 	if (m_header.isWii())
 	{
@@ -1003,7 +1003,7 @@ bool WiiImage::parseImage()
 		//m_imageFile->parts[0].type = PART_DATA;
 	}
 
-	uint8 nvp = 0;
+	uint8_t nvp = 0;
 	for (int i = 0; i < m_partitionCount; i++)
 	{
 		if (!io_read_part (buffer, 0x440, i, 0))
@@ -1117,7 +1117,7 @@ bool WiiImage::parseImage()
 				partition.isEncrypted);
 			partition.addFilesystemObject("fst.bin", partition.header.fstOffset, partition.header.fstSize, refFst, dataFile);
 
-			std::vector<uint8> fstData(partition.header.fstSize);
+			std::vector<uint8_t> fstData(partition.header.fstSize);
 			if (io_read_part(&fstData[0], partition.header.fstSize, i, partition.header.fstOffset) != partition.header.fstSize)
 			{
 				DLOG << "fst.bin";
@@ -1126,7 +1126,7 @@ bool WiiImage::parseImage()
 
 			partition.fileCount = be32(&fstData[8]);
 
-			if (static_cast<uint32>(partition.fileCount * 12) > partition.header.fstSize)
+			if (static_cast<uint32_t>(partition.fileCount * 12) > partition.header.fstSize)
 			{
 				DLOG << "invalid fst for partition " << i;
 			}
@@ -1185,11 +1185,11 @@ bool WiiImage::parseImage()
 	return true;
 }
 
-uint32 WiiImage::calcDolSize(const uint8* header)
+uint32_t WiiImage::calcDolSize(const uint8_t* header)
 {
-	uint8 i;
-	uint32 offset, size;
-	uint32 max = 0;
+	uint8_t i;
+	uint32_t offset, size;
+	uint32_t max = 0;
 
 	// iterate through the 7 code segments
 	for (i = 0; i < 7; ++i)
@@ -1220,10 +1220,10 @@ bool WiiImage::checkForFreeSpace(int partition, offset_t offset, int blockCount)
 	return true;
 #if 0
 	// convert offset to block representation
-	uint32 nBlockOffsetStart = 0;
+	uint32_t nBlockOffsetStart = 0;
 
-	nBlockOffsetStart = (uint32)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64)0x8000);
-	nBlockOffsetStart = nBlockOffsetStart + (uint32)(nOffset / (uint64) 0x7c00);
+	nBlockOffsetStart = (uint32_t)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64_t)0x8000);
+	nBlockOffsetStart = nBlockOffsetStart + (uint32_t)(nOffset / (uint64_t) 0x7c00);
 	if (0!=nOffset%0x7c00)
 	{
 		// starts part way into a block so need to check the number of blocks plus one
@@ -1233,7 +1233,7 @@ bool WiiImage::checkForFreeSpace(int partition, offset_t offset, int blockCount)
 		nBlockOffsetStart++;
 	}
 
-	for (uint32 x = 0; x < nBlocks; x++)
+	for (uint32_t x = 0; x < nBlocks; x++)
 	{
 		if (1==pFreeTable[nBlockOffsetStart+x])
 		{
@@ -1339,10 +1339,10 @@ Consolgames::WiiFileStream* WiiImage::openFile(const std::string& path, Stream::
 // CLUSTERS
 //////////////////////////////////////////////////////////////////////////
 
-bool WiiImage::wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *header)
+bool WiiImage::wii_read_cluster(int partition, int cluster, uint8_t *data, uint8_t *header)
 {
-	uint8 buf[SIZE_CLUSTER];
-	uint8  iv[16];
+	uint8_t buf[SIZE_CLUSTER];
+	uint8_t  iv[16];
 
 	/* Jump to the specified cluster and copy it to memory */
 	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + static_cast<offset_t>(cluster) * SIZE_CLUSTER;
@@ -1351,7 +1351,7 @@ bool WiiImage::wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *
 	io_read(buf, SIZE_CLUSTER, offset);
 
 	/* Set title key */
-	const uint8* title_key =  &m_partitions[partition].title_key[0];
+	const uint8_t* title_key =  &m_partitions[partition].title_key[0];
 
 	/* Copy header if required*/
 	if (header)
@@ -1377,9 +1377,9 @@ bool WiiImage::wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *
 	return true;
 }
 
-bool WiiImage::wii_read_cluster_hashes(int partition, int cluster, uint8 *h0, uint8 *h1, uint8 *h2)
+bool WiiImage::wii_read_cluster_hashes(int partition, int cluster, uint8_t *h0, uint8_t *h1, uint8_t *h2)
 {
-	uint8 buf[SIZE_CLUSTER_HEADER];
+	uint8_t buf[SIZE_CLUSTER_HEADER];
 
 	/* Read cluster header */
 	if (!wii_read_cluster(partition, cluster, NULL, buf))
@@ -1400,12 +1400,12 @@ bool WiiImage::wii_read_cluster_hashes(int partition, int cluster, uint8 *h0, ui
 // calculate the group hash for a cluster
 bool WiiImage::wii_calc_group_hash(int partition, int cluster)
 {
-	uint8 h2[SIZE_H2];
-	uint8 h3[SIZE_H3];
-	uint8 h4[SIZE_H4];
+	uint8_t h2[SIZE_H2];
+	uint8_t h3[SIZE_H3];
+	uint8_t h4[SIZE_H4];
 
 	/* Calculate cluster group */
-	uint32 group = cluster / NB_CLUSTER_GROUP;
+	uint32_t group = cluster / NB_CLUSTER_GROUP;
 
 	/* Get H2 hash of the group */
 	if (!wii_read_cluster_hashes(partition, cluster, NULL, NULL, h2))
@@ -1455,7 +1455,7 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluste
 		clustersInGroup = NB_CLUSTER_GROUP;
 	}
 
-	std::vector<uint8> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
+	std::vector<uint8_t> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
 	std::vector<ClusterHeader> headers(NB_CLUSTER_GROUP);
 	
 	// if we are replacing a full set of clusters then we don't
@@ -1470,8 +1470,8 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluste
 		/* Read group clusters and headers */
 		for (int i = 0; i < clustersInGroup; i++)
 		{
-			uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-			if (!wii_read_cluster(partition, firstClusterInGroup + i, d_ptr, reinterpret_cast<uint8*>(&headers[i])))
+			uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+			if (!wii_read_cluster(partition, firstClusterInGroup + i, d_ptr, reinterpret_cast<uint8_t*>(&headers[i])))
 			{
 				return false;
 			}
@@ -1498,7 +1498,7 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluste
 		sha1(&headers[clusterIndexInGroup].h0[0][0], SIZE_H0, h1);
 
 		// now copy to all the sub cluster locations
-		const uint32 subgroupIndex = clusterIndexInGroup / NB_CLUSTER_SUBGROUP;
+		const uint32_t subgroupIndex = clusterIndexInGroup / NB_CLUSTER_SUBGROUP;
 		const int clusterIndexInSubgroup = clusterIndexInGroup % NB_CLUSTER_SUBGROUP;
 		for (int cluster = 0; cluster < NB_CLUSTER_SUBGROUP; cluster++)
 		{
@@ -1532,46 +1532,46 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluste
 	sha1(&h2[0][0], SIZE_H2, &m_h3[clusterGroup * 0x14]);
 
 	// now encrypt and write
-	const uint8* title_key = &(m_partitions[partition].title_key[0]);
+	const uint8_t* title_key = &(m_partitions[partition].title_key[0]);
 
 	/* Encrypt headers */
 	for (int i = 0; i < clustersInGroup; i++)
 	{
-		uint8 *ptr = reinterpret_cast<uint8*>(&headers[i]);
+		uint8_t *ptr = reinterpret_cast<uint8_t*>(&headers[i]);
 
-		uint8 phData[SIZE_CLUSTER_HEADER];
+		uint8_t phData[SIZE_CLUSTER_HEADER];
 
 		/* Set IV key */
-		uint8 iv[16] = {};
+		uint8_t iv[16] = {};
 
 		/* Encrypt */
-		aes_cbc_enc(ptr, (uint8*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
-		memcpy(ptr, (uint8*)phData, SIZE_CLUSTER_HEADER);
+		aes_cbc_enc(ptr, (uint8_t*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
+		memcpy(ptr, (uint8_t*)phData, SIZE_CLUSTER_HEADER);
 	}
 
 	/* Encrypt clusters */
 	for (int i = 0; i < clustersInGroup; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const uint8 *h_ptr = reinterpret_cast<const uint8*>(&headers[i]);
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const uint8_t *h_ptr = reinterpret_cast<const uint8_t*>(&headers[i]);
 
-		uint8 phData[SIZE_CLUSTER_DATA];
+		uint8_t phData[SIZE_CLUSTER_DATA];
 
-		uint8 iv[16];
+		uint8_t iv[16];
 		std::copy(&h_ptr[OFFSET_CLUSTER_IV], &h_ptr[OFFSET_CLUSTER_IV] + 16, iv);
 
 		/* Encrypt */
-		aes_cbc_enc(d_ptr, (uint8*) phData, SIZE_CLUSTER_DATA, title_key, iv);
-		memcpy(d_ptr, (uint8*)phData, SIZE_CLUSTER_DATA);
+		aes_cbc_enc(d_ptr, (uint8_t*) phData, SIZE_CLUSTER_DATA, title_key, iv);
+		memcpy(d_ptr, (uint8_t*)phData, SIZE_CLUSTER_DATA);
 	}
 
 	/* Jump to first cluster in the group */
-	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + (uint64)((uint64)firstClusterInGroup * (uint64)SIZE_CLUSTER);
+	offset_t offset = m_partitions[partition].offset + m_partitions[partition].dataOffset + (uint64_t)((uint64_t)firstClusterInGroup * (uint64_t)SIZE_CLUSTER);
 
 	for (int i = 0; i < clustersInGroup; i++)
 	{
-		const uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const uint8 *h_ptr = reinterpret_cast<const uint8*>(&headers[i]);
+		const uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const uint8_t *h_ptr = reinterpret_cast<const uint8_t*>(&headers[i]);
 
 		if (!writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
 		{
@@ -1593,12 +1593,12 @@ bool WiiImage::wii_write_clusters(int partition, int cluster, int offsetInCluste
 	return true;
 }
 
-void WiiImage::sha1(const uint8 *data, uint32 len, uint8 *hash)
+void WiiImage::sha1(const uint8_t *data, uint32_t len, uint8_t *hash)
 {
 	SHA1(data, len, hash);
 }
 
-void WiiImage::aes_cbc_enc(const uint8 *in, uint8 *out, uint32 len, const uint8 *key, uint8 *iv)
+void WiiImage::aes_cbc_enc(const uint8_t *in, uint8_t *out, uint32_t len, const uint8_t *key, uint8_t *iv)
 {
 	AES_KEY aes_key;
 
@@ -1609,7 +1609,7 @@ void WiiImage::aes_cbc_enc(const uint8 *in, uint8 *out, uint32 len, const uint8 
 	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_ENCRYPT);
 }
 
-void WiiImage::aes_cbc_dec(const uint8* in, uint8* out, uint32 len, const uint8* key, uint8 *iv)
+void WiiImage::aes_cbc_dec(const uint8_t* in, uint8_t* out, uint32_t len, const uint8_t* key, uint8_t *iv)
 {
 	AES_KEY aes_key;
 
@@ -1620,15 +1620,15 @@ void WiiImage::aes_cbc_dec(const uint8* in, uint8* out, uint32 len, const uint8*
 	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_DECRYPT);
 }
 
-bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
+bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8_t* in)
 {
 	// TODO: Delegate to wii_read_clusters
 
-	uint8 h0[SIZE_H0];
-	uint8 h1[SIZE_H1];
-	uint8 h2[SIZE_H2];
+	uint8_t h0[SIZE_H0];
+	uint8_t h1[SIZE_H1];
+	uint8_t h2[SIZE_H2];
 
-	uint8 iv[16];
+	uint8_t iv[16];
 
 	/* Calculate cluster group and subgroup */
 	int group = cluster / NB_CLUSTER_GROUP;
@@ -1645,14 +1645,14 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	}
 
 	/* Allocate memory */
-	std::vector<uint8> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
-	std::vector<uint8> header(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP);
+	std::vector<uint8_t> data(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP);
+	std::vector<uint8_t> header(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP);
 
 	/* Read group clusters and headers */
 	for (int i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 		/* Read cluster */
 		if (!wii_read_cluster(partition, f_cluster + i, d_ptr, h_ptr))
@@ -1681,7 +1681,7 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
 		const int pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
-		uint8 tmp[SIZE_H0];
+		uint8_t tmp[SIZE_H0];
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -1715,7 +1715,7 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	for (int i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
 		const int pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
-		uint8 tmp[SIZE_H1];
+		uint8_t tmp[SIZE_H1];
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -1733,20 +1733,20 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	/* Write H2 table */
 	for (int i = 0; i < nb_cluster; i++)
 	{
-		uint32 nb = SIZE_CLUSTER_HEADER * i;
+		uint32_t nb = SIZE_CLUSTER_HEADER * i;
 
 		/* Write H2 table */
 		memcpy(&header[nb + OFFSET_H2], h2, SIZE_H2);
 	}
 
 	/* Set title key */
-	const uint8* title_key = &(m_partitions[partition].title_key[0]);
+	const uint8_t* title_key = &(m_partitions[partition].title_key[0]);
 
 	/* Encrypt headers */
 	for (int i = 0; i < nb_cluster; i++)
 	{
-		uint8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
-		uint8 phData[SIZE_CLUSTER_HEADER];
+		uint8_t *ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t phData[SIZE_CLUSTER_HEADER];
 
 		/* Set IV key */
 		memset(iv, 0, 16);
@@ -1759,10 +1759,10 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	/* Encrypt clusters */
 	for (int i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
-		uint8 phData[SIZE_CLUSTER_DATA];
+		uint8_t phData[SIZE_CLUSTER_DATA];
 
 
 		/* Set IV key */
@@ -1779,8 +1779,8 @@ bool WiiImage::wii_write_cluster(int partition, int cluster, const uint8* in)
 	/* Write new clusters */
 	for (int i = 0; i < nb_cluster; i++)
 	{
-		const uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		const uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		const uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		const uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 		/* Write cluster header */
 		if (writeDirect(offset, h_ptr, SIZE_CLUSTER_HEADER))
@@ -1899,8 +1899,8 @@ bool WiiImage::wii_write_data_file(int partition, offset_t offset, void* data, l
 bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, largesize_t size)
 {
 	/* Calculate some needed information */
-	uint32 cluster_start = (uint32)(offset / (uint64)(SIZE_CLUSTER_DATA));
-	uint32 offset_start = (uint32)(offset - (cluster_start * (uint64)(SIZE_CLUSTER_DATA)));
+	uint32_t cluster_start = (uint32_t)(offset / (uint64_t)(SIZE_CLUSTER_DATA));
+	uint32_t offset_start = (uint32_t)(offset - (cluster_start * (uint64_t)(SIZE_CLUSTER_DATA)));
 
 	/* Write clusters */
 	int writen = 0;
@@ -1937,7 +1937,7 @@ bool WiiImage::wii_write_data(int partition, offset_t offset, Stream* file, larg
 			// max check
 			if (toWrite > (size-writen))
 			{
-				toWrite = (uint32)(size-writen);
+				toWrite = (uint32_t)(size-writen);
 			}
 
 			if (!wii_write_clusters(partition, cluster_start + clusterCount, offset_start, toWrite, file))
@@ -1985,8 +1985,8 @@ bool WiiImage::checkPartition(int partition)
 
 	// Checking signature...
 // 	{
-// 		const uint32 size = m_partitions[partition].tmdSize;
-// 		std::vector<uint8> buffer(size);
+// 		const uint32_t size = m_partitions[partition].tmdSize;
+// 		std::vector<uint8_t> buffer(size);
 // 
 // 		readDirect(m_partitions[partition].offset + m_partitions[partition].tmdOffset, &buffer[0], size);
 // 		HashData contentHash;
@@ -1996,7 +1996,7 @@ bool WiiImage::checkPartition(int partition)
 // 
 // 		if (!std::equal(signatureHash, signatureHash + 20, contentHash))
 // 		{
-// 			uint8 decryptedSignature[256];
+// 			uint8_t decryptedSignature[256];
 // 
 // 			RSA_public_decrypt()
 // 			if (signatureHash[0] != 0 && contentHash[0] != 0)
@@ -2008,7 +2008,7 @@ bool WiiImage::checkPartition(int partition)
 // 	}
 
 	std::vector<SHA1Hash> expectedH3Hashes(groupCount);
-	std::vector<uint8> data(64 * SIZE_CLUSTER_DATA);
+	std::vector<uint8_t> data(64 * SIZE_CLUSTER_DATA);
 	// array for each cluster and each hash
 	std::vector<ClusterHeader> headers(64);
 
@@ -2027,11 +2027,11 @@ bool WiiImage::checkPartition(int partition)
 			const offset_t clusterOffset = clusterIndex * SIZE_CLUSTER_DATA;
 			const offset_t clusterPhOffset = clusterOffset + m_partitions[partition].offset + SIZE_CLUSTER_HEADER * clusterIndex + m_partitions[partition].dataOffset;
 
-			uint8 buf[SIZE_CLUSTER_DATA];
+			uint8_t buf[SIZE_CLUSTER_DATA];
 			readDirect(offset, buf, SIZE_CLUSTER_HEADER);
 
-			uint8 iv[16] = {};
-			aes_cbc_dec(buf, reinterpret_cast<uint8*>(&headers[i]), SIZE_CLUSTER_HEADER, m_partitions[partition].title_key, iv);
+			uint8_t iv[16] = {};
+			aes_cbc_dec(buf, reinterpret_cast<uint8_t*>(&headers[i]), SIZE_CLUSTER_HEADER, m_partitions[partition].title_key, iv);
 			std::copy(&buf[OFFSET_CLUSTER_IV], &buf[OFFSET_CLUSTER_IV] + 16, iv);
 
 			readDirect(offset + SIZE_CLUSTER_HEADER, buf, SIZE_CLUSTER_DATA);

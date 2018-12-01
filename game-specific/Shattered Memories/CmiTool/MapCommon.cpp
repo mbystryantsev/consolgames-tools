@@ -11,14 +11,14 @@ namespace
 #pragma pack(push, 1)
 struct RGBA
 {
-	uint8 r, g, b, a;
+	uint8_t r, g, b, a;
 };
 #pragma pack(pop)
 }
 
 void deswizzle8(const void* src, void* dest, int width, int height)
 {
-	const uint8* sb = static_cast<const uint8*>(src);
+	const uint8_t* sb = static_cast<const uint8_t*>(src);
 
 	for (int ty = 0; ty < height; ty+=8)
 	{
@@ -26,7 +26,7 @@ void deswizzle8(const void* src, void* dest, int width, int height)
 		{
 			for (int y = ty; y < ty + 8; y++)
 			{
-				uint8* db = static_cast<uint8*>(dest) + y * width + tx;
+				uint8_t* db = static_cast<uint8_t*>(dest) + y * width + tx;
 				for (int x = tx; x < tx + 16; x++)
 				{
 					*db++ = *sb++;
@@ -43,7 +43,7 @@ void deswizzle4(const void* src, void* dest, int width, int height)
 
 void swizzle8(const void* src, void* dest, int width, int height)
 {
-	uint8* db = static_cast<uint8*>(dest);
+	uint8_t* db = static_cast<uint8_t*>(dest);
 
 	for (int ty = 0; ty < height; ty+=8)
 	{
@@ -51,7 +51,7 @@ void swizzle8(const void* src, void* dest, int width, int height)
 		{
 			for (int y = ty; y < ty + 8; y++)
 			{
-				const uint8* sb = static_cast<const uint8*>(src) + y * width + tx;
+				const uint8_t* sb = static_cast<const uint8_t*>(src) + y * width + tx;
 				for (int x = tx; x < tx + 16; x++)
 				{
 					*db++ = *sb++;
@@ -85,9 +85,9 @@ bool savePNG(const void* image, int width, int height, const char* filename)
 	return result;
 }
 
-void indexed4ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, int count)
+void indexed4ToRGBA(const void* indexed, const uint32_t* palette, uint32_t* rgba, int count)
 {
-	const uint8* src = static_cast<const uint8*>(indexed);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed);
 
 	for (int i = 0; i < count / 2; i++)
 	{
@@ -97,9 +97,9 @@ void indexed4ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, in
 	}
 }
 
-void indexed8ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, int count)
+void indexed8ToRGBA(const void* indexed, const uint32_t* palette, uint32_t* rgba, int count)
 {
-	const uint8* src = static_cast<const uint8*>(indexed);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed);
 
 	for (int i = 0; i < count; i++)
 	{
@@ -109,8 +109,8 @@ void indexed8ToRGBA(const void* indexed, const uint32* palette, uint32* rgba, in
 
 void indexed8ToIndexed4(const void* indexed8, void* indexed4, int count)
 {
-	const uint8* src = static_cast<const uint8*>(indexed8);
-	uint8* dst = static_cast<uint8*>(indexed4);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed8);
+	uint8_t* dst = static_cast<uint8_t*>(indexed4);
 
 	for (int i = 0; i < count / 2; i++)
 	{
@@ -121,8 +121,8 @@ void indexed8ToIndexed4(const void* indexed8, void* indexed4, int count)
 
 void indexed4ToIndexed8(const void* indexed4, void* indexed8, int count)
 {
-	const uint8* src = static_cast<const uint8*>(indexed4);
-	uint8* dst = static_cast<uint8*>(indexed8);
+	const uint8_t* src = static_cast<const uint8_t*>(indexed4);
+	uint8_t* dst = static_cast<uint8_t*>(indexed8);
 
 	for (int i = 0; i < count; i++)
 	{

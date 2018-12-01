@@ -9,10 +9,10 @@ struct FillInfo;
 class RowColMapEncoder : public MapEncoder
 {
 public:
-	virtual bool encodeLayers(void* tilesCanvas, const void* layer1Pixels, const void* layer0Pixels, uint32* layer1palette, uint32* layer0Palette, uint32* layer1Indices, uint32* layer0Indices) override;
+	virtual bool encodeLayers(void* tilesCanvas, const void* layer1Pixels, const void* layer0Pixels, uint32_t* layer1palette, uint32_t* layer0Palette, uint32_t* layer1Indices, uint32_t* layer0Indices) override;
 
 private:
-	bool encodeLayer(FillInfo& fillInfo, const void* pixels, int width, int height, uint8* canvas, uint32* palette, uint32* indices);
+	bool encodeLayer(FillInfo& fillInfo, const void* pixels, int width, int height, uint8_t* canvas, uint32_t* palette, uint32_t* indices);
 };
 
 }

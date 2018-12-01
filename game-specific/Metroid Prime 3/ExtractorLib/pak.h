@@ -133,9 +133,9 @@ struct CompressedFileHeader
 
 struct CompressedStreamHeader
 {
-	uint32 flags   : 8;
-	uint32 lzoSize : 24;
-	uint32 dataSize;
+	uint32_t flags   : 8;
+	uint32_t lzoSize : 24;
+	uint32_t dataSize;
 };
 
 #pragma pack(pop)
@@ -177,8 +177,8 @@ public:
 
 	Consolgames::Stream* openFileDirect(Hash hash);
 
-	static uint32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out, void* lzoWorkMem);
-	static void decompressLzo(Consolgames::Stream* lzoStream, uint32 lzoSize, Consolgames::Stream* outStream);
+	static uint32_t compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out, void* lzoWorkMem);
+	static void decompressLzo(Consolgames::Stream* lzoStream, uint32_t lzoSize, Consolgames::Stream* outStream);
 
 protected:
 	enum CompressionFlags
@@ -198,14 +198,14 @@ protected:
 	CompressedStreamHeader readCmpdStreamHeader();
 
 	bool extractFile(const FileRecord& file, Consolgames::Stream* out);
-	uint32 storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8 flags = 0xFF);
+	uint32_t storeFile(Consolgames::Stream* file, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8_t flags = 0xFF);
 	virtual std::wstring findFile(const std::vector<std::wstring>& inputDirs, Hash hash, ResType res) const;
-	virtual uint32 storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8 flags = 0xFF);
+	virtual uint32_t storeFile(const std::wstring& filename, Consolgames::Stream* stream, bool isPacked, bool isTexture, uint8_t flags = 0xFF);
 	int findSegment(ResType type) const;
 	int getSegmentOffset(int index) const;
 	static void swapFileEndian(FileRecord& fileRecord);
 	std::string findName(const Hash& hash) const;
-	uint32 compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out);
+	uint32_t compressLzo(Consolgames::Stream* in, int size, Consolgames::Stream *out);
 
 protected:
 	void initProgress(int count);
@@ -226,9 +226,9 @@ protected:
 	int m_strgIndex;
 	int m_rshdIndex;
 	int m_dataIndex;
-	uint32 m_strgOffset;
-	uint32 m_rshdOffset;
-	uint32 m_dataOffset;
+	uint32_t m_strgOffset;
+	uint32_t m_rshdOffset;
+	uint32_t m_dataOffset;
 	
 	std::vector<char> m_lzoWorkMem;
 	

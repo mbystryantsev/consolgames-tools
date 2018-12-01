@@ -23,9 +23,9 @@ namespace Consolgames
 struct IsoFileDescriptor
 {
 	IsoFileDescriptor();
-	IsoFileDescriptor(const uint8* data, int length = 0);
+	IsoFileDescriptor(const uint8_t* data, int length = 0);
 
-	static IsoFileDescriptor fromData(const uint8* data, int length = 0);
+	static IsoFileDescriptor fromData(const uint8_t* data, int length = 0);
 	bool isFile() const { return !(flags & 2); }
 	bool isDir() const { return !isFile(); }
 	bool isNull() const {return name.empty();};
@@ -44,17 +44,17 @@ struct IsoFileDescriptor
 		}
 
 		int   year;
-		uint8 month;
-		uint8 day;
-		uint8 hour;
-		uint8 minute;
-		uint8 second;
-		uint8 gmtOffset; // Offset from Greenwich Mean Time in number of 15 min intervals from -48 (West) to + 52 (East)
+		uint8_t month;
+		uint8_t day;
+		uint8_t hour;
+		uint8_t minute;
+		uint8_t second;
+		uint8_t gmtOffset; // Offset from Greenwich Mean Time in number of 15 min intervals from -48 (West) to + 52 (East)
 
 	} date;
 
-	uint32	lba;
-	uint32  size;
+	uint32_t	lba;
+	uint32_t  size;
 	int		flags;
 	std::string name;
 };

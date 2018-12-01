@@ -12,16 +12,16 @@ namespace
 
 struct RGBA16
 {
-	uint16 r : 5;
-	uint16 g : 5;
-	uint16 b : 5;
-	uint16 a : 1;
+	uint16_t r : 5;
+	uint16_t g : 5;
+	uint16_t b : 5;
+	uint16_t a : 1;
 };
 
 #pragma pack(pop)
 }
 
-static const uint8 s_alphaDecodingTable[129] =
+static const uint8_t s_alphaDecodingTable[129] =
 {
 	0,   2,   4,   6,   8,   10,  12,  14,  16,  18,  20,  22,  24,  26,  28,  30,
 	32,  34,  36,  38,  40,  42,  44,  46,  48,  50,  52,  54,  56,  58,  60,  62,
@@ -34,7 +34,7 @@ static const uint8 s_alphaDecodingTable[129] =
 	255
 };
 
-static const uint8 s_alphaEncodingTable[256] =
+static const uint8_t s_alphaEncodingTable[256] =
 {
 	0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,   6,   7,   7,   8,
 	8,   9,   9,   10,  10,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,  16,
@@ -153,12 +153,12 @@ int PSTextureCodec::bestSuitablePaletteFormatFor(int textureFormat) const
 	return PSFormats::paletteFormatUndefined;
 }
 
-uint32 PSTextureCodec::encodedRasterSize(int format, int width, int height) const 
+uint32_t PSTextureCodec::encodedRasterSize(int format, int width, int height) const 
 {
 	return PSFormats::encodedRasterSize(static_cast<PSFormats::ImageFormat>(format), width, height);
 }
 
-uint32 PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
+uint32_t PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const 
 {
 	UNUSED(paletteFormat);
 
@@ -184,7 +184,7 @@ uint32 PSTextureCodec::encodedPaletteSize(int format, int paletteFormat) const
 
 bool PSTextureCodec::decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat)
 {
-	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
+	std::vector<uint8_t> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
 	{
@@ -200,7 +200,7 @@ bool PSTextureCodec::decode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		uint32 pal[16];
+		uint32_t pal[16];
 		decode32ColorsToRGBA(palette, 16, pal);
 		unswizzle4(image, &buffer[0], width, height);
 		convertIndexed4ToRGBA(&buffer[0], width * height, pal, result);
@@ -215,7 +215,7 @@ bool PSTextureCodec::decode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		uint32 pal[256];
+		uint32_t pal[256];
 		decode32ColorsToRGBA(palette, 256, pal);
 		rotatePalette32(pal);
 		unswizzle8(image, &buffer[0], width, height);
@@ -257,7 +257,7 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 		return false;
 	}
 
-	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
+	std::vector<uint8_t> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
 	{
@@ -273,8 +273,8 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		uint32 pal[16];
-		std::vector<uint8> indices(width * height);
+		uint32_t pal[16];
+		std::vector<uint8_t> indices(width * height);
 		if (!quantizer.quantize(image, 16, width, height, &indices[0], pal))
 		{
 			return false;
@@ -294,7 +294,7 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		uint32 pal[256];
+		uint32_t pal[256];
 		if (!quantizer.quantize(image, 256, width, height, &buffer[0], pal))
 		{
 			return false;
@@ -313,7 +313,7 @@ bool PSTextureCodec::encode(void* result, const void* image, int format, int wid
 			return false;
 		}
 
-		std::vector<uint32> data(width * height * 4);
+		std::vector<uint32_t> data(width * height * 4);
 		memcpy(&data[0], image, width * height * 4);
 		floydSteinberg(&data[0], width, height, 5, 5, 5, 8);
 		encode16ColorsFromRGBA(&data[0], width * height, result);

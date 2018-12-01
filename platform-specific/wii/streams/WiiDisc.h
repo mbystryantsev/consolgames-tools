@@ -121,7 +121,7 @@ public:
 		node->data.subtype   = subtype;
 		return node;
 	}
-	PNode addItemToTree(PNode parent, CString name, uint32 part, uint64 offset, uint64 size, int fst_reference, int data_type = dataFile){
+	PNode addItemToTree(PNode parent, CString name, uint32_t part, uint64_t offset, uint64_t size, int fst_reference, int data_type = dataFile){
 		PNode node = parent->addChild();
 		node->data.name   = name;
 		node->data.partition   = part;
@@ -160,13 +160,13 @@ void AfxMessageBox(const CString& s)
 #   define _file fd
 #endif
 
-uint16 be16 (const uint8 *p);
-uint32 be32 (const uint8 *p);
-uint64 be64 (const uint8 *p);
+uint16 be16 (const uint8_t *p);
+uint32_t be32 (const uint8_t *p);
+uint64_t be64 (const uint8_t *p);
 
-extern uint8 verbose_level;
+extern uint8_t verbose_level;
 size_t g_strnlen (const char *s, size_t size);
-uint32 get_dol_size (const uint8 *header);
+uint32_t get_dol_size (const uint8_t *header);
 
 
 
@@ -190,26 +190,26 @@ enum TmdSigType
 
 struct TmdContent
 {
-	uint32 cid;
+	uint32_t cid;
 	uint16 index;
 	uint16 type;
-	uint64 size;
-	uint8 hash[20];
+	uint64_t size;
+	uint8_t hash[20];
 };
 
 struct Tmd 
 {
 	TmdSigType sigType;
-	uint8 *sig;
+	uint8_t *sig;
 	char issuer[64];
-	uint8 version;
-	uint8 ca_crl_version;
-	uint8 signer_crl_version;
-	uint64 sys_version;
-	uint64 title_id;
-	uint32 title_type;
+	uint8_t version;
+	uint8_t ca_crl_version;
+	uint8_t signer_crl_version;
+	uint64_t sys_version;
+	uint64_t title_id;
+	uint32_t title_type;
 	uint16 group_id;
-	uint32 access_rights;
+	uint32_t access_rights;
 	uint16 title_version;
 	uint16 num_contents;
 	uint16 boot_index;
@@ -222,21 +222,21 @@ struct Tmd
 struct PartitionHeader 
 {
 	char console;
-	uint8 isGamecube;
-	uint8 isWii;
+	uint8_t isGamecube;
+	uint8_t isWii;
 
 	char gamecode[2];
 	char region;
 	char publisher[2];
 
-	uint8 hasMagic;
+	uint8_t hasMagic;
 	char name[0x60];
 
-	uint64 dolOffset;
-	uint64 dol_size;
+	uint64_t dolOffset;
+	uint64_t dol_size;
 
-	uint64 fstOffset;
-	uint64 fstSize;
+	uint64_t fstOffset;
+	uint64_t fstSize;
 };
 
 enum PartitionType
@@ -250,14 +250,14 @@ enum PartitionType
 
 struct Partition
 {
-	uint64 offset;
+	uint64_t offset;
 	PartitionHeader header;
-	uint64 appldr_size;
-	uint8 isEncrypted;
-	uint64 tmdOffset;
-	uint64 tmdSize;
+	uint64_t appldr_size;
+	uint8_t isEncrypted;
+	uint64_t tmdOffset;
+	uint64_t tmdSize;
 	Tmd* tmd;
-	uint64	h3_offset;
+	uint64_t	h3_offset;
 
 	char title_id_str[17];
 
@@ -267,18 +267,18 @@ struct Partition
 	char key_c[35];
 	AES_KEY key;
 
-	uint8 title_key[16];
+	uint8_t title_key[16];
 
-	uint64 data_offset;
-	uint64 data_size;
+	uint64_t data_offset;
+	uint64_t data_size;
 
-	uint64 cert_offset;
-	uint64 cert_size;
+	uint64_t cert_offset;
+	uint64_t cert_size;
 
-	uint8 dec_buffer[0x8000];
+	uint8_t dec_buffer[0x8000];
 
-	uint32 cached_block;
-	uint8 cache[0x7c00];
+	uint32_t cached_block;
+	uint8_t cache[0x7c00];
 };
 */
 
@@ -288,7 +288,7 @@ struct Partition
 class WiiDisc
 {
 public:
-	largesize_t findRequiredFreeSpaceInPartition(struct ImageFile *image, uint64 nPartition, uint32 nRequiredSize);
+	largesize_t findRequiredFreeSpaceInPartition(struct ImageFile *image, uint64_t nPartition, uint32_t nRequiredSize);
 	bool checkForFreeSpace(int partition, offset_t offset, int blockCount);
 	bool extractPartitionFiles(int partition, const std::string& directory);
 	bool doPartitionShrink(int partition);
@@ -301,30 +301,30 @@ public:
 	bool setBootMode();
 	offset_t nImageSize;
 
-	void aes_cbc_dec(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv);
-	void aes_cbc_enc(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv);
-	void sha1(uint8 *data, uint32 len, uint8 *hash);
+	void aes_cbc_dec(uint8_t *in, uint8_t *out, uint32_t len, uint8_t *key, uint8_t *iv);
+	void aes_cbc_enc(uint8_t *in, uint8_t *out, uint32_t len, uint8_t *key, uint8_t *iv);
+	void sha1(uint8_t *data, uint32_t len, uint8_t *hash);
 
-	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, uint8 *in, std::FILE * fIn= NULL, IWiiDiscProcessHandler* _ProgressBox = NULL);
-	bool wii_write_clusters(int partition, int cluster,  uint8 *in, uint32 nClusterOffset, uint32 nBytesToWrite, std::FILE * fIn);
-	int wii_read_data(int partition, uint64 offset, uint32 size, uint8 **out);
-	bool wii_read_cluster_hashes(int partition, int cluster, uint8 *h0, uint8 *h1, uint8 *h2);
-	int wii_write_cluster(int partition, int cluster, uint8 *in);
-	int wii_read_cluster(int partition, int cluster, uint8 *data, uint8 *header);
+	bool wii_write_data_file(int partition, offset_t offset, largesize_t size, uint8_t *in, std::FILE * fIn= NULL, IWiiDiscProcessHandler* _ProgressBox = NULL);
+	bool wii_write_clusters(int partition, int cluster,  uint8_t *in, uint32_t nClusterOffset, uint32_t nBytesToWrite, std::FILE * fIn);
+	int wii_read_data(int partition, uint64_t offset, uint32_t size, uint8_t **out);
+	bool wii_read_cluster_hashes(int partition, int cluster, uint8_t *h0, uint8_t *h1, uint8_t *h2);
+	int wii_write_cluster(int partition, int cluster, uint8_t *in);
+	int wii_read_cluster(int partition, int cluster, uint8_t *data, uint8_t *header);
 	bool wii_calc_group_hash(int partition, int cluster);
 	int wii_nb_cluster(int partition);
 
 	bool wii_trucha_signing(int partition);
 	bool discWriteDirect(offset_t offset, void* data, largesize_t size);
 	void markAsUnused(offset_t offset, largesize_t size);
-	bool mergeAndRelocateFSTs(unsigned char *pFST1, uint32 nSizeofFST1, unsigned char *pFST2, uint32 nSizeofFST2, unsigned char *pNewFST,  uint32 * nSizeofNewFST, uint64 nNewOffset, uint64 nOldOffset);
+	bool mergeAndRelocateFSTs(unsigned char *pFST1, uint32_t nSizeofFST1, unsigned char *pFST2, uint32_t nSizeofFST2, unsigned char *pNewFST,  uint32_t * nSizeofNewFST, uint64_t nNewOffset, uint64_t nOldOffset);
 	bool TruchaScrub(struct ImageFile * image, unsigned int nPartition);
 	bool RecreateOriginalFile(const std::string& csScrubbedName, const std::string& csDIFName, const std::string& csOutName);
 	bool CheckAndLoadKey(bool bLoadCrypto = false, struct ImageFile *image = NULL);
 	bool SaveDecryptedFile(CString csDestinationFilename,  struct ImageFile *image,
-							uint32 part, uint64 nFileOffset, uint64 nFileSize, bool bOverrideEncrypt = false);
+							uint32_t part, uint64_t nFileOffset, uint64_t nFileSize, bool bOverrideEncrypt = false);
 	bool LoadDecryptedFile(CString csDestinationFilename,  struct ImageFile *image,
-							uint32 part, uint64 nFileOffset, uint64 nFileSize, int nFSTReference, IWiiDiscProcessHandler* _ProgressBox = NULL);
+							uint32_t part, uint64_t nFileOffset, uint64_t nFileSize, int nFSTReference, IWiiDiscProcessHandler* _ProgressBox = NULL);
 	void Reset(void);
 	void markAsUsed(offset_t offset, largesize_t size);
 	void markAsUsedDC(offset_t partitionOffset, offset_t offset, largesize_t size, bool isEncrypted);
@@ -346,16 +346,16 @@ public:
 	PNode hPartition[20];
 	PNode hDisc;
 
-	uint8			image_parse_header (struct PartitionHeader *header, uint8 *buffer);
+	uint8_t			image_parse_header (struct PartitionHeader *header, uint8_t *buffer);
 	struct ImageFile *	image_init (const char *filename, int file_p = 0);
 	int			image_parse (struct ImageFile *image);
 	void			image_deinit (struct ImageFile *image, bool close_file = true);
-	uint32			parse_fst (uint8 *fst, const char *names, uint32 i, struct tree *tree, struct ImageFile *image, uint32 part, PNode hParent);
-	uint8			get_partitions (struct ImageFile *image);
-	void			tmd_load (struct ImageFile *image, uint32 part);
-	int			io_read (void *ptr, size_t size, struct ImageFile *image, uint64 offset);
-	size_t			io_read_part (void* ptr, size_t size, struct ImageFile *image, uint32 part, uint64 offset);
-	int			decrypt_block (struct ImageFile *image, uint32 part, uint32 block);
+	uint32_t			parse_fst (uint8_t *fst, const char *names, uint32_t i, struct tree *tree, struct ImageFile *image, uint32_t part, PNode hParent);
+	uint8_t			get_partitions (struct ImageFile *image);
+	void			tmd_load (struct ImageFile *image, uint32_t part);
+	int			io_read (void *ptr, size_t size, struct ImageFile *image, uint64_t offset);
+	size_t			io_read_part (void* ptr, size_t size, struct ImageFile *image, uint32_t part, uint64_t offset);
+	int			decrypt_block (struct ImageFile *image, uint32_t part, uint32_t block);
 
 
 CString	m_csText;
@@ -366,13 +366,13 @@ private:
 	ImageFile* m_imageFile;
 
 
-	uint32 parse_fst_and_save(uint8 *fst, const char *names, uint32 i, ImageFile *image, uint32 part);
+	uint32_t parse_fst_and_save(uint8_t *fst, const char *names, uint32_t i, ImageFile *image, uint32_t part);
 
-	uint64 findFirstData(uint64 nStartOffset,  uint64 nLength, bool bUsed = true);
-	bool CopyDiscDataDirect(struct ImageFile * image, int nPart, uint64 nSource, uint64 nDest, uint64 nLength);
-	uint64 SearchBackwards(uint64 nStartPosition, uint64 nEndPosition);
-	void FindFreeSpaceInPartition(_int64 nPartOffset, uint64 * pStart, uint64 * pSize);
-	void Write32( uint8 *p, uint32 nVal);
+	uint64_t findFirstData(uint64_t nStartOffset,  uint64_t nLength, bool bUsed = true);
+	bool CopyDiscDataDirect(struct ImageFile * image, int nPart, uint64_t nSource, uint64_t nDest, uint64_t nLength);
+	uint64_t SearchBackwards(uint64_t nStartPosition, uint64_t nEndPosition);
+	void FindFreeSpaceInPartition(_int64 nPartOffset, uint64_t * pStart, uint64_t * pSize);
+	void Write32( uint8_t *p, uint32_t nVal);
 
 	CString m_filename;
 };

@@ -8,8 +8,8 @@ public:
 	virtual bool isPaletteFormatSupported(int format) const override;
 	virtual bool isMipmapsSupported(int format) const override;
 	virtual int bestSuitablePaletteFormatFor(int textureFormat) const override;
-	virtual uint32 encodedRasterSize(int format, int width, int height) const override;
-	virtual uint32 encodedPaletteSize(int format, int paletteFormat) const override;
+	virtual uint32_t encodedRasterSize(int format, int width, int height) const override;
+	virtual uint32_t encodedPaletteSize(int format, int paletteFormat) const override;
 	virtual bool decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat) override;
 	virtual int defaultMipmapCount() const override;
 	virtual int minWidth(int format) const override;

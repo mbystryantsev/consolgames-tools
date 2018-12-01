@@ -6,8 +6,8 @@
 #include <core.h>
 #include <memory>
 
-//uint8		filesystemType;	// 0x01 = ISO9660, 0x02 = Joliet, 0xFF = NULL
-//uint8		volID[5];		// "CD001"
+//uint8_t		filesystemType;	// 0x01 = ISO9660, 0x02 = Joliet, 0xFF = NULL
+//uint8_t		volID[5];		// "CD001"
 
 namespace Consolgames
 {
@@ -40,7 +40,7 @@ IsoDirectory::IsoDirectory(SectorSource& r)
 
 	while( !done )
 	{
-		uint8 sector[2048];
+		uint8_t sector[2048];
 		m_internalReader.readSector(sector,i);
 		if( memcmp( &sector[1], "CD001", 5 ) == 0 )
 		{
@@ -109,8 +109,8 @@ void IsoDirectory::init(const IsoFileDescriptor& directoryEntry)
 	// parse directory sector
 	IsoFile dataStream (m_internalReader, directoryEntry);
 	m_files.clear();
-	uint32 remainingSize = directoryEntry.size;
-	uint8 b[257];
+	uint32_t remainingSize = directoryEntry.size;
+	uint8_t b[257];
 	while(remainingSize>=4) // hm hack :P
 	{
 		dataStream.read(b, 1);
@@ -217,7 +217,7 @@ bool IsoDirectory::isDir(const std::string& filePath) const
 	return (descriptor.isNull() || (findFile(filePath).flags & 2) == 2);
 }
 
-uint32 IsoDirectory::fileSize( const std::string& filePath ) const
+uint32_t IsoDirectory::fileSize( const std::string& filePath ) const
 {
 	return findFile( filePath ).size;
 }

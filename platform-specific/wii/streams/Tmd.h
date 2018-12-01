@@ -1,6 +1,6 @@
 #pragma once
 #include "WiiTypes.h"
-#include <core.h>
+#include <cinttypes>
 
 namespace Consolgames
 {
@@ -16,11 +16,11 @@ enum WiiPartitionType
 
 struct TmdContent
 {
-	uint32 cid;
+	uint32_t cid;
 	int index;
 	WiiPartitionType type;
 	largesize_t size;
-	uint8 hash[20];
+	uint8_t hash[20];
 };
 
 struct Tmd 
@@ -43,19 +43,19 @@ struct Tmd
 	}
 
 	TmdSigType sigType;
-	std::vector<uint8> signature;
+	std::vector<uint8_t> signature;
 	char issuer[64];
-	uint8 version;
-	uint8 ca_crl_version;
-	uint8 signer_crl_version;
-	uint64 sys_version;
-	uint64 title_id;
-	uint32 title_type;
-	uint16 group_id;
-	uint32 accessRights;
-	uint16 titleVersion;
-	uint16 numContents;
-	uint16 bootIndex;
+	uint8_t version;
+	uint8_t ca_crl_version;
+	uint8_t signer_crl_version;
+	uint64_t sys_version;
+	uint64_t title_id;
+	uint32_t title_type;
+	uint16_t group_id;
+	uint32_t accessRights;
+	uint16_t titleVersion;
+	uint16_t numContents;
+	uint16_t bootIndex;
 	std::vector<TmdContent> contents;
 };
 

@@ -22,7 +22,7 @@ MemoryStream::MemoryStream(const void* data, largesize_t size)
 	, m_bufferSize(size)
 	, m_size(size)
 	, m_mode(modeRead)
-	, m_constMemory(reinterpret_cast<const uint8*>(data))
+	, m_constMemory(reinterpret_cast<const uint8_t*>(data))
 	, m_externalPointer(true)
 	, m_position(0)
 {
@@ -30,9 +30,9 @@ MemoryStream::MemoryStream(const void* data, largesize_t size)
 }
 
 #ifdef CPP_SUPPORTS_MOVE_SEMANTICS
-MemoryStream::MemoryStream(std::vector<uint8>&& data)
+MemoryStream::MemoryStream(std::vector<uint8_t>&& data)
 	: Stream()
-	, m_buffer(std::forward<std::vector<uint8>>(data))
+	, m_buffer(std::forward<std::vector<uint8_t>>(data))
 	, m_bufferSize(data.size())
 	, m_size(data.size())
 	, m_mode(modeReadWrite)

@@ -23,12 +23,12 @@ class Archive
 private:
 	struct FileRecord
 	{
-		uint32 hash;
-		uint32 offset;
-		uint32 storedSize;
-		uint32 decompressedSize;
+		uint32_t hash;
+		uint32_t offset;
+		uint32_t storedSize;
+		uint32_t decompressedSize;
 
-		uint32 originalSize() const;
+		uint32_t originalSize() const;
 		bool isPacked() const;
 
 		bool operator ==(const FileRecord& other) const
@@ -72,7 +72,7 @@ public:
 		virtual bool stopRequested() = 0;
 	};
 
-	typedef std::map<uint32, uint32> MergeMap;
+	typedef std::map<uint32_t, uint32_t> MergeMap;
 
 	struct FileInfo
 	{
@@ -85,8 +85,8 @@ public:
 		}
 
 		int index;
-		uint32 offset;
-		uint32 size;
+		uint32_t offset;
+		uint32_t size;
 		bool packed;
 	};
 
@@ -96,19 +96,19 @@ public:
 	Archive(Consolgames::Stream* stream);
 	bool open();
 
-	bool extractFiles(const std::string& outDir, const std::set<uint32>& fileList = std::set<uint32>());
-	bool extractFiles(const std::wstring& outDir, const std::set<uint32>& fileList = std::set<uint32>());
+	bool extractFiles(const std::string& outDir, const std::set<uint32_t>& fileList = std::set<uint32_t>());
+	bool extractFiles(const std::wstring& outDir, const std::set<uint32_t>& fileList = std::set<uint32_t>());
 	bool rebuild(const std::wstring& outFile, FileSource& fileSource, const MergeMap& mergeMap = MergeMap());
 	bool rebuild(const std::wstring& outFile, const std::vector<std::wstring>& dirList, const MergeMap& mergeMap = MergeMap());
 	std::shared_ptr<Consolgames::Stream> openFile(const std::string& filename);
-	std::shared_ptr<Consolgames::Stream> openFile(uint32 fileHash);
+	std::shared_ptr<Consolgames::Stream> openFile(uint32_t fileHash);
 
 	void setNames(const std::list<std::string>& names);
 
 	void addProgressListener(IProgressListener* listener);
 
-	uint32 alignment() const;
-	FileInfo fileInfo(uint32 hash) const;
+	uint32_t alignment() const;
+	FileInfo fileInfo(uint32_t hash) const;
 	FileInfo fileInfo(const std::string& filename) const;
 
 private:
@@ -139,7 +139,7 @@ private:
 private:
 	bool extractFile(const FileRecord& record, Consolgames::Stream* stream);
 	bool extractFile(const FileRecord& record, const std::wstring& path);
-	uint32 alignSize(uint32 size) const;
+	uint32_t alignSize(uint32_t size) const;
 
 	void notifyProgressStart(int size);
 	void notifyProgress(int progress, const std::string& name);
@@ -150,18 +150,18 @@ private:
 	Consolgames::Stream* m_stream;
 	std::unique_ptr<Consolgames::Stream> m_fileStreamHolder;
 	std::vector<FileRecord> m_fileRecords;
-	std::map<uint32, const FileRecord*> m_fileRecordsMap;
+	std::map<uint32_t, const FileRecord*> m_fileRecordsMap;
 	Header m_header;
-	uint32 m_magicMarker1;
-	uint32 m_magicMarker2;
+	uint32_t m_magicMarker1;
+	uint32_t m_magicMarker2;
 	bool m_hasMagicMarker;
 	bool m_opened;
-	std::map<uint32, std::string> m_names;
-	uint32 m_alignment;
+	std::map<uint32_t, std::string> m_names;
+	uint32_t m_alignment;
 	std::list<IProgressListener*> m_progressListeners;
 	bool m_originsMode;
 
-	static const uint32 s_defaultAlignment;
+	static const uint32_t s_defaultAlignment;
 };
 
 }

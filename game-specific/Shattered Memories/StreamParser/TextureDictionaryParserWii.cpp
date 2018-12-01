@@ -21,29 +21,29 @@ bool TextureDictionaryParserWii::fetch()
 {
 	m_stream->setByteOrder(Stream::orderLittleEndian);
 
-	const uint32 pos = m_stream->position(); 
+	const uint32_t pos = m_stream->position(); 
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
-	const uint32 unk5 = m_stream->readUInt32();
-	const uint32 unk6 = m_stream->readUInt32();
-	const uint32 dataSize = m_stream->readUInt32();
-	const uint32 unk8 = m_stream->readUInt32();
+	const uint32_t unk1 = m_stream->readUInt32();
+	const uint32_t unk2 = m_stream->readUInt32();
+	const uint32_t unk5 = m_stream->readUInt32();
+	const uint32_t unk6 = m_stream->readUInt32();
+	const uint32_t dataSize = m_stream->readUInt32();
+	const uint32_t unk8 = m_stream->readUInt32();
 
 	if (dataSize == 0)
 	{
 		return false;
 	}
 
-	const uint32 unk9 = m_stream->readUInt32();
-	const uint32 unk10 = m_stream->readUInt32();
-	const uint32 unk11 = m_stream->readUInt32();
-	const uint32 unk12 = m_stream->readUInt32();
-	const uint32 unk13 = m_stream->readUInt32();
-	const uint32 unk14 = m_stream->readUInt32();
-	const uint32 unk15 = m_stream->readUInt32();
-	const uint32 unk16 = m_stream->readUInt32();
-	const uint32 unk17 = m_stream->readUInt32();
+	const uint32_t unk9 = m_stream->readUInt32();
+	const uint32_t unk10 = m_stream->readUInt32();
+	const uint32_t unk11 = m_stream->readUInt32();
+	const uint32_t unk12 = m_stream->readUInt32();
+	const uint32_t unk13 = m_stream->readUInt32();
+	const uint32_t unk14 = m_stream->readUInt32();
+	const uint32_t unk15 = m_stream->readUInt32();
+	const uint32_t unk16 = m_stream->readUInt32();
+	const uint32_t unk17 = m_stream->readUInt32();
 
 	m_stream->setByteOrder(Stream::orderBigEndian);
 
@@ -53,7 +53,7 @@ bool TextureDictionaryParserWii::fetch()
 
 	//DLOG << HEX << "Texture, position: " << m_stream->position() << ", name: " << name; 
 
-	const uint32 imageSize = m_stream->readUInt32();
+	const uint32_t imageSize = m_stream->readUInt32();
 
 	m_currentMetaInfo.width = m_stream->readUInt16();
 	m_currentMetaInfo.height = m_stream->readUInt16();
@@ -62,7 +62,7 @@ bool TextureDictionaryParserWii::fetch()
 	m_currentMetaInfo.textureFormat = m_stream->readUInt8();
 	m_currentMetaInfo.paletteFormat = static_cast<char>(m_stream->readUInt8());
 
-	const uint32 unk18 = m_stream->readUInt32();
+	const uint32_t unk18 = m_stream->readUInt32();
 
 	m_currentMetaInfo.palettePosition = 0;
 	m_currentMetaInfo.paletteSize = 0;
@@ -129,8 +129,8 @@ bool TextureDictionaryParserWii::initSegment()
 	}
 	m_streamSize = m_stream->readUInt32();
 
-	const uint32 unk1 = m_stream->readUInt32();
-	const uint32 unk2 = m_stream->readUInt32();
+	const uint32_t unk1 = m_stream->readUInt32();
+	const uint32_t unk2 = m_stream->readUInt32();
 
 	return true;
 }

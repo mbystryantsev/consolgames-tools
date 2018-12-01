@@ -13,7 +13,7 @@ static std::wstring filename(const std::wstring& path, const std::string& name)
 	return path + PATH_SEPARATOR_L + wstring(name.begin(), name.end());
 }
 
-static wstring filename(const wstring& path, uint32 hash, const std::string& ext = std::string())
+static wstring filename(const wstring& path, uint32_t hash, const std::string& ext = std::string())
 {
 	return filename(path, Hash::toString(hash) + ext);
 }
@@ -23,7 +23,7 @@ DirectoriesFileSource::DirectoriesFileSource(const vector<wstring>& directories)
 {
 }
 
-shared_ptr<Stream> DirectoriesFileSource::file(uint32 hash, FileAccessor&)
+shared_ptr<Stream> DirectoriesFileSource::file(uint32_t hash, FileAccessor&)
 {
 	for (vector<wstring>::const_iterator dir = m_directories.begin(); dir != m_directories.end(); dir++)
 	{

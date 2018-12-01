@@ -50,7 +50,7 @@ void IsoFile::init()
 	m_currentSectorNumber = m_fileEntry.lba;
 	m_currentOffset       = 0;
 	m_sectorOffset        = 0;
-	m_maxOffset           = std::max<uint32>(0, m_fileEntry.size);
+	m_maxOffset           = std::max<uint32_t>(0, m_fileEntry.size);
 
 	if (m_maxOffset > 0)
 	{
@@ -145,7 +145,7 @@ void IsoFile::makeDataAvailable()
 	}
 }
 
-uint8 IsoFile::readByte()
+uint8_t IsoFile::readByte()
 {
 	ASSERT(m_currentOffset < m_maxOffset);
 
@@ -172,7 +172,7 @@ largesize_t IsoFile::internalRead(void* dest, offset_t off, largesize_t len)
 			slen = static_cast<size_t>(m_maxOffset - m_currentOffset);
 		}
 
-		memcpy(reinterpret_cast<uint8*>(dest) + off, m_currentSector + m_sectorOffset, static_cast<size_t>(slen));
+		memcpy(reinterpret_cast<uint8_t*>(dest) + off, m_currentSector + m_sectorOffset, static_cast<size_t>(slen));
 
 		m_sectorOffset += slen;
 		m_currentOffset += slen;

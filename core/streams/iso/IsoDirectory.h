@@ -47,7 +47,7 @@ public:
 	bool isFile(const std::string& filePath) const;
 	bool isDir(const std::string& filePath) const;
 	
-	uint32 fileSize(const std::string& filePath) const;
+	uint32_t fileSize(const std::string& filePath) const;
 
 	IsoFileDescriptor findFile(const std::string& filePath) const;
 	

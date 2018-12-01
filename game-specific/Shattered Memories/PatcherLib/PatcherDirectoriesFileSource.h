@@ -12,7 +12,7 @@ class PatcherDirectoriesFileSource : public FileSource
 public:
 	PatcherDirectoriesFileSource(const QStringList& directories);
 
-	virtual std::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
+	virtual std::shared_ptr<Consolgames::Stream> file(uint32_t hash, FileAccessor& accessor) override;
 	virtual std::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
 
 private:

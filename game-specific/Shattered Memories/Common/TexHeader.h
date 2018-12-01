@@ -22,14 +22,14 @@ struct TexHeader
 	static TexHeader read(Consolgames::Stream* stream);
 	void write(Consolgames::Stream* stream) const;
 
-	uint32 platformSignature;
-	uint32 format;
+	uint32_t platformSignature;
+	uint32_t format;
 	int width;
 	int height;
 	int mipmapCount;
-	uint32 paletteFormat;
-	uint32 rasterSize;
-	uint32 paletteSize;
+	uint32_t paletteFormat;
+	uint32_t rasterSize;
+	uint32_t paletteSize;
 };
 
 }

@@ -14,17 +14,17 @@ IsoFileDescriptor::IsoFileDescriptor()
 {
 }
 
-IsoFileDescriptor::IsoFileDescriptor(const uint8* data, int length)
+IsoFileDescriptor::IsoFileDescriptor(const uint8_t* data, int length)
 {
 	*this = fromData(data, length);
 }
 
-IsoFileDescriptor IsoFileDescriptor::fromData(const uint8* data, int)
+IsoFileDescriptor IsoFileDescriptor::fromData(const uint8_t* data, int)
 {
 	IsoFileDescriptor info;
 
-	info.lba  = *reinterpret_cast<const uint32*>(&data[2]);
-	info.size = *reinterpret_cast<const uint32*>(&data[10]);
+	info.lba  = *reinterpret_cast<const uint32_t*>(&data[2]);
+	info.size = *reinterpret_cast<const uint32_t*>(&data[10]);
 
 	info.date.year      = data[18] + 1900;
 	info.date.month     = data[19];
@@ -40,7 +40,7 @@ IsoFileDescriptor IsoFileDescriptor::fromData(const uint8* data, int)
 
 	if(fileNameLength == 1)
 	{
-		uint8 c = data[33];
+		uint8_t c = data[33];
 
 		switch(c)
 		{
@@ -57,8 +57,8 @@ IsoFileDescriptor IsoFileDescriptor::fromData(const uint8* data, int)
 	else
 	{
 		// copy string and up-convert from ascii to wxChar
-		const uint8* fnsrc = data + 33;
-		const uint8* fnend = fnsrc + fileNameLength;
+		const uint8_t* fnsrc = data + 33;
+		const uint8_t* fnend = fnsrc + fileNameLength;
 
 		while (fnsrc != fnend)
 		{

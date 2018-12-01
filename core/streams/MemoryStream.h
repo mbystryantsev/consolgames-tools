@@ -15,7 +15,7 @@ public:
 	MemoryStream();
     MemoryStream(const void* data, largesize_t size);
 #ifdef CPP_SUPPORTS_MOVE_SEMANTICS
-	MemoryStream(std::vector<uint8>&& data);
+	MemoryStream(std::vector<uint8_t>&& data);
 #endif
     virtual ~MemoryStream(){}
 
@@ -37,9 +37,9 @@ private:
 	largesize_t m_bufferSize;
 	OpenMode m_mode;
 	largesize_t m_position;
-	uint8* m_memory;
-	const uint8* m_constMemory;
-	std::vector<uint8> m_buffer;
+	uint8_t* m_memory;
+	const uint8_t* m_constMemory;
+	std::vector<uint8_t> m_buffer;
 	bool m_externalPointer;
 };
 

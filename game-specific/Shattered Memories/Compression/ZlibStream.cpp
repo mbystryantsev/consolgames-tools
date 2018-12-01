@@ -60,7 +60,7 @@ void ZlibStream::flush()
 
 largesize_t ZlibStream::skip(largesize_t size)
 {
-	uint8 buf[s_chunkSize];
+	uint8_t buf[s_chunkSize];
 	largesize_t skipped = 0;
 	while (size > 0)
 	{

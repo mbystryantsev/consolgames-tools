@@ -26,7 +26,7 @@ using namespace ShatteredMemories;
 static void nvImageToRgba(const nv::Image& image, void* result)
 {
 #pragma pack(push, 1)
-struct RGBA {uint8 r, g, b, a;};
+struct RGBA {uint8_t r, g, b, a;};
 #pragma pack(pop)
 
 	RGBA* dst = static_cast<RGBA*>(result);
@@ -362,7 +362,7 @@ static unique_ptr<TextureCodec> codecForPlatform(Platform platform)
 }
 
 
-static Platform platformFromSignature(uint32 signature)
+static Platform platformFromSignature(uint32_t signature)
 {
 	switch (signature)
 	{
@@ -377,7 +377,7 @@ static Platform platformFromSignature(uint32 signature)
 	return platformUndefined;
 }
 
-static uint32 platformToSignature(Platform platform)
+static uint32_t platformToSignature(Platform platform)
 {
 	switch (platform)
 	{
@@ -448,9 +448,9 @@ static bool decodeTexture(Stream& stream, const string& destPath, bool decodeMip
 		cout << "WARNING: Actual and expected palette size are different!" << endl;
 	}
 
-	vector<uint8> rasterData(header.rasterSize);
-	vector<uint8> paletteData(header.paletteSize);
-	vector<uint8> image(resultWidth * resultHeight * 4);
+	vector<uint8_t> rasterData(header.rasterSize);
+	vector<uint8_t> paletteData(header.paletteSize);
+	vector<uint8_t> image(resultWidth * resultHeight * 4);
 	stream.read(&rasterData[0], header.rasterSize);
 	if (!paletteData.empty())
 	{
@@ -532,7 +532,7 @@ static bool encodeTexture(const string& filename, const string& destFile, Platfo
 		image.reset(resizedImage->createImage());
 	}
 
-	std::vector<uint32> rgba(image->width() * image->height());
+	std::vector<uint32_t> rgba(image->width() * image->height());
 	nvImageToRgba(*image, &rgba[0]);
 
 	TexHeader header;
@@ -740,10 +740,10 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 		const std::string name = extractPart(line, indexTextureName);
 		const int format = codec->textureFormatFromString(extractPart(line, indexFormat).c_str());
 		const int paletteFormat = (indexPaletteFormat == -1) ? TextureCodec::paletteFormatNone : codec->paletteFormatFromString(extractPart(line, indexPaletteFormat).c_str());
-		const uint32 rasterPosition = strtoul(extractPart(line, indexRasterPosition).c_str(), NULL, 16);
-		const uint32 rasterSize = strtoul(extractPart(line, indexRasterSize).c_str(), NULL, 16);
-		const uint32 palettePosition = strtoul(extractPart(line, indexPalettePosition).c_str(), NULL, 16);
-		const uint32 paletteSize = strtoul(extractPart(line, indexPaletteSize).c_str(), NULL, 16);
+		const uint32_t rasterPosition = strtoul(extractPart(line, indexRasterPosition).c_str(), NULL, 16);
+		const uint32_t rasterSize = strtoul(extractPart(line, indexRasterSize).c_str(), NULL, 16);
+		const uint32_t palettePosition = strtoul(extractPart(line, indexPalettePosition).c_str(), NULL, 16);
+		const uint32_t paletteSize = strtoul(extractPart(line, indexPaletteSize).c_str(), NULL, 16);
 
 		if (fileName.empty() || width == 0 || height == 0 || name.empty() || format == TextureCodec::textureFormatUndefined || rasterPosition == 0 || rasterSize == 0)
 		{
@@ -787,9 +787,9 @@ static bool extractTextures(Platform platform, const std::string& csvFile, const
 			return false;
 		}
 
-		vector<uint8> rasterData(rasterSize);
-		vector<uint8> paletteData(paletteSize);
-		vector<uint8> image(width * height * 4);
+		vector<uint8_t> rasterData(rasterSize);
+		vector<uint8_t> paletteData(paletteSize);
+		vector<uint8_t> image(width * height * 4);
 
 		textureStream->seek(rasterPosition, Stream::seekSet);
 		textureStream->read(&rasterData[0], rasterSize);
@@ -855,7 +855,7 @@ static bool encodeJPEG(const string& filename, const string& destFile, int quali
 #pragma pack(push, 1)
 	struct RGB24
 	{
-		uint8 r, g, b;
+		uint8_t r, g, b;
 	};
 #pragma pack(pop)
 

@@ -4,12 +4,13 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #endif
 
-#include <core.h>
 #include "aes.h"
+#include <core.h>
 #include <Nullable.h>
 #include <Tree.h>
 #include <vector>
 #include <string>
+#include <cinttypes>
 
 namespace Consolgames
 {
@@ -58,22 +59,22 @@ enum TmdSigType
 	SIG_RSA_4096
 };
 
-inline uint16 be16 (const uint8 *p)
+inline uint16_t be16 (const uint8_t *p)
 {
 	return (p[0] << 8) | p[1];
 }
 
-inline uint32 be32 (const uint8 *p)
+inline uint32_t be32 (const uint8_t *p)
 {
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
-inline uint64 be64 (const uint8 *p)
+inline uint64_t be64 (const uint8_t *p)
 {
-	return ((uint64) be32 (p) << 32) | be32 (p + 4);
+	return ((uint64_t) be32 (p) << 32) | be32 (p + 4);
 }
 
-#define ROUNDUP64B(x) (((uint64)(x) + 64 - 1) & ~(64 - 1))
+#define ROUNDUP64B(x) (((uint64_t)(x) + 64 - 1) & ~(64 - 1))
 
 struct PartitionHeader 
 {
@@ -86,10 +87,10 @@ struct PartitionHeader
 	char name[0x60];
 
 	offset_t dolOffset;
-	uint32 dolSize;
+	uint32_t dolSize;
 
 	offset_t fstOffset;
-	uint32 fstSize;
+	uint32_t fstSize;
 
 	static PartitionHeader parse(void* data)
 	{
@@ -173,7 +174,7 @@ struct FileInfo
 
 struct Certificate
 {
-	uint32 signatureType;
+	uint32_t signatureType;
 	char signature[256];
 	char issuer[64];
 	int tag;

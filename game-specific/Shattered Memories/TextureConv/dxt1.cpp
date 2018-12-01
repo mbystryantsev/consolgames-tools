@@ -125,7 +125,7 @@ void DXTCodec::decodeDXT1(const void* src, void* dest, int width, int height, in
 	int destX = 0;
 	int destY = 0;
 
-	const uint8* bytes = static_cast<const uint8*>(src);
+	const uint8_t* bytes = static_cast<const uint8_t*>(src);
 	for (int i = 0; i < mipmaps; i++)
 	{
 		const int mipmapWidth = std::max(width, s_minMipmapSide);
@@ -182,7 +182,7 @@ int DXTCodec::encodeDXT1(const void* src, void* dest, int width, int height)
 				}
 				else
 				{
-					squish::ColourSet colours(reinterpret_cast<const uint8*>(rgba.colors()), 0, true);
+					squish::ColourSet colours(reinterpret_cast<const uint8_t*>(rgba.colors()), 0, true);
 					fit.SetColourSet(&colours, squish::kDxt1);
 					fit.Compress(&block);
 				}

@@ -45,25 +45,25 @@ bool Map::open(Stream* stream)
 	header.bgLayerWH = stream->readUInt32();
 	header.tilesCanvasWH = stream->readUInt32();
 
-	uint32 palLayer0[16];
+	uint32_t palLayer0[16];
 	stream->read(palLayer0, sizeof(palLayer0));
 
-	uint32 palLayer1[16];
+	uint32_t palLayer1[16];
 	stream->read(palLayer1, sizeof(palLayer1));
 
-	uint32 palBG[16];
+	uint32_t palBG[16];
 	stream->read(palBG, sizeof(palBG));
 
-	std::vector<uint8> bgData(128 * 128 / 2);
+	std::vector<uint8_t> bgData(128 * 128 / 2);
 	stream->read(&bgData[0], bgData.size());
 
-	std::vector<uint32> indexesLayer1(0x2000);
+	std::vector<uint32_t> indexesLayer1(0x2000);
 	stream->read(&indexesLayer1[0], indexesLayer1.size() * 4);
 
-	std::vector<uint32> indexesLayer0(0x800);
+	std::vector<uint32_t> indexesLayer0(0x800);
 	stream->read(&indexesLayer0[0], indexesLayer0.size() * 4);
 
-	std::vector<uint8> tilesCanvas(512 * 512 / 2);
+	std::vector<uint8_t> tilesCanvas(512 * 512 / 2);
 	stream->read(&tilesCanvas[0], tilesCanvas.size());
 
 	m_layer1Raster.resize(c_layer1Width * c_layer1Height);
@@ -115,23 +115,23 @@ bool Map::save(const std::string& filename)
 		return false;
 	}
 
-	std::vector<uint8> tilesCanvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
+	std::vector<uint8_t> tilesCanvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
 
 	RowColMapEncoder encoder;
 
-	uint32 palBG[16];
-	std::vector<uint8> bgPixels(c_bgWidthHeight * c_bgWidthHeight / 2);
+	uint32_t palBG[16];
+	std::vector<uint8_t> bgPixels(c_bgWidthHeight * c_bgWidthHeight / 2);
 
 	if (!encoder.encodeBG(&m_bgRaster[0], &bgPixels[0], palBG))
 	{
 		return false;
 	}
 
-	uint32 palLayer1[16];
-	uint32 palLayer0[16];
+	uint32_t palLayer1[16];
+	uint32_t palLayer0[16];
 
-	std::vector<uint32> indicesLayer1(0x2000);
-	std::vector<uint32> indicesLayer0(0x800);
+	std::vector<uint32_t> indicesLayer1(0x2000);
+	std::vector<uint32_t> indicesLayer0(0x800);
 
 	if (!encoder.encodeLayers(&tilesCanvas[0], &m_layer1Raster[0], &m_layer0Raster[0], palLayer1, palLayer0, &indicesLayer1[0], &indicesLayer0[0]))
 	{

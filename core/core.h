@@ -1,4 +1,5 @@
 #pragma once
+#include <cinttypes>
 
 #if defined(_DEBUG) && !defined(CG_DEBUG)
 # define CG_DEBUG
@@ -26,11 +27,6 @@
 # define _CRT_SECURE_NO_DEPRECATE 1
 #endif
 
-typedef unsigned char    uint8;
-typedef unsigned short   uint16;
-typedef unsigned int     uint32;
-typedef unsigned __int64 uint64;
-
 namespace Consolgames
 {
 
@@ -46,17 +42,17 @@ namespace Consolgames
 # define PATH_SEPARATOR_STR_L L"/"
 #endif
 
-inline uint16 endian16(uint16 v)
+inline uint16_t endian16(uint16_t v)
 {
 	return (v >> 8) | (v << 8);
 }
 
-inline uint32 endian32(uint32 v)
+inline uint32_t endian32(uint32_t v)
 {
 	return (v >> 24) | (v << 24) | ((v >> 8) & 0xFF00) | ((v << 8) & 0xFF0000);
 }
 
-inline uint64 endian64(uint64 v)
+inline uint64_t endian64(uint64_t v)
 {
 	return (v >> 56)
 		| (v << 56)
@@ -163,14 +159,14 @@ public:
 	DLog& operator <<(const char* s){std::cout << s; return *this;}
 	DLog& operator <<(const std::string& s){std::cout << s; return *this;}
 	DLog& operator <<(const std::wstring& s){std::cout << s.c_str(); return *this;}
-	DLog& operator <<(__int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
-	DLog& operator <<(unsigned __int64 v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
-	DLog& operator <<(int v) { return (*this << (__int64)v); }
-	DLog& operator <<(unsigned int v) { return (*this << (unsigned __int64)v); }
-	DLog& operator <<(long v) { return (*this << (__int64)v); }
-	DLog& operator <<(unsigned long v) { return (*this << (unsigned __int64)v); }
-	DLog& operator <<(short v) { return (*this << (__int64)v); }
-	DLog& operator <<(unsigned short v) { return (*this << (unsigned __int64)v); }
+	DLog& operator <<(int64_t v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
+	DLog& operator <<(uint64_t v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
+	DLog& operator <<(int v) { return (*this << (int64_t)v); }
+	DLog& operator <<(unsigned int v) { return (*this << (uint64_t)v); }
+	DLog& operator <<(long v) { return (*this << (int64_t)v); }
+	DLog& operator <<(unsigned long v) { return (*this << (uint64_t)v); }
+	DLog& operator <<(short v) { return (*this << (int64_t)v); }
+	DLog& operator <<(unsigned short v) { return (*this << (uint64_t)v); }
 	DLog& operator <<(char c){std::cout << c; return *this;}
 	DLog& operator <<(unsigned char c){std::cout << c; return *this;}
 	DLog& operator <<(const LogModifiers& m){setModifier(m); return *this;}
@@ -204,8 +200,8 @@ const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 # define override
 #endif
 
-typedef __int64 offset_t;
-typedef __int64 largesize_t;
+typedef int64_t offset_t;
+typedef int64_t largesize_t;
 
 #if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1800)
 # define CPP_SUPPORTS_MOVE_SEMANTICS

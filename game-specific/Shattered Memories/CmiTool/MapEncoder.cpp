@@ -11,12 +11,12 @@ namespace
 #pragma pack(push, 1)
 struct RGBA
 {
-	uint8 r, g, b, a;
+	uint8_t r, g, b, a;
 };
 #pragma pack(pop)
 }
 
-bool MapEncoder::quantize(const void* pixels, int width, int height, void* result, uint32* palette, bool indexed8)
+bool MapEncoder::quantize(const void* pixels, int width, int height, void* result, uint32_t* palette, bool indexed8)
 {
 	liq_attr *attr = liq_attr_create();
 	if (attr == NULL)
@@ -57,7 +57,7 @@ bool MapEncoder::quantize(const void* pixels, int width, int height, void* resul
 	}
 	else
 	{
-		std::vector<uint8> indexedImage(width * height);
+		std::vector<uint8_t> indexedImage(width * height);
 		liq_write_remapped_image(res, image, &indexedImage[0], width * height);
 		indexed8ToIndexed4(&indexedImage[0], result, width * height);
 	}
@@ -69,9 +69,9 @@ bool MapEncoder::quantize(const void* pixels, int width, int height, void* resul
 	return true;
 }
 
-bool MapEncoder::encodeBG(const void* pixels, void* result, uint32* palette)
+bool MapEncoder::encodeBG(const void* pixels, void* result, uint32_t* palette)
 {
-	std::vector<uint8> data(c_bgWidthHeight * c_bgWidthHeight / 2);
+	std::vector<uint8_t> data(c_bgWidthHeight * c_bgWidthHeight / 2);
 	if (!quantize(pixels, c_bgWidthHeight, c_bgWidthHeight, &data[0], palette))
 	{
 		return false;

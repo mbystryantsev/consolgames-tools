@@ -8,8 +8,8 @@ using namespace Consolgames;
 namespace ShatteredMemories
 {
 
-const uint32 DataStreamParser::s_dataStreamId = 0x716;
-const uint32 DataStreamParser::s_segmentHeaderSize = 12;
+const uint32_t DataStreamParser::s_dataStreamId = 0x716;
+const uint32_t DataStreamParser::s_segmentHeaderSize = 12;
 
 bool DataStreamParser::MetaInfo::isNull()
 {
@@ -167,7 +167,7 @@ bool DataStreamParser::initSegment()
 
 	m_currentMetaInfo = readMetaInfo();
 
-	m_position = static_cast<uint32>(m_stream->position() - m_startStreamPosition - m_currSegmentPosition);
+	m_position = static_cast<uint32_t>(m_stream->position() - m_startStreamPosition - m_currSegmentPosition);
 
 	if (!m_currentMetaInfo.isNull())
 	{
@@ -247,17 +247,17 @@ bool DataStreamParser::atSegmentEnd() const
 	return (m_stream->position() == nextSegmentPosition());
 }
 
-uint32 DataStreamParser::totalSegmentSize() const
+uint32_t DataStreamParser::totalSegmentSize() const
 {
 	return m_segmentSize + s_segmentHeaderSize;
 }
 
-uint32 DataStreamParser::itemSize() const
+uint32_t DataStreamParser::itemSize() const
 {
 	return m_currentItemSize;
 }
 
-uint32 DataStreamParser::segmentSize() const
+uint32_t DataStreamParser::segmentSize() const
 {
 	return m_segmentSize;
 }

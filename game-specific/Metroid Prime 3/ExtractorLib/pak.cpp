@@ -22,7 +22,7 @@ static std::wstring strToWStr(const std::string& str)
 	return result;
 }
 
-static uint32 alignSize(uint32 size)
+static uint32_t alignSize(uint32_t size)
 {
 	return ((size + (ALIGN - 1)) / ALIGN) * ALIGN;
 }
@@ -44,7 +44,7 @@ Hash hashFromData(const char* c)
 	for (int i = 0; i < 8; i++)
 	{
 		hash <<= 8;
-		hash |= static_cast<uint8>(c[i]);
+		hash |= static_cast<uint8_t>(c[i]);
 	}
 	return hash;
 }
@@ -129,37 +129,37 @@ bool PakArchive::extractFile(Hash filenameHash, Consolgames::Stream* out)
 	return false;
 }
 
-uint32 PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkMem)
+uint32_t PakArchive::compressLzo(Stream* in, int size, Stream* out, void* lzoWorkMem)
 {
 	unsigned int lzo_size = 0;
 	const int cChunk = 0x4000;
-	uint8 buf[cChunk];
-	std::vector<uint8> compressionBuffer(MAX_LZO_SIZE(cChunk));
+	uint8_t buf[cChunk];
+	std::vector<uint8_t> compressionBuffer(MAX_LZO_SIZE(cChunk));
 	while (size > 0)
 	{
 		int chunk = std::min(cChunk, size);
 		lzo_uint lzoChunk = 0;
-		uint16 lzoChunkStored = 0;
+		uint16_t lzoChunkStored = 0;
 		size -= chunk;
 		in->read(buf, chunk);
 		VERIFY(lzo1x_999_compress(buf, chunk, &compressionBuffer[0], &lzoChunk, lzoWorkMem) == LZO_E_OK);
 		lzo_size += lzoChunk + 2;
-		lzoChunkStored = endian16(static_cast<uint16>(lzoChunk));
+		lzoChunkStored = endian16(static_cast<uint16_t>(lzoChunk));
 		out->write(&lzoChunkStored, 2);
 		out->write(&compressionBuffer[0], lzoChunk);
 	}
 	return lzo_size;
 }
 
-uint32 PakArchive::compressLzo(Stream* in, int size, Stream *out)
+uint32_t PakArchive::compressLzo(Stream* in, int size, Stream *out)
 {
 	return compressLzo(in, size, out, &m_lzoWorkMem[0]);
 }
 
-void PakArchive::decompressLzo(Stream* lzoStream, uint32 lzoSize, Stream* outStream)
+void PakArchive::decompressLzo(Stream* lzoStream, uint32_t lzoSize, Stream* outStream)
 {
-	uint8 lzoBuffer[MAX_CHUNK];
-	uint8 decompressionBuffer[MAX_LZO_SIZE(MAX_CHUNK)];
+	uint8_t lzoBuffer[MAX_CHUNK];
+	uint8_t decompressionBuffer[MAX_LZO_SIZE(MAX_CHUNK)];
 	while (lzoSize > 0)
 	{
 		unsigned short chunk = endian16(lzoStream->readUInt16());
@@ -172,10 +172,10 @@ void PakArchive::decompressLzo(Stream* lzoStream, uint32 lzoSize, Stream* outStr
 	}
 }
 
-uint32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture, uint8 flags)
+uint32_t PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool isTexture, uint8_t flags)
 {
 	int size = static_cast<int>(file->size());
-	uint32 totalSize = 0;
+	uint32_t totalSize = 0;
 	offset_t offset = stream->position();
 
 	if (isPacked)
@@ -201,7 +201,7 @@ uint32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool i
 
 		if (dataPacked)
 		{
-			const uint32 lzoSize = compressLzo(file, size, stream);
+			const uint32_t lzoSize = compressLzo(file, size, stream);
 			cmpdHeader.lzoSize = endian32(lzoSize) >> 8;
 			totalSize += lzoSize;
 		}
@@ -244,7 +244,7 @@ uint32 PakArchive::storeFile(Stream* file, Stream* stream, bool isPacked, bool i
 	return totalSize;
 }
 
-uint32 PakArchive::storeFile(const std::wstring& filename, Stream* stream, bool isPacked, bool isTexture, uint8 flags)
+uint32_t PakArchive::storeFile(const std::wstring& filename, Stream* stream, bool isPacked, bool isTexture, uint8_t flags)
 {
 	FileStream file(filename, Stream::modeRead);
 	return storeFile(&file, stream, isPacked, isTexture, flags);
@@ -487,7 +487,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 			if (!filename.empty())
 			{
 				bool isTexture = false;
-				uint8 flags = 0xFF;
+				uint8_t flags = 0xFF;
 				// read flags
 				if (files[i].packed != 0)
 				{
@@ -547,7 +547,7 @@ bool PakArchive::rebuild(Consolgames::Stream* outStream, const std::vector<std::
 	outStream->write(&segments[0], segments.size() * sizeof(SegmentRecord)); 
 								 
 	outStream->seek(m_rshdOffset, Stream::seekSet);
-	uint32 fileCount = endian32(files.size());
+	uint32_t fileCount = endian32(files.size());
 	outStream->write(&fileCount, 4);
 	
 	std::for_each(files.begin(), files.end(), swapFileEndian);

@@ -36,7 +36,7 @@ protected:
 	offset_t m_maxOffset;
 
 	int m_currentSectorNumber;
-	uint8	m_currentSector[sectorLength];
+	uint8_t	m_currentSector[sectorLength];
 	offset_t m_sectorOffset;
 
 public:
@@ -56,7 +56,7 @@ public:
 
 	const IsoFileDescriptor& entry() const;
 
-	uint8 readByte();
+	uint8_t readByte();
 	largesize_t read(void* dest, largesize_t len);
 
 protected:

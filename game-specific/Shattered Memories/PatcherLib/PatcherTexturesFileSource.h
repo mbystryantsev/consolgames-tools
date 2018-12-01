@@ -17,12 +17,12 @@ enum PartType
 
 struct PartInfoRecord
 {
-	uint32 offset() const
+	uint32_t offset() const
 	{
 		return (type == partRaster ? textureInfo.rasterOffset : textureInfo.paletteOffset);
 	}
 
-	uint32 size() const
+	uint32_t size() const
 	{
 		return (type == partRaster ? textureInfo.rasterSize : textureInfo.paletteSize);
 	}
@@ -37,7 +37,7 @@ public:
 	PatcherTexturesFileSource(FileSource* primarySource, const QString& texturesPath, const TextureDatabase& texturesDatabase,
 		Consolgames::Stream::ByteOrder streamsByteOrder, bool isOrigins);
 
-	virtual std::shared_ptr<Consolgames::Stream> file(uint32 hash, FileAccessor& accessor) override;
+	virtual std::shared_ptr<Consolgames::Stream> file(uint32_t hash, FileAccessor& accessor) override;
 	virtual std::shared_ptr<Consolgames::Stream> fileByName(const std::string& name, FileAccessor& accessor) override;
 
 private:

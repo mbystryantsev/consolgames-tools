@@ -16,10 +16,10 @@ public:
 		int bitsPerPixel;
 		int textureFormat;
 		int paletteFormat;
-		uint32 rasterPosition;
-		uint32 rasterSize;
-		uint32 palettePosition;
-		uint32 paletteSize;
+		uint32_t rasterPosition;
+		uint32_t rasterSize;
+		uint32_t palettePosition;
+		uint32_t paletteSize;
 	};
 
 public:

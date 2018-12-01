@@ -47,14 +47,14 @@ vector<wstring> dirList(int argc, const char* argv[])
 	return dirs;
 }
 
-set<uint32> hashList(int argc, const char* argv[])
+set<uint32_t> hashList(int argc, const char* argv[])
 {
-	set<uint32> hashes;
+	set<uint32_t> hashes;
 	for (int i = 4; i < argc; i++)
 	{
 		const char* str = argv[i];
 		char* end = NULL;
-		const uint32 hash = strtoul(str, &end, 16);
+		const uint32_t hash = strtoul(str, &end, 16);
 		if (*end != 0)
 		{
 			hashes.insert(Hash::calc(str));
@@ -114,7 +114,7 @@ int main(int argc, const char* argv[])
 		}
 
 		const string outDir = argv[3];
-		const set<uint32> hashes = hashList(argc, argv);
+		const set<uint32_t> hashes = hashList(argc, argv);
 		const list<string> names = fileList(argc, argv);
 		arc.setNames(names);
 		if (!arc.extractFiles(outDir, hashes))

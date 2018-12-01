@@ -5,7 +5,7 @@
 namespace Origins
 {
 
-static void copyTile(const uint32* canvas, int tileX, int tileY, uint32* dest, int destX, int destY, int destWidth, int destHeight)
+static void copyTile(const uint32_t* canvas, int tileX, int tileY, uint32_t* dest, int destX, int destY, int destWidth, int destHeight)
 {
 	for (int y = 0; y < 16; y++)
 	{
@@ -14,8 +14,8 @@ static void copyTile(const uint32* canvas, int tileX, int tileY, uint32* dest, i
 			break;
 		}
 
-		uint32* dst = dest + (destY + y) * destWidth + destX;
-		const uint32* src = canvas + (tileY + y) * c_tilesCanvasWidthHeight + tileX;
+		uint32_t* dst = dest + (destY + y) * destWidth + destX;
+		const uint32_t* src = canvas + (tileY + y) * c_tilesCanvasWidthHeight + tileX;
 		for (int x = 0; x < c_tileWidthHeight; x++)
 		{
 			if (destX + x >= destWidth || tileX + x >= c_tilesCanvasWidthHeight)
@@ -28,17 +28,17 @@ static void copyTile(const uint32* canvas, int tileX, int tileY, uint32* dest, i
 	}
 }
 
-static bool decodeLayer(void* result, const void* tilesCanvas, const uint32* indexes, const uint32* palette, int width, int height)
+static bool decodeLayer(void* result, const void* tilesCanvas, const uint32_t* indexes, const uint32_t* palette, int width, int height)
 {
-	std::vector<uint32> canvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);
+	std::vector<uint32_t> canvas(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);
 	{
-		std::vector<uint8> tilesData(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
+		std::vector<uint8_t> tilesData(c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight / 2);
 		deswizzle4(tilesCanvas, &tilesData[0], c_tilesCanvasWidthHeight, c_tilesCanvasWidthHeight);
 		indexed4ToRGBA(&tilesData[0], palette, &canvas[0], c_tilesCanvasWidthHeight * c_tilesCanvasWidthHeight);
 	}
 
-	uint32* dest = static_cast<uint32*>(result);
-	const uint32* idxPtr = indexes;
+	uint32_t* dest = static_cast<uint32_t*>(result);
+	const uint32_t* idxPtr = indexes;
 
 	std::fill_n(dest, width * height, palette[0]);
 
@@ -46,7 +46,7 @@ static bool decodeLayer(void* result, const void* tilesCanvas, const uint32* ind
 	{
 		for (int x = 0; x < width; x+=16)
 		{
-			const uint32 index = *idxPtr++;
+			const uint32_t index = *idxPtr++;
 			if (index == -1)
 			{
 				continue;
@@ -61,21 +61,21 @@ static bool decodeLayer(void* result, const void* tilesCanvas, const uint32* ind
 	return true;
 }
 
-bool MapDecoder::decodeLayer1(void* result, const void* tilesCanvas, const uint32* indexes, const uint32* palette)
+bool MapDecoder::decodeLayer1(void* result, const void* tilesCanvas, const uint32_t* indexes, const uint32_t* palette)
 {
 	return decodeLayer(result, tilesCanvas, indexes, palette, c_layer1Width, c_layer1Height);
 }
 
-bool MapDecoder::decodeLayer0(void* result, const void* tilesCanvas, const uint32* indexes, const uint32* palette)
+bool MapDecoder::decodeLayer0(void* result, const void* tilesCanvas, const uint32_t* indexes, const uint32_t* palette)
 {
 	return decodeLayer(result, tilesCanvas, indexes, palette, c_layer0Width, c_layer0Height);
 }
 
-bool MapDecoder::decodeBG(void* result, const void* bgData, const uint32* palette)
+bool MapDecoder::decodeBG(void* result, const void* bgData, const uint32_t* palette)
 {
-	uint8 raster[c_bgWidthHeight * c_bgWidthHeight / 2];
+	uint8_t raster[c_bgWidthHeight * c_bgWidthHeight / 2];
 	deswizzle4(bgData, raster, c_bgWidthHeight, c_bgWidthHeight);
-	indexed4ToRGBA(raster, palette, static_cast<uint32*>(result), c_bgWidthHeight * c_bgWidthHeight);
+	indexed4ToRGBA(raster, palette, static_cast<uint32_t*>(result), c_bgWidthHeight * c_bgWidthHeight);
 	return true;
 }
 

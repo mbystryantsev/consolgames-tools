@@ -167,7 +167,7 @@ void nv::SlowCompressor::compressDXT1a(const CompressionOptions::Private & compr
 			}
 			else
 			{
-				squish::ColourSet colours((uint8 *)rgba.colors(), squish::kDxt1|squish::kWeightColourByAlpha);
+				squish::ColourSet colours((uint8_t *)rgba.colors(), squish::kDxt1|squish::kWeightColourByAlpha);
 				fit.SetColourSet(&colours, squish::kDxt1);
 				fit.Compress(&block);
 			}
@@ -236,7 +236,7 @@ int EncodeDXT1(void* src, void* dest, int width, int height, bool flip, bool fas
                     }
                     else
                     {
-                        squish::ColourSet colours((uint8 *)rgba.colors(), squish::kDxt1|squish::kWeightColourByAlpha);
+                        squish::ColourSet colours((uint8_t *)rgba.colors(), squish::kDxt1|squish::kWeightColourByAlpha);
                         fit.SetColourSet(&colours, squish::kDxt1);
                         fit.Compress(&block_dxt);
                     }

@@ -17,45 +17,45 @@ namespace
 struct RGB565
 {
 	RGB565() : v(0){}
-	RGB565(uint32 v) : v(v){}
+	RGB565(uint32_t v) : v(v){}
 
 	union
 	{
 		struct
 		{
-			uint16 b : 5;
-			uint16 g : 6;
-			uint16 r : 5;
+			uint16_t b : 5;
+			uint16_t g : 6;
+			uint16_t r : 5;
 		};
-		uint16 v;
+		uint16_t v;
 	};
 };
 
 struct RGB5A3
 {
 	RGB5A3() : v(0){}
-	RGB5A3(uint32 v) : v(v){}
+	RGB5A3(uint32_t v) : v(v){}
 
 	union
 	{
 		struct
 		{
-			uint16 b : 5;
-			uint16 g : 5;
-			uint16 r : 5;
-			uint16 noAlpha : 1;
+			uint16_t b : 5;
+			uint16_t g : 5;
+			uint16_t r : 5;
+			uint16_t noAlpha : 1;
 		} rgb555;
 		
 		struct
 		{
-			uint16 b : 4;
-			uint16 g : 4;
-			uint16 r : 4;
-			uint16 a : 3;
-			uint16 noAlpha : 1;
+			uint16_t b : 4;
+			uint16_t g : 4;
+			uint16_t r : 4;
+			uint16_t a : 3;
+			uint16_t noAlpha : 1;
 		} rgba4443;
 
-		uint16 v;
+		uint16_t v;
 	};
 };
 
@@ -155,7 +155,7 @@ template <typename Color>
 static void encodeColorsFromRGBA(const void* colors, int count, void* dest)
 {
 	const RGBA* src = static_cast<const RGBA*>(colors);
-	uint16* dst = static_cast<uint16*>(dest);
+	uint16_t* dst = static_cast<uint16_t*>(dest);
 
 	while (count-- > 0)
 	{
@@ -201,7 +201,7 @@ static bool encodeColorsFromRGBA(WiiFormats::ImageFormat format, const void* col
 template <typename Color>
 static void decodeColorsToRGBA(const void* colors, int count, void* dest)
 {
-	const uint16* src = static_cast<const uint16*>(colors);
+	const uint16_t* src = static_cast<const uint16_t*>(colors);
 	RGBA* dst = static_cast<RGBA*>(dest);
 
 	while (count-- > 0)
@@ -242,7 +242,7 @@ static bool decodeColorsToRGBA(WiiFormats::ImageFormat format, const void* color
 	return false;
 }
 
-static void swapHalfBytes(uint8* data, int size)
+static void swapHalfBytes(uint8_t* data, int size)
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -337,7 +337,7 @@ static int blockSize(int format)
 	return 0;
 }
 
-uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height) const 
+uint32_t WiiTextureCodec::encodedRasterSize(int format, int width, int height) const 
 {
 	if (!isFormatSupported(format))
 	{
@@ -351,7 +351,7 @@ uint32 WiiTextureCodec::encodedRasterSize(int format, int width, int height) con
 	return std::max(minSize, (width * height * bpp) / 8);
 }
 
-uint32 WiiTextureCodec::encodedPaletteSize(int format, int) const 
+uint32_t WiiTextureCodec::encodedPaletteSize(int format, int) const 
 {
 	if (format == WiiFormats::imageFormatC4)
 	{
@@ -398,7 +398,7 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 		return true;
 	}
 	
-	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
+	std::vector<uint8_t> buffer(encodedRasterSize(format, width, height));
 
 	if (format == WiiFormats::imageFormatC4)
 	{
@@ -408,7 +408,7 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 			return false;
 		}
 
-		uint32 pal[16];
+		uint32_t pal[16];
 		if (!decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 16, pal))
 		{
 			return false;
@@ -426,7 +426,7 @@ bool WiiTextureCodec::decode(void* result, const void* image, int format, int wi
 			return false;
 		}
 
-		uint32 pal[256];
+		uint32_t pal[256];
 		if (!decodeColorsToRGBA(static_cast<WiiFormats::PaletteFormat>(paletteFormat), palette, 256, pal))
 		{
 			return false;
@@ -485,7 +485,7 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 		return true;
 	}
 
-	std::vector<uint8> buffer(encodedRasterSize(format, width, height));
+	std::vector<uint8_t> buffer(encodedRasterSize(format, width, height));
 
 	if (buffer.empty())
 	{
@@ -494,7 +494,7 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 
 	if (format == WiiFormats::imageFormatC4)
 	{
-		std::vector<uint8> indices(width * height);
+		std::vector<uint8_t> indices(width * height);
 
 		if (!isMipmap)
 		{
@@ -504,7 +504,7 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 				return false;
 			}
 
-			uint32 pal[16];
+			uint32_t pal[16];
 			if (!quantizer.quantize(image, 16, width, height, &indices[0], pal))
 			{
 				return false;
@@ -537,7 +537,7 @@ bool WiiTextureCodec::encode(void* result, const void* image, int format, int wi
 				return false;
 			}
 
-			uint32 pal[256];
+			uint32_t pal[256];
 			if (!quantizer.quantize(image, 256, width, height, &buffer[0], palette))
 			{
 				return false;

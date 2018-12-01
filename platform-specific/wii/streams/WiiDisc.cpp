@@ -91,21 +91,21 @@ PNode CWIIScrubberDlg::FindDataPartition()
 
 /******* FROM stdafx.h *********/
 
-uint8 verbose_level = 0;
+uint8_t verbose_level = 0;
 
-uint16 be16 (const uint8 *p)
+uint16 be16 (const uint8_t *p)
 {
 	return (p[0] << 8) | p[1];
 }
 
-uint32 be32 (const uint8 *p)
+uint32_t be32 (const uint8_t *p)
 {
 	return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 }
 
-uint64 be64 (const uint8 *p)
+uint64_t be64 (const uint8_t *p)
 {
-	return ((uint64) be32 (p) << 32) | be32 (p + 4);
+	return ((uint64_t) be32 (p) << 32) | be32 (p + 4);
 }
 
 
@@ -120,11 +120,11 @@ size_t g_strnlen (const char *s, size_t size)
 	return size;
 }
 
-uint32 get_dol_size (const uint8 *header)
+uint32_t get_dol_size (const uint8_t *header)
 {
-	uint8 i;
-	uint32 offset, size;
-	uint32 max = 0;
+	uint8_t i;
+	uint32_t offset, size;
+	uint32_t max = 0;
 
 	// iterate through the 7 code segments
 	for (i = 0; i < 7; ++i)
@@ -153,7 +153,7 @@ uint32 get_dol_size (const uint8 *header)
 //#include "WIIScrubberDlg.h"
 
 /* Trucha signature */
-uint8 trucha_signature[256] =
+uint8_t trucha_signature[256] =
 {
 	0x57, 0x61, 0x4E, 0x69, 0x4E, 0x4B, 0x6F, 0x4B,
 	0x4F, 0x57, 0x61, 0x53, 0x48, 0x65, 0x52, 0x65,
@@ -215,7 +215,7 @@ WiiDisc::WiiDisc(void* pParent)
 	hDisc = NULL;
 
 	// then clear the decrypt key
-	uint8 key[16];
+	uint8_t key[16];
 
 	memset(key,0,16);
 
@@ -236,7 +236,7 @@ WiiDisc::~WiiDisc()
 }
 
 /*
-uint8 WiiDisc::image_parse_header (struct PartitionHeader *header, uint8 *buffer)
+uint8_t WiiDisc::image_parse_header (struct PartitionHeader *header, uint8_t *buffer)
 {
 	memset (header, 0, sizeof (struct PartitionHeader));
 
@@ -286,12 +286,12 @@ uint8 WiiDisc::image_parse_header (struct PartitionHeader *header, uint8 *buffer
 }
 */
 
-uint32 WiiDisc::parse_fst(uint8 *fst, const char *names, uint32 i, struct tree *tree, uint32 part, PNode pParent)
+uint32_t WiiDisc::parse_fst(uint8_t *fst, const char *names, uint32_t i, struct tree *tree, uint32_t part, PNode pParent)
 {
-	uint64 offset;
-	uint32 size;
+	uint64_t offset;
+	uint32_t size;
 	const char *name;
-	uint32 j;
+	uint32_t j;
 
 	name = names + (be32 (fst + 12 * i) & 0x00ffffff);
 	size = be32 (fst + 12 * i + 8);
@@ -351,13 +351,13 @@ uint32 WiiDisc::parse_fst(uint8 *fst, const char *names, uint32 i, struct tree *
 }
 
 
-uint32 WiiDisc::parse_fst_and_save(uint8 *fst, const char *names, uint32 i, ImageFile *image, uint32 part)
+uint32_t WiiDisc::parse_fst_and_save(uint8_t *fst, const char *names, uint32_t i, ImageFile *image, uint32_t part)
 {
 	//MSG msg;
-	uint64 offset;
-	uint32 size;
+	uint64_t offset;
+	uint32_t size;
 	const char *name;
-	uint32 j;
+	uint32_t j;
 	CString	csTemp;
 
 	name = names + (be32 (fst + 12 * i) & 0x00ffffff);
@@ -432,18 +432,18 @@ uint32 WiiDisc::parse_fst_and_save(uint8 *fst, const char *names, uint32 i, Imag
 	}
 }
 
-uint8 WiiDisc::get_partitions (struct ImageFile *image)
+uint8_t WiiDisc::get_partitions (struct ImageFile *image)
 {
-	uint8 buffer[16];
-	uint64 part_tbl_offset;
-	uint64 chan_tbl_offset;
-	uint32 i;
+	uint8_t buffer[16];
+	uint64_t part_tbl_offset;
+	uint64_t chan_tbl_offset;
+	uint32_t i;
 
-	uint8 title_key[16];
-	uint8 iv[16];
-	uint8 partition_key[16];
+	uint8_t title_key[16];
+	uint8_t iv[16];
+	uint8_t partition_key[16];
 
-	uint32 nchans;
+	uint32_t nchans;
 
 
 	// clear out the old memory allocated
@@ -468,8 +468,8 @@ uint8 WiiDisc::get_partitions (struct ImageFile *image)
 	image->nparts += nchans;
 
 
-	part_tbl_offset = uint64 (be32 (&buffer[4])) * ((uint64)(4));
-	chan_tbl_offset = (uint64 )(be32 (&buffer[12])) * ((uint64) (4));
+	part_tbl_offset = uint64_t (be32 (&buffer[4])) * ((uint64_t)(4));
+	chan_tbl_offset = (uint64_t )(be32 (&buffer[12])) * ((uint64_t) (4));
 	DLOG << "Partition table offset: " << part_tbl_offset;
 	DLOG << "Channel table offset: " << chan_tbl_offset;
 
@@ -527,7 +527,7 @@ uint8 WiiDisc::get_partitions (struct ImageFile *image)
 			image->parts[i].chan_id[3] = buffer[7];
 		}
 
-		image->parts[i].offset = (uint64)(be32 (buffer)) * ((uint64)(4));
+		image->parts[i].offset = (uint64_t)(be32 (buffer)) * ((uint64_t)(4));
 
 		AddToLog("partition offset: ", image->parts[i].offset);
 
@@ -536,12 +536,12 @@ uint8 WiiDisc::get_partitions (struct ImageFile *image)
 
 
 		io_read (buffer, 8, image, image->parts[i].offset + 0x2b8);
-		image->parts[i].data_offset = (uint64)(be32 (buffer)) << 2;
-		image->parts[i].data_size = (uint64)(be32 (&buffer[4])) << 2;
+		image->parts[i].data_offset = (uint64_t)(be32 (buffer)) << 2;
+		image->parts[i].data_size = (uint64_t)(be32 (&buffer[4])) << 2;
 
 		// now get the H3 offset
 		io_read (buffer,4, image, image->parts[i].offset + 0x2b4);
-		image->parts[i].h3_offset = (uint64)(be32 (buffer)) << 2 ;
+		image->parts[i].h3_offset = (uint64_t)(be32 (buffer)) << 2 ;
 
 		AddToLog("partition data offset:", image->parts[i].data_offset);
 		AddToLog("partition data size:", image->parts[i].data_size);
@@ -602,7 +602,7 @@ struct ImageFile * WiiDisc::image_init (const char *filename, int file_p)
 
 	//OFSTRUCT OpenBuff;
 
-	uint8 buffer[0x440];
+	uint8_t buffer[0x440];
 	m_csFilename = "";
 
 	if(!fp) fp = _open (filename, _O_BINARY | _O_RDWR);
@@ -686,12 +686,12 @@ struct ImageFile * WiiDisc::image_init (const char *filename, int file_p)
 */
 int WiiDisc::image_parse (struct ImageFile *image)
 {
-	uint8 buffer[0x440];
-	uint8 *fst;
-	uint32 i;
-	uint8 j, valid, nvp;
+	uint8_t buffer[0x440];
+	uint8_t *fst;
+	uint32_t i;
+	uint8_t j, valid, nvp;
 
-	uint32 nfiles;
+	uint32_t nfiles;
 
 	PNode hPartitionBin;
 
@@ -766,16 +766,16 @@ int WiiDisc::image_parse (struct ImageFile *image)
 			//hPartitionBin = m_pParent->AddItemToTree(csText, hPartition[i]);
 			hPartitionBin = m_pParent->addItemToTree(hPartition[i], "partition.bin", i, image->parts[i].offset, image->parts[i].data_offset, -4, dataPartitionBin);
 			// add on the boot.bin
-			AddToLog("\\boot.bin", image->parts[i].offset + image->parts[i].data_offset, (uint64)0x440);
-			markAsUsedDC(image->parts[i].offset + image->parts[i].data_offset, 0, (uint64)0x440, image->parts[i].isEncrypted);
-			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [0]", "boot.bin", i, (uint64) 0x0, (uint64)0x440);
-			m_pParent->addItemToTree(hPartition[i], "boot.bin", i, (uint64)0, (uint64)0x440, 0, dataFile);
+			AddToLog("\\boot.bin", image->parts[i].offset + image->parts[i].data_offset, (uint64_t)0x440);
+			markAsUsedDC(image->parts[i].offset + image->parts[i].data_offset, 0, (uint64_t)0x440, image->parts[i].isEncrypted);
+			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [0]", "boot.bin", i, (uint64_t) 0x0, (uint64_t)0x440);
+			m_pParent->addItemToTree(hPartition[i], "boot.bin", i, (uint64_t)0, (uint64_t)0x440, 0, dataFile);
 
 
 			// add on the bi2.bin
-			AddToLog("\\bi2.bin", image->parts[i].offset + image->parts[i].data_offset + 0x440, (uint64)0x2000);
-			markAsUsedDC(image->parts[i].offset + image->parts[i].data_offset, 0x440, (uint64)0x2000, image->parts[i].isEncrypted);
-			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [0]", "bi2.bin", i, (uint64) 0x440, (uint64)0x2000);
+			AddToLog("\\bi2.bin", image->parts[i].offset + image->parts[i].data_offset + 0x440, (uint64_t)0x2000);
+			markAsUsedDC(image->parts[i].offset + image->parts[i].data_offset, 0x440, (uint64_t)0x2000, image->parts[i].isEncrypted);
+			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [0]", "bi2.bin", i, (uint64_t) 0x440, (uint64_t)0x2000);
 			//m_pParent->AddItemToTree(csText, hPartition[i]);
 			m_pParent->addItemToTree(hPartition[i], "bi2.bin", i, 0x440, 0x2000, 0, dataFile);
 		}
@@ -790,7 +790,7 @@ int WiiDisc::image_parse (struct ImageFile *image)
 		{
 			AddToLog("\\apploader.img", image->parts[i].offset+ image->parts[i].data_offset +0x2440, image->parts[i].appldr_size);
 			markAsUsedDC(	image->parts[i].offset + image->parts[i].data_offset, 0x2440, image->parts[i].appldr_size, image->parts[i].isEncrypted);
-			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-3]", "apploader.img", i, (uint64) 0x2440, (uint64) image->parts[i].appldr_size);
+			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-3]", "apploader.img", i, (uint64_t) 0x2440, (uint64_t) image->parts[i].appldr_size);
 			//m_pParent->AddItemToTree(csText, hPartition[i]);
 			m_pParent->addItemToTree(hPartition[i], "apploader.img", i, 0x2440, image->parts[i].appldr_size, -3, dataFile);
 		}
@@ -837,16 +837,16 @@ int WiiDisc::image_parse (struct ImageFile *image)
 			m_pParent->addItemToTree(hPartitionBin, "tmd.bin", i, image->parts[i].tmdOffset, image->parts[i].tmdSize, -5, dataFile);
 
 			AddToLog("\\cert.bin", image->parts[i].offset + image->parts[i].cert_offset, image->parts[i].cert_size);
-			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-6]", "cert.bin", i, (uint64)image->parts[i].cert_offset, (uint64)image->parts[i].cert_size);
-			m_pParent->addItemToTree(hPartitionBin, "cert.bin", i, (uint64)image->parts[i].cert_offset, (uint64)image->parts[i].cert_size, -6, dataFile);
+			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-6]", "cert.bin", i, (uint64_t)image->parts[i].cert_offset, (uint64_t)image->parts[i].cert_size);
+			m_pParent->addItemToTree(hPartitionBin, "cert.bin", i, (uint64_t)image->parts[i].cert_offset, (uint64_t)image->parts[i].cert_size, -6, dataFile);
 
 			// add on the H3
-			AddToLog("\\h3.bin", image->parts[i].offset + image->parts[i].h3_offset, (uint64)0x18000);
-			markAsUsedDC(	image->parts[i].offset, image->parts[i].h3_offset, (uint64)0x18000, false);
+			AddToLog("\\h3.bin", image->parts[i].offset + image->parts[i].h3_offset, (uint64_t)0x18000);
+			markAsUsedDC(	image->parts[i].offset, image->parts[i].h3_offset, (uint64_t)0x18000, false);
 
-			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-7]", "h3.bin", i, (uint64) image->parts[i].h3_offset, (uint64)0x18000);
+			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-7]", "h3.bin", i, (uint64_t) image->parts[i].h3_offset, (uint64_t)0x18000);
 
-			m_pParent->addItemToTree(hPartitionBin, "h3.bin", i, (uint64) image->parts[i].h3_offset, (uint64)0x18000, -7, dataFile);
+			m_pParent->addItemToTree(hPartitionBin, "h3.bin", i, (uint64_t) image->parts[i].h3_offset, (uint64_t)0x18000, -7, dataFile);
 		}
 
 
@@ -861,8 +861,8 @@ int WiiDisc::image_parse (struct ImageFile *image)
 			//csText.Format("%s [0x%lX] [0x%I64X] [0x%I64X] [-1]", "fst.bin", i, image->parts[i].header.fst_offset, image->parts[i].header.fst_size);
 			m_pParent->addItemToTree(hPartition[i], "fst.bin", i, image->parts[i].header.fst_offset, image->parts[i].header.fst_size, -1, dataFile);
 
-			fst = (uint8 *) (malloc ((uint32)(image->parts[i].header.fst_size)));
-			if (io_read_part (fst, (uint32)(image->parts[i].header.fst_size), image, i, image->parts[i].header.fst_offset) != image->parts[i].header.fst_size)
+			fst = (uint8_t *) (malloc ((uint32_t)(image->parts[i].header.fst_size)));
+			if (io_read_part (fst, (uint32_t)(image->parts[i].header.fst_size), image, i, image->parts[i].header.fst_offset) != image->parts[i].header.fst_size)
 			{
 				AfxMessageBox("fst.bin");
 				free (fst);
@@ -898,14 +898,14 @@ int WiiDisc::image_parse (struct ImageFile *image)
 }
 
 /*
-void WiiDisc::tmd_load (struct ImageFile *image, uint32 part)
+void WiiDisc::tmd_load (struct ImageFile *image, uint32_t part)
 {
 	struct tmd *tmd;
-	uint32 tmd_offset, tmd_size;
+	uint32_t tmd_offset, tmd_size;
 	enum TmdSigType sig = SIG_UNKNOWN;
 
-	uint64 off, cert_size, cert_off;
-	uint8 buffer[64];
+	uint64_t off, cert_size, cert_off;
+	uint8_t buffer[64];
 	uint16 i, s;
 
 	off = image->parts[part].offset;
@@ -1014,7 +1014,7 @@ void WiiDisc::tmd_load (struct ImageFile *image, uint32 part)
 */
 
 /*
-int WiiDisc::io_read (void *ptr, size_t size, struct ImageFile *image, uint64 offset)
+int WiiDisc::io_read (void *ptr, size_t size, struct ImageFile *image, uint64_t offset)
 {
 	size_t bytes;
 	__int64 nSeek;
@@ -1036,7 +1036,7 @@ int WiiDisc::io_read (void *ptr, size_t size, struct ImageFile *image, uint64 of
 }
 */
 
-int WiiDisc::decrypt_block (struct ImageFile *image, uint32 part, uint32 block)
+int WiiDisc::decrypt_block (struct ImageFile *image, uint32_t part, uint32_t block)
 {
 	if (block == image->parts[part].cached_block)
 		return 0;
@@ -1044,7 +1044,7 @@ int WiiDisc::decrypt_block (struct ImageFile *image, uint32 part, uint32 block)
 
 	if (io_read (image->parts[part].dec_buffer, 0x8000, image,
 				 image->parts[part].offset +
-				 image->parts[part].data_offset + (uint64)(0x8000) * (uint64)(block))
+				 image->parts[part].data_offset + (uint64_t)(0x8000) * (uint64_t)(block))
 			!= 0x8000)
 	{
 		AfxMessageBox("decrypt read");
@@ -1062,11 +1062,11 @@ int WiiDisc::decrypt_block (struct ImageFile *image, uint32 part, uint32 block)
 }
 
 size_t WiiDisc::io_read_part(void *ptr, size_t size, struct ImageFile *image,
-							  uint32 part, uint64 offset)
+							  uint32_t part, uint64_t offset)
 {
-	uint32 block = (uint32)(offset / (uint64)(0x7c00));
-	uint32 cache_offset = (uint32)(offset % (uint64)(0x7c00));
-	uint32 cache_size;
+	uint32_t block = (uint32_t)(offset / (uint64_t)(0x7c00));
+	uint32_t cache_offset = (uint32_t)(offset % (uint64_t)(0x7c00));
+	uint32_t cache_size;
 	unsigned char *dst = static_cast<unsigned char*>(ptr);
 
 	if (!image->parts[part].isEncrypted)
@@ -1099,12 +1099,12 @@ size_t WiiDisc::io_read_part(void *ptr, size_t size, struct ImageFile *image,
 unsigned int WiiDisc::CountBlocksUsed()
 {
 	unsigned int	nRetVal = 0;;
-	uint64				nBlock = 0;
-	uint64				i = 0;
+	uint64_t				nBlock = 0;
+	uint64_t				i = 0;
 	unsigned char	cLastBlock = 0x01;
 
 	AddToLog("------------------------------------------------------------------------------");
-	for ( i =0; i < (nImageSize / (uint64)(0x8000)); i++)
+	for ( i =0; i < (nImageSize / (uint64_t)(0x8000)); i++)
 	{
 		nRetVal += pFreeTable[i];
 		if (cLastBlock!=pFreeTable[i])
@@ -1112,11 +1112,11 @@ unsigned int WiiDisc::CountBlocksUsed()
 			// change so show
 			if (1==cLastBlock)
 			{
-				AddToLog("Marked Content", nBlock * (uint64)(0x8000), i*(uint64)(0x8000) - 1, (i-nBlock)*32);
+				AddToLog("Marked Content", nBlock * (uint64_t)(0x8000), i*(uint64_t)(0x8000) - 1, (i-nBlock)*32);
 			}
 			else
 			{
-				AddToLog("Empty Content", nBlock * (uint64)(0x8000), i*(uint64)(0x8000) - 1, (i-nBlock)*32);
+				AddToLog("Empty Content", nBlock * (uint64_t)(0x8000), i*(uint64_t)(0x8000) - 1, (i-nBlock)*32);
 			}
 			nBlock = i;
 			cLastBlock = pFreeTable[i];
@@ -1126,11 +1126,11 @@ unsigned int WiiDisc::CountBlocksUsed()
 	// output the final range
 	if (1==cLastBlock)
 	{
-		AddToLog("Marked Content", nBlock *(uint64)(0x8000), nImageSize - 1, (i-nBlock)*32);
+		AddToLog("Marked Content", nBlock *(uint64_t)(0x8000), nImageSize - 1, (i-nBlock)*32);
 	}
 	else
 	{
-		AddToLog("Empty Content", nBlock * (uint64)(0x8000), nImageSize - 1, (i-nBlock)*32);
+		AddToLog("Empty Content", nBlock * (uint64_t)(0x8000), nImageSize - 1, (i-nBlock)*32);
 	}
 	AddToLog("------------------------------------------------------------------------------");
 
@@ -1217,7 +1217,7 @@ BOOL WiiDisc::CleanupISO(CString csFileIn, CString csFileOut, int nMode, int nHe
 		break;
 	}
 
-	m_progressHandler->setRange(0, (int)((nImageSize / (uint64)(0x8000))));
+	m_progressHandler->setRange(0, (int)((nImageSize / (uint64_t)(0x8000))));
 	m_progressHandler->setPosition(0);
 
 	CString csTempString;
@@ -1242,7 +1242,7 @@ BOOL WiiDisc::CleanupISO(CString csFileIn, CString csFileOut, int nMode, int nHe
 	// check to see if we have to write it -  allow for bigger discs now
 	// as well as smaller ones
 	for( unsigned int i =0;
-			((i < (nImageSize/ (uint64)(0x8000)))&&(!feof(fIn)));
+			((i < (nImageSize/ (uint64_t)(0x8000)))&&(!feof(fIn)));
 			i++)
 	{
 
@@ -1425,7 +1425,7 @@ void WiiDisc::Reset()
 	}
 
 	// then clear the decrypt key
-	uint8 key[16];
+	uint8_t key[16];
 
 	memset(key,0,16);
 
@@ -1437,9 +1437,9 @@ void WiiDisc::Reset()
 
 bool WiiDisc::saveDecryptedFile(const std::string& destFilename, int partition, offset_t offset, largesize_t size, bool overrideEncrypt)
 {
-	uint32 block = (uint32)(offset / (uint64)(0x7c00));
-	uint32 cache_offset = (uint32)(offset % (uint64)(0x7c00));
-	uint64 cache_size = 0;
+	uint32_t block = (uint32_t)(offset / (uint64_t)(0x7c00));
+	uint32_t cache_offset = (uint32_t)(offset % (uint64_t)(0x7c00));
+	uint64_t cache_size = 0;
 
 	unsigned char cBuffer[0x8000];
 
@@ -1449,7 +1449,7 @@ bool WiiDisc::saveDecryptedFile(const std::string& destFilename, int partition, 
 	{
 		if (-1==_lseeki64 (m_imageFile->fp, offset, SEEK_SET))
 		{
-			//uint32 x = GetLastError();
+			//uint32_t x = GetLastError();
 			DLOG << "io_seek error";
 			return false;
 		}
@@ -1461,7 +1461,7 @@ bool WiiDisc::saveDecryptedFile(const std::string& destFilename, int partition, 
 			{
 				cache_size = 0x8000;
 			}
-			::_read(m_imageFile->fp, &cBuffer[0], (uint32)(cache_size));
+			::_read(m_imageFile->fp, &cBuffer[0], (uint32_t)(cache_size));
 			outStream.write(cBuffer, cache_size);
 			size -= cache_size;
 		}
@@ -1494,15 +1494,15 @@ bool WiiDisc::saveDecryptedFile(const std::string& destFilename, int partition, 
 	return true;
 }
 
-bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, uint64 offset, uint64 size, int fstReference)
+bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32_t partition, uint64_t offset, uint64_t size, int fstReference)
 {
 	FILE * fIn;
-	uint32		nImageSize;
-	uint64		nfImageSize;
-	uint8 *	pPartData ;
-	uint64		nFreeSpaceStart;
-	uint32		nExtraData;
-	uint32		nExtraDataBlocks;
+	uint32_t		nImageSize;
+	uint64_t		nfImageSize;
+	uint8_t *	pPartData ;
+	uint64_t		nFreeSpaceStart;
+	uint32_t		nExtraData;
+	uint32_t		nExtraDataBlocks;
 
 	std::vector<char> bootBin(0x440);
 
@@ -1521,7 +1521,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 	// get the size of the file we are trying to load
 	
 	nfImageSize = inStream->size();
-	nImageSize = (uint32) nfImageSize;
+	nImageSize = (uint32_t) nfImageSize;
 
 
 	// now get the filesize we are trying to load and make sure it is smaller
@@ -1539,9 +1539,9 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 			if (0<fstReference)
 			{
 				// normal file so change the FST.BIN
-				uint8 * pFSTBin = (unsigned char *) calloc((uint32)(image->parts[partition].header.fst_size),1);
+				uint8_t * pFSTBin = (unsigned char *) calloc((uint32_t)(image->parts[partition].header.fst_size),1);
 
-				io_read_part(pFSTBin, (uint32)(image->parts[partition].header.fst_size), image, partition, image->parts[partition].header.fst_offset);
+				io_read_part(pFSTBin, (uint32_t)(image->parts[partition].header.fst_size), image, partition, image->parts[partition].header.fst_offset);
 
 				// alter the entry for the passed FST Reference
 				fstReference = fstReference * 0x0c;
@@ -1550,7 +1550,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 				Write32(pFSTBin + fstReference + 0x08L , nImageSize);
 
 				// write out the FST.BIN
-				wii_write_data_file(image, partition, image->parts[partition].header.fst_offset, (uint32)(image->parts[partition].header.fst_size), pFSTBin);
+				wii_write_data_file(image, partition, image->parts[partition].header.fst_offset, (uint32_t)(image->parts[partition].header.fst_size), pFSTBin);
 
 				// write it out
 				wii_write_data_file(image, partition, offset, nImageSize, NULL, fIn, _ProgressBox);
@@ -1623,7 +1623,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 				case -4:
 					// Partition.bin
 					// it's a direct write
-					pPartData = (uint8 *)calloc(1,(unsigned int)size);
+					pPartData = (uint8_t *)calloc(1,(unsigned int)size);
 
 					fread(pPartData,1,(unsigned int)size, fIn);
 					DiscWriteDirect(m_imageFile->parts[partition].offset, pPartData, (unsigned int)size);
@@ -1637,7 +1637,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 					// h3.bin
 
 					// same for all 3
-					pPartData = (uint8 *)calloc(1,(unsigned int)size);
+					pPartData = (uint8_t *)calloc(1,(unsigned int)size);
 
 					fread(pPartData,1,(unsigned int)size, fIn);
 					DiscWriteDirect(m_imageFile->parts[partition].offset + offset, pPartData, (unsigned int)size);
@@ -1681,20 +1681,20 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 		{
 			// normal one - so read out the fst and change the values for the relevant pointer
 			// before writing it out
-			uint8 * pFSTBin = (unsigned char *) calloc((uint32)(image->parts[partition].header.fst_size),1);
+			uint8_t * pFSTBin = (unsigned char *) calloc((uint32_t)(image->parts[partition].header.fst_size),1);
 
-			io_read_part(pFSTBin, (uint32)(image->parts[partition].header.fst_size), image, partition, image->parts[partition].header.fst_offset);
+			io_read_part(pFSTBin, (uint32_t)(image->parts[partition].header.fst_size), image, partition, image->parts[partition].header.fst_offset);
 
 			// alter the entry for the passed FST Reference
 			fstReference = fstReference * 0x0c;
 
 			// update the offset for this file
-			Write32(pFSTBin + fstReference + 0x04L, uint32 (nFreeSpaceStart >> 2));
+			Write32(pFSTBin + fstReference + 0x04L, uint32_t (nFreeSpaceStart >> 2));
 			// update the length for the file
 			Write32(pFSTBin + fstReference + 0x08L , nImageSize);
 
 			// write out the FST.BIN
-			wii_write_data_file(image, partition, image->parts[partition].header.fst_offset, (uint32)(image->parts[partition].header.fst_size), pFSTBin);
+			wii_write_data_file(image, partition, image->parts[partition].header.fst_offset, (uint32_t)(image->parts[partition].header.fst_size), pFSTBin);
 
 			// now write data file out
 			wii_write_data_file(image, partition, nFreeSpaceStart, nImageSize, NULL, fIn, _ProgressBox);
@@ -1717,9 +1717,9 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 				}
 
 				// update the settings for the FST.BIN entry
-				Write32(pBootBin + 0x424L, uint32 (nFreeSpaceStart >> 2));
-				Write32(pBootBin + 0x428L, (uint32)(nImageSize >> 2));
-				Write32(pBootBin + 0x42CL, (uint32)(nImageSize >> 2));
+				Write32(pBootBin + 0x424L, uint32_t (nFreeSpaceStart >> 2));
+				Write32(pBootBin + 0x428L, (uint32_t)(nImageSize >> 2));
+				Write32(pBootBin + 0x42CL, (uint32_t)(nImageSize >> 2));
 
 				// now write it out
 				wii_write_data_file(image, partition, 0, 0x440, pBootBin);
@@ -1734,7 +1734,7 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 				io_read_part(pBootBin, 0x440, image, partition, 0);
 
 				// update the settings for the main.dol entry
-				Write32(pBootBin + 0x420L, uint32 (nFreeSpaceStart >> 2));
+				Write32(pBootBin + 0x420L, uint32_t (nFreeSpaceStart >> 2));
 
 				// now write it out
 				wii_write_data_file(image, partition, 0, 0x440, pBootBin);
@@ -1751,9 +1751,9 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 
 				// check to see what we have to move
 				// by calculating the amount of extra data we are trying to stuff in
-				nExtraData = (uint32)(nImageSize - image->parts[partition].appldr_size);
+				nExtraData = (uint32_t)(nImageSize - image->parts[partition].appldr_size);
 
-				nExtraDataBlocks = 1 + ((nImageSize - (uint32)(image->parts[partition].appldr_size)) / 0x7c00);
+				nExtraDataBlocks = 1 + ((nImageSize - (uint32_t)(image->parts[partition].appldr_size)) / 0x7c00);
 
 				// check to see if we have that much free at the end of the area
 				// or do we need to try and overwrite
@@ -1781,12 +1781,12 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 					else
 					{
 						// "just" need to move main.dol
-						uint8 * pMainDol = (uint8 *) calloc((uint32)(image->parts[partition].header.dol_size),1);
+						uint8_t * pMainDol = (uint8_t *) calloc((uint32_t)(image->parts[partition].header.dol_size),1);
 
-						io_read_part(pMainDol, (uint32)(image->parts[partition].header.dol_size), image, partition, image->parts[partition].header.dol_offset);
+						io_read_part(pMainDol, (uint32_t)(image->parts[partition].header.dol_size), image, partition, image->parts[partition].header.dol_offset);
 
 						// try and get some free space for it
-						nFreeSpaceStart = findRequiredFreeSpaceInPartition(image, partition, (uint32)(image->parts[partition].header.dol_size));
+						nFreeSpaceStart = findRequiredFreeSpaceInPartition(image, partition, (uint32_t)(image->parts[partition].header.dol_size));
 
 						// now unmark the original dol area
 						MarkAsUnused(image->parts[partition].offset+image->parts[partition].data_offset+(((image->parts[partition].header.dol_offset)/0x7c00)*0x8000),
@@ -1796,13 +1796,13 @@ bool WiiDisc::loadDecryptedFile(const std::string& filename, uint32 partition, u
 								(true==CheckForFreeSpace(image, partition,image->parts[partition].appldr_size + 0x2440 ,nExtraDataBlocks)))
 						{
 							// got space so write it out
-							wii_write_data_file(image, partition, nFreeSpaceStart, (uint32)(image->parts[partition].header.dol_size), pMainDol);
+							wii_write_data_file(image, partition, nFreeSpaceStart, (uint32_t)(image->parts[partition].header.dol_size), pMainDol);
 
 							// now do the boot.bin file too
 							io_read_part(pBootBin, 0x440, image, partition, 0);
 
 							// update the settings for the boot.BIN entry
-							Write32(pBootBin + 0x420L, uint32 (nFreeSpaceStart >> 2));
+							Write32(pBootBin + 0x420L, uint32_t (nFreeSpaceStart >> 2));
 
 							// now write it out
 							wii_write_data_file(image, partition, 0, 0x440, pBootBin);
@@ -1845,7 +1845,7 @@ BOOL WiiDisc::CheckAndLoadKey(BOOL bLoadCrypto, struct ImageFile *image)
 {
 	//FILE * fp_key;
 
-	static uint8 LoadedKey[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
+	static uint8_t LoadedKey[16] = {0xEB, 0xE4, 0x2A, 0x22, 0x5E, 0x85, 0x93, 0xE4, 0x48, 0xD9, 0xC5, 0x45, 0x73, 0x81, 0xAA, 0xF7};
 
 	if (false==bLoadCrypto)
 	{
@@ -1907,7 +1907,7 @@ BOOL WiiDisc::CheckAndLoadKey(BOOL bLoadCrypto, struct ImageFile *image)
 // Inverse of the be32 function - writes a 32 bit value   //
 // high to low                                            //
 ////////////////////////////////////////////////////////////
-void WiiDisc::Write32( uint8 *p, uint32 nVal)
+void WiiDisc::Write32( uint8_t *p, uint32_t nVal)
 {
 	p[0] = (nVal >> 24) & 0xFF;
 	p[1] = (nVal >> 16) & 0xFF;
@@ -1919,16 +1919,16 @@ void WiiDisc::Write32( uint8 *p, uint32 nVal)
 // location for the new data.                                                         //
 // UNFINISHED - UNFINISHED - UNFINISHED ETC...........................................//
 ////////////////////////////////////////////////////////////////////////////////////////
-BOOL WiiDisc::MergeAndRelocateFSTs(unsigned char *pFST1, uint32 nSizeofFST1, unsigned char *pFST2, uint32 nSizeofFST2, unsigned char *pNewFST,  uint32 * nSizeofNewFST, uint64 nNewOffset, uint64 nOldOffset)
+BOOL WiiDisc::MergeAndRelocateFSTs(unsigned char *pFST1, uint32_t nSizeofFST1, unsigned char *pFST2, uint32_t nSizeofFST2, unsigned char *pNewFST,  uint32_t * nSizeofNewFST, uint64_t nNewOffset, uint64_t nOldOffset)
 {
 
-	uint32 nFilesFST1 = 0;
-	uint32 nFilesFST2 = 0;
-	//uint32 nFilesNewFST = 0;
-	uint32 nStringTableOffset;
+	uint32_t nFilesFST1 = 0;
+	uint32_t nFilesFST2 = 0;
+	//uint32_t nFilesNewFST = 0;
+	uint32_t nStringTableOffset;
 
-	//uint64	nOffsetCalc = 0;
-	uint32 nStringPad =   0;
+	//uint64_t	nOffsetCalc = 0;
+	uint32_t nStringPad =   0;
 
 	// extract the data for FST 1
 	nFilesFST1 = be32(pFST1 + 8);
@@ -1977,21 +1977,21 @@ BOOL WiiDisc::MergeAndRelocateFSTs(unsigned char *pFST1, uint32 nSizeofFST1, uns
 // creation of a DIF file for a specific area e.g. mariokart partition 3    //
 // Not really used these days                                               //
 //////////////////////////////////////////////////////////////////////////////
-void WiiDisc::MarkAsUnused(uint64 nOffset, uint64 nSize)
+void WiiDisc::MarkAsUnused(uint64_t nOffset, uint64_t nSize)
 {
-	uint64 nStartValue = nOffset;
-	uint64 nEndValue = nOffset + nSize;
+	uint64_t nStartValue = nOffset;
+	uint64_t nEndValue = nOffset + nSize;
 	while((nStartValue < nEndValue)&&
 			(nStartValue < (4699979776LL * 2LL)))
 	{
 
-		pFreeTable[nStartValue / (uint64)(0x8000)] = 0;
-		nStartValue = nStartValue + ((uint64)(0x8000));
+		pFreeTable[nStartValue / (uint64_t)(0x8000)] = 0;
+		nStartValue = nStartValue + ((uint64_t)(0x8000));
 	}
 
 }
 
-BOOL WiiDisc::DiscWriteDirect(struct ImageFile *image, uint64 nOffset, uint8 *pData, unsigned int nSize)
+BOOL WiiDisc::DiscWriteDirect(struct ImageFile *image, uint64_t nOffset, uint8_t *pData, unsigned int nSize)
 {
 
 	_int64 nSeek;
@@ -2023,14 +2023,14 @@ BOOL WiiDisc::DiscWriteDirect(struct ImageFile *image, uint64 nOffset, uint8 *pD
 
 BOOL WiiDisc::wii_trucha_signing(struct ImageFile *image, int partition)
 {
-	uint8 *buf, hash[20];
-	uint32 size, val;
+	uint8_t *buf, hash[20];
+	uint32_t size, val;
 
 	/* Store TMD size */
-	size = (uint32)(image->parts[partition].tmdSize);
+	size = (uint32_t)(image->parts[partition].tmdSize);
 
 	/* Allocate memory */
-	buf = (uint8 *)calloc(size,1);
+	buf = (uint8_t *)calloc(size,1);
 
 	if (!buf)
 	{
@@ -2093,8 +2093,8 @@ int WiiDisc::wii_nb_cluster(struct ImageFile *iso, int partition)
 // calculate the group hash for a cluster
 bool WiiDisc::wii_calc_group_hash(struct ImageFile *iso, int partition, int cluster)
 {
-	uint8 h2[SIZE_H2], h3[SIZE_H3], h4[SIZE_H4];
-	uint32 group;
+	uint8_t h2[SIZE_H2], h3[SIZE_H3], h4[SIZE_H4];
+	uint32_t group;
 
 	/* Calculate cluster group */
 	group = cluster / NB_CLUSTER_GROUP;
@@ -2132,16 +2132,16 @@ bool WiiDisc::wii_calc_group_hash(struct ImageFile *iso, int partition, int clus
 	return true;
 }
 
-int WiiDisc::wii_read_cluster(struct ImageFile *iso, int partition, int cluster, uint8 *data, uint8 *header)
+int WiiDisc::wii_read_cluster(struct ImageFile *iso, int partition, int cluster, uint8_t *data, uint8_t *header)
 {
-	uint8 buf[SIZE_CLUSTER];
-	uint8  iv[16];
-	uint8 * title_key;
-	uint64 offset;
+	uint8_t buf[SIZE_CLUSTER];
+	uint8_t  iv[16];
+	uint8_t * title_key;
+	uint64_t offset;
 
 
 	/* Jump to the specified cluster and copy it to memory */
-	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64)((uint64)cluster * (uint64)SIZE_CLUSTER);
+	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64_t)((uint64_t)cluster * (uint64_t)SIZE_CLUSTER);
 
 	// read the correct location block in
 	io_read(buf, SIZE_CLUSTER, iso, offset);
@@ -2173,28 +2173,28 @@ int WiiDisc::wii_read_cluster(struct ImageFile *iso, int partition, int cluster,
 	return 0;
 }
 
-int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster, uint8 *in)
+int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster, uint8_t *in)
 {
-	uint8 h0[SIZE_H0];
-	uint8 h1[SIZE_H1];
-	uint8 h2[SIZE_H2];
+	uint8_t h0[SIZE_H0];
+	uint8_t h1[SIZE_H1];
+	uint8_t h2[SIZE_H2];
 
-	uint8 *data;
-	uint8 *header;
-	uint8 *title_key;
+	uint8_t *data;
+	uint8_t *header;
+	uint8_t *title_key;
 
-	uint8 iv[16];
+	uint8_t iv[16];
 
-	uint32 group,
+	uint32_t group,
 	subgroup,
 	f_cluster,
 	nb_cluster,
 	pos_cluster,
 	pos_header;
 
-	uint64 offset;
+	uint64_t offset;
 
-	uint32 i;
+	uint32_t i;
 	//int ret = 0;
 
 	/* Calculate cluster group and subgroup */
@@ -2210,16 +2210,16 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 		nb_cluster = NB_CLUSTER_GROUP;
 
 	/* Allocate memory */
-	data   = (uint8 *)calloc(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP, 1);
-	header = (uint8 *)calloc(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP, 1);
+	data   = (uint8_t *)calloc(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP, 1);
+	header = (uint8_t *)calloc(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP, 1);
 	if (!data || !header)
 		return 1;
 
 	/* Read group clusters and headers */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 		/* Read cluster */
 		if (wii_read_cluster(iso, partition, f_cluster + i, d_ptr, h_ptr))
@@ -2233,7 +2233,7 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Calculate new cluster H0 table */
 	for (i = 0; i < SIZE_CLUSTER_DATA; i += 0x400)
 	{
-		uint32 idx = (i / 0x400) * 20;
+		uint32_t idx = (i / 0x400) * 20;
 
 		/* Calculate SHA-1 hash */
 		sha1(&in[i], 0x400, &h0[idx]);
@@ -2249,8 +2249,8 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Calculate H1 */
 	for (i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
-		uint32 pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
-		uint8 tmp[SIZE_H0];
+		uint32_t pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
+		uint8_t tmp[SIZE_H0];
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -2266,7 +2266,7 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Write H1 table */
 	for (i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
-		uint32 pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
+		uint32_t pos = SIZE_CLUSTER_HEADER * ((subgroup * NB_CLUSTER_SUBGROUP) + i);
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -2279,8 +2279,8 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Calculate H2 */
 	for (i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
-		uint32 pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
-		uint8 tmp[SIZE_H1];
+		uint32_t pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
+		uint8_t tmp[SIZE_H1];
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -2296,7 +2296,7 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Write H2 table */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint32 nb = SIZE_CLUSTER_HEADER * i;
+		uint32_t nb = SIZE_CLUSTER_HEADER * i;
 
 		/* Write H2 table */
 		memcpy(&header[nb + OFFSET_H2], h2, SIZE_H2);
@@ -2308,43 +2308,43 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 	/* Encrypt headers */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *ptr = &header[SIZE_CLUSTER_HEADER * i];
 
-		uint8 phData[SIZE_CLUSTER_HEADER];
+		uint8_t phData[SIZE_CLUSTER_HEADER];
 
 		/* Set IV key */
 		memset(iv, 0, 16);
 
 		/* Encrypt */
-		aes_cbc_enc(ptr, (uint8*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
-		memcpy(ptr, (uint8*)phData, SIZE_CLUSTER_HEADER);
+		aes_cbc_enc(ptr, (uint8_t*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
+		memcpy(ptr, (uint8_t*)phData, SIZE_CLUSTER_HEADER);
 	}
 
 	/* Encrypt clusters */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
-		uint8 phData[SIZE_CLUSTER_DATA];
+		uint8_t phData[SIZE_CLUSTER_DATA];
 
 
 		/* Set IV key */
 		memcpy(iv, &h_ptr[OFFSET_CLUSTER_IV], 16);
 
 		/* Encrypt */
-		aes_cbc_enc(d_ptr, (uint8*) phData, SIZE_CLUSTER_DATA, title_key, iv);
-		memcpy(d_ptr, (uint8*)phData, SIZE_CLUSTER_DATA);
+		aes_cbc_enc(d_ptr, (uint8_t*) phData, SIZE_CLUSTER_DATA, title_key, iv);
+		memcpy(d_ptr, (uint8_t*)phData, SIZE_CLUSTER_DATA);
 	}
 
 	/* Jump to first cluster in the group */
-	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64)((uint64)f_cluster * (uint64)SIZE_CLUSTER);
+	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64_t)((uint64_t)f_cluster * (uint64_t)SIZE_CLUSTER);
 
 	/* Write new clusters */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 		/* Write cluster header */
 		if (true==DiscWriteDirect(iso, offset, h_ptr, SIZE_CLUSTER_HEADER))
@@ -2389,9 +2389,9 @@ int WiiDisc::wii_write_cluster(struct ImageFile *iso, int partition, int cluster
 }
 
 
-bool WiiDisc::wii_read_cluster_hashes(struct ImageFile *iso, int partition, int cluster, uint8 *h0, uint8 *h1, uint8 *h2)
+bool WiiDisc::wii_read_cluster_hashes(struct ImageFile *iso, int partition, int cluster, uint8_t *h0, uint8_t *h1, uint8_t *h2)
 {
-	uint8 buf[SIZE_CLUSTER_HEADER];
+	uint8_t buf[SIZE_CLUSTER_HEADER];
 
 	/* Read cluster header */
 	if (wii_read_cluster(iso, partition, cluster, NULL, buf))
@@ -2407,19 +2407,19 @@ bool WiiDisc::wii_read_cluster_hashes(struct ImageFile *iso, int partition, int 
 	return true;
 }
 
-int WiiDisc::wii_read_data(struct ImageFile *iso, int partition, uint64 offset, uint32 size, uint8 **out)
+int WiiDisc::wii_read_data(struct ImageFile *iso, int partition, uint64_t offset, uint32_t size, uint8_t **out)
 {
-	uint8 *buf, *tmp;
-	uint32 cluster_start, clusters, i, offset_start;
+	uint8_t *buf, *tmp;
+	uint32_t cluster_start, clusters, i, offset_start;
 
 
 	/* Calculate some needed information */
-	cluster_start = (uint32)(offset / (uint64)(SIZE_CLUSTER_DATA));
-	clusters = (uint32)(((offset + (uint64)(size)) / (uint64)(SIZE_CLUSTER_DATA))) - (cluster_start - 1);
-	offset_start = (uint32)(offset - (cluster_start * (uint64)(SIZE_CLUSTER_DATA)));
+	cluster_start = (uint32_t)(offset / (uint64_t)(SIZE_CLUSTER_DATA));
+	clusters = (uint32_t)(((offset + (uint64_t)(size)) / (uint64_t)(SIZE_CLUSTER_DATA))) - (cluster_start - 1);
+	offset_start = (uint32_t)(offset - (cluster_start * (uint64_t)(SIZE_CLUSTER_DATA)));
 
 	/* Allocate memory */
-	buf = (uint8 *)calloc(clusters * SIZE_CLUSTER_DATA,1);
+	buf = (uint8_t *)calloc(clusters * SIZE_CLUSTER_DATA,1);
 	if (!buf)
 		return 1;
 
@@ -2429,7 +2429,7 @@ int WiiDisc::wii_read_data(struct ImageFile *iso, int partition, uint64 offset, 
 			return 1;
 
 	/* Allocate memory */
-	tmp = (uint8 *)calloc(size,1);
+	tmp = (uint8_t *)calloc(size,1);
 	if (!tmp)
 		return 1;
 
@@ -2446,12 +2446,12 @@ int WiiDisc::wii_read_data(struct ImageFile *iso, int partition, uint64 offset, 
 }
 
 
-void WiiDisc::sha1(uint8 *data, uint32 len, uint8 *hash)
+void WiiDisc::sha1(uint8_t *data, uint32_t len, uint8_t *hash)
 {
 	SHA1(data, len, hash);
 }
 
-void WiiDisc::aes_cbc_enc(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv)
+void WiiDisc::aes_cbc_enc(uint8_t *in, uint8_t *out, uint32_t len, uint8_t *key, uint8_t *iv)
 {
 	AES_KEY aes_key;
 
@@ -2462,7 +2462,7 @@ void WiiDisc::aes_cbc_enc(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *
 	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_ENCRYPT);
 }
 
-void WiiDisc::aes_cbc_dec(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *iv)
+void WiiDisc::aes_cbc_dec(uint8_t *in, uint8_t *out, uint32_t len, uint8_t *key, uint8_t *iv)
 {
 	AES_KEY aes_key;
 
@@ -2473,7 +2473,7 @@ void WiiDisc::aes_cbc_dec(uint8 *in, uint8 *out, uint32 len, uint8 *key, uint8 *
 	AES_cbc_encrypt(in, out, len, &aes_key, iv, AES_DECRYPT);
 }
 
-largesize_t WiiDisc::findRequiredFreeSpaceInPartition(uint64 nPartition, uint32 nRequiredSize)
+largesize_t WiiDisc::findRequiredFreeSpaceInPartition(uint64_t nPartition, uint32_t nRequiredSize)
 {
 
 	// search through the free space to find a free area that is at least
@@ -2503,7 +2503,7 @@ largesize_t WiiDisc::findRequiredFreeSpaceInPartition(uint64 nPartition, uint32 
 	// now go through the marked list to find the free area of the required size
 	while (nCurrentOffset < nEndOffset)
 	{
-		nBlock = (uint32)(nCurrentOffset / (uint64)(0x8000));
+		nBlock = (uint32_t)(nCurrentOffset / (uint64_t)(0x8000));
 		if (cLastBlock!=pFreeTable[nBlock])
 		{
 			// change
@@ -2527,7 +2527,7 @@ largesize_t WiiDisc::findRequiredFreeSpaceInPartition(uint64 nPartition, uint32 
 				{
 					// BINGO! - convert into relative offset from data start
 					// and in encrypted format
-					nReturnOffset = ((nMarkedStart - nStartOffset) / (uint64) 0x8000) * (uint64)(0x7c00);
+					nReturnOffset = ((nMarkedStart - nStartOffset) / (uint64_t) 0x8000) * (uint64_t)(0x7c00);
 					return nReturnOffset;
 				}
 			}
@@ -2546,14 +2546,14 @@ largesize_t WiiDisc::findRequiredFreeSpaceInPartition(uint64 nPartition, uint32 
 // Check to see if we have free space for so many blocks   //
 /////////////////////////////////////////////////////////////
 
-BOOL WiiDisc::CheckForFreeSpace(uint32 nPartition, uint64 nOffset, uint32 nBlocks)
+BOOL WiiDisc::CheckForFreeSpace(uint32_t nPartition, uint64_t nOffset, uint32_t nBlocks)
 {
 
 	// convert offset to block representation
-	uint32 nBlockOffsetStart = 0;
+	uint32_t nBlockOffsetStart = 0;
 
-	nBlockOffsetStart = (uint32)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64)0x8000);
-	nBlockOffsetStart = nBlockOffsetStart + (uint32)(nOffset / (uint64) 0x7c00);
+	nBlockOffsetStart = (uint32_t)((m_imageFile->parts[nPartition].data_offset + m_imageFile->parts[nPartition].offset) / (uint64_t)0x8000);
+	nBlockOffsetStart = nBlockOffsetStart + (uint32_t)(nOffset / (uint64_t) 0x7c00);
 	if (0!=nOffset%0x7c00)
 	{
 		// starts part way into a block so need to check the number of blocks plus one
@@ -2563,7 +2563,7 @@ BOOL WiiDisc::CheckForFreeSpace(uint32 nPartition, uint64 nOffset, uint32 nBlock
 		nBlockOffsetStart++;
 	}
 
-	for (uint32 x = 0; x < nBlocks; x++)
+	for (uint32_t x = 0; x < nBlocks; x++)
 	{
 		if (1==pFreeTable[nBlockOffsetStart+x])
 		{
@@ -2581,11 +2581,11 @@ BOOL WiiDisc::CheckForFreeSpace(uint32 nPartition, uint64 nOffset, uint32 nBlock
 // Also works on channels                                               //
 //////////////////////////////////////////////////////////////////////////
 /*
-BOOL WIIDisc::DeletePartition(uint32 nPartition)
+BOOL WIIDisc::DeletePartition(uint32_t nPartition)
 {
 
-	uint8	buffer[16];
-	uint64	WriteLocation;
+	uint8_t	buffer[16];
+	uint64_t	WriteLocation;
 	int	i;
 
 	memset(buffer,0,16);
@@ -2601,15 +2601,15 @@ BOOL WIIDisc::DeletePartition(uint32 nPartition)
 
 		// update the count of channels in the correct location
 		Write32(buffer, m_imageFile->ChannelCount -1);
-		DiscWriteDirect(m_imageFile, (uint64) 0x40008, buffer, 4);
+		DiscWriteDirect(m_imageFile, (uint64_t) 0x40008, buffer, 4);
 
 		// create the updated channel list in the correct location on the disc
-		WriteLocation = m_imageFile->chan_tbl_offset + (uint64)(8)*(uint64)(nPartition - 1);
+		WriteLocation = m_imageFile->chan_tbl_offset + (uint64_t)(8)*(uint64_t)(nPartition - 1);
 
 		for (i = nPartition; i < m_imageFile->ChannelCount; i++)
 		{
 			// read the next partition info
-			io_read(buffer, 8, m_imageFile, m_imageFile->chan_tbl_offset + (uint64)(8)*(uint64)(i));
+			io_read(buffer, 8, m_imageFile, m_imageFile->chan_tbl_offset + (uint64_t)(8)*(uint64_t)(i));
 			// write it out over the deleted one
 			DiscWriteDirect(m_imageFile, WriteLocation, buffer, 8);
 			WriteLocation = WriteLocation + 8;
@@ -2625,15 +2625,15 @@ BOOL WIIDisc::DeletePartition(uint32 nPartition)
 
 		// update the count of partitions
 		Write32(buffer, m_imageFile->PartitionCount -1);
-		DiscWriteDirect(m_imageFile, (uint64) 0x40000, buffer, 4);
+		DiscWriteDirect(m_imageFile, (uint64_t) 0x40000, buffer, 4);
 
 		// create the partition table
-		WriteLocation = m_imageFile->part_tbl_offset + (uint64)(8)*(uint64)(nPartition - 1);
+		WriteLocation = m_imageFile->part_tbl_offset + (uint64_t)(8)*(uint64_t)(nPartition - 1);
 
 		for (i = nPartition; i < m_imageFile->PartitionCount; i++)
 		{
 			// read the next partition info
-			io_read(buffer, 8, m_imageFile, m_imageFile->part_tbl_offset + (uint64)(8)*(uint64)(i));
+			io_read(buffer, 8, m_imageFile, m_imageFile->part_tbl_offset + (uint64_t)(8)*(uint64_t)(i));
 			// write it out over the deleted one
 			DiscWriteDirect(m_imageFile, WriteLocation, buffer, 8);
 			WriteLocation = WriteLocation + 8;
@@ -2653,14 +2653,14 @@ BOOL WIIDisc::DeletePartition(uint32 nPartition)
 // as some discs have 'interesting' values in here                      //
 //////////////////////////////////////////////////////////////////////////
 /*
-BOOL WIIDisc::ResizePartition(uint32 nPartition)
+BOOL WIIDisc::ResizePartition(uint32_t nPartition)
 {
-	uint64 nCurrentSize = 0;
-	uint64 nMinimumSize = 0;
-	uint64 nMaximumSize = 0;
-	uint64 nNewSize = 0;
+	uint64_t nCurrentSize = 0;
+	uint64_t nMinimumSize = 0;
+	uint64_t nMaximumSize = 0;
+	uint64_t nNewSize = 0;
 
-	uint8 buffer[16];
+	uint8_t buffer[16];
 
 	// Get size of current partition
 	nCurrentSize = m_imageFile->parts[nPartition].data_size;
@@ -2708,7 +2708,7 @@ BOOL WIIDisc::ResizePartition(uint32 nPartition)
 
 		// now simply write out the new size and store it
 		m_imageFile->parts[nPartition].data_size = nNewSize;
-		Write32(buffer, (uint32)((uint64) nNewSize >> 2));
+		Write32(buffer, (uint32_t)((uint64_t) nNewSize >> 2));
 		DiscWriteDirect(m_imageFile->parts[nPartition].offset + 0x2bc, buffer, 4);
 
 		return true;
@@ -2720,17 +2720,17 @@ BOOL WIIDisc::ResizePartition(uint32 nPartition)
 */
 
 
-uint64 WiiDisc::SearchBackwards(uint64 nStartPosition, uint64 nEndPosition)
+uint64_t WiiDisc::SearchBackwards(uint64_t nStartPosition, uint64_t nEndPosition)
 {
 
-	uint64 nCurrentBlock;
-	uint64 nEndBlock;
-	uint64	nStartBlock;
+	uint64_t nCurrentBlock;
+	uint64_t nEndBlock;
+	uint64_t	nStartBlock;
 
-	nCurrentBlock = (nStartPosition + nEndPosition - 1)/ (uint64)(0x8000);
+	nCurrentBlock = (nStartPosition + nEndPosition - 1)/ (uint64_t)(0x8000);
 	nStartBlock = nCurrentBlock;
 
-	nEndBlock = nEndPosition / (uint64)(0x8000);
+	nEndBlock = nEndPosition / (uint64_t)(0x8000);
 
 	while (nCurrentBlock > nEndBlock)
 	{
@@ -2743,11 +2743,11 @@ uint64 WiiDisc::SearchBackwards(uint64 nStartPosition, uint64 nEndPosition)
 			// if it's the first block then we are at the start position
 			if (nStartBlock==nCurrentBlock)
 			{
-				return (nCurrentBlock - nEndBlock + 1)* ((uint64)(0x8000));
+				return (nCurrentBlock - nEndBlock + 1)* ((uint64_t)(0x8000));
 			}
 			else
 			{
-				return (nCurrentBlock - nEndBlock )* ((uint64)(0x8000));
+				return (nCurrentBlock - nEndBlock )* ((uint64_t)(0x8000));
 			}
 		}
 	}
@@ -2762,28 +2762,28 @@ uint64 WiiDisc::SearchBackwards(uint64 nStartPosition, uint64 nEndPosition)
 // pointer as that allows for larger files to be updated. I'm talking to  //
 // you Okami.....                                                         //
 ////////////////////////////////////////////////////////////////////////////
-bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int cluster, uint8 *in, uint32 nClusterOffset, uint32 nBytesToWrite, FILE * fIn)
+bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int cluster, uint8_t *in, uint32_t nClusterOffset, uint32_t nBytesToWrite, FILE * fIn)
 {
-	uint8 h0[SIZE_H0];
-	uint8 h1[SIZE_H1];
-	uint8 h2[SIZE_H2];
+	uint8_t h0[SIZE_H0];
+	uint8_t h1[SIZE_H1];
+	uint8_t h2[SIZE_H2];
 
-	uint8 *data;
-	uint8 *header;
-	uint8 *title_key;
+	uint8_t *data;
+	uint8_t *header;
+	uint8_t *title_key;
 
-	uint8 iv[16];
+	uint8_t iv[16];
 
-	uint32 group,
+	uint32_t group,
 	subgroup,
 	f_cluster,
 	nb_cluster,
 	pos_cluster,
 	pos_header;
 
-	uint64 offset;
+	uint64_t offset;
 
-	uint32 i;
+	uint32_t i;
 	int j;
 
 	//int ret = 0;
@@ -2803,8 +2803,8 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 		nb_cluster = NB_CLUSTER_GROUP;
 
 	/* Allocate memory */
-	data   = (uint8 *)calloc(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP, 1);
-	header = (uint8 *)calloc(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP, 1);
+	data   = (uint8_t *)calloc(SIZE_CLUSTER_DATA * NB_CLUSTER_GROUP, 1);
+	header = (uint8_t *)calloc(SIZE_CLUSTER_HEADER * NB_CLUSTER_GROUP, 1);
 	if (!data || !header)
 		return false;
 
@@ -2821,8 +2821,8 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 		/* Read group clusters and headers */
 		for (i = 0; i < nb_cluster; i++)
 		{
-			uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-			uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+			uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+			uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 			/* Read cluster */
 			if (wii_read_cluster(iso, partition, f_cluster + i, d_ptr, h_ptr))
@@ -2865,7 +2865,7 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 		/* Calculate new clusters H0 table */
 		for (i = 0; i < SIZE_CLUSTER_DATA; i += 0x400)
 		{
-			uint32 idx = (i / 0x400) * 20;
+			uint32_t idx = (i / 0x400) * 20;
 
 			/* Calculate SHA-1 hash */
 			sha1(&data[pos_cluster + (j * SIZE_CLUSTER_DATA) + i], 0x400, &h0[idx]);
@@ -2883,9 +2883,9 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 		{
 			// need to get the position of the first block we are changing
 			// which is the start of the subgroup for the current cluster
-			uint32 nSubGroup = ((cluster + j) % NB_CLUSTER_GROUP) / NB_CLUSTER_SUBGROUP;
+			uint32_t nSubGroup = ((cluster + j) % NB_CLUSTER_GROUP) / NB_CLUSTER_SUBGROUP;
 
-			uint32 pos = (SIZE_CLUSTER_HEADER * nSubGroup * NB_CLUSTER_SUBGROUP) + (0x14 * ((cluster +j)%NB_CLUSTER_SUBGROUP));
+			uint32_t pos = (SIZE_CLUSTER_HEADER * nSubGroup * NB_CLUSTER_SUBGROUP) + (0x14 * ((cluster +j)%NB_CLUSTER_SUBGROUP));
 
 			memcpy(&header[pos + (k * SIZE_CLUSTER_HEADER) + OFFSET_H1], h1, 20);
 		}
@@ -2897,7 +2897,7 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 	/* Calculate H2 */
 	for (i = 0; i < NB_CLUSTER_SUBGROUP; i++)
 	{
-		uint32 pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
+		uint32_t pos = (NB_CLUSTER_SUBGROUP * i) * SIZE_CLUSTER_HEADER;
 
 		/* Cluster exists? */
 		if ((pos / SIZE_CLUSTER_HEADER) > nb_cluster)
@@ -2927,42 +2927,42 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 	/* Encrypt headers */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *ptr = &header[SIZE_CLUSTER_HEADER * i];
 
-		uint8 phData[SIZE_CLUSTER_HEADER];
+		uint8_t phData[SIZE_CLUSTER_HEADER];
 
 		/* Set IV key */
 		memset(iv, 0, 16);
 
 		/* Encrypt */
-		aes_cbc_enc(ptr, (uint8*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
-		memcpy(ptr, (uint8*)phData, SIZE_CLUSTER_HEADER);
+		aes_cbc_enc(ptr, (uint8_t*) phData, SIZE_CLUSTER_HEADER, title_key, iv);
+		memcpy(ptr, (uint8_t*)phData, SIZE_CLUSTER_HEADER);
 	}
 
 	/* Encrypt clusters */
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
-		uint8 phData[SIZE_CLUSTER_DATA];
+		uint8_t phData[SIZE_CLUSTER_DATA];
 
 
 		/* Set IV key */
 		memcpy(iv, &h_ptr[OFFSET_CLUSTER_IV], 16);
 
 		/* Encrypt */
-		aes_cbc_enc(d_ptr, (uint8*) phData, SIZE_CLUSTER_DATA, title_key, iv);
-		memcpy(d_ptr, (uint8*)phData, SIZE_CLUSTER_DATA);
+		aes_cbc_enc(d_ptr, (uint8_t*) phData, SIZE_CLUSTER_DATA, title_key, iv);
+		memcpy(d_ptr, (uint8_t*)phData, SIZE_CLUSTER_DATA);
 	}
 
 	/* Jump to first cluster in the group */
-	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64)((uint64)f_cluster * (uint64)SIZE_CLUSTER);
+	offset = iso->parts[partition].offset + iso->parts[partition].data_offset + (uint64_t)((uint64_t)f_cluster * (uint64_t)SIZE_CLUSTER);
 
 	for (i = 0; i < nb_cluster; i++)
 	{
-		uint8 *d_ptr = &data[SIZE_CLUSTER_DATA * i];
-		uint8 *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
+		uint8_t *d_ptr = &data[SIZE_CLUSTER_DATA * i];
+		uint8_t *h_ptr = &header[SIZE_CLUSTER_HEADER * i];
 
 		if (true==DiscWriteDirect(iso, offset, h_ptr, SIZE_CLUSTER_HEADER))
 		{
@@ -3008,21 +3008,21 @@ bool WiiDisc::wii_write_clusters(struct ImageFile *iso, int partition, int clust
 // Offset to write the data in the minimum number of chunks               //
 // A bit like lumpy chunk packer from the Atari days......................//
 ////////////////////////////////////////////////////////////////////////////
-BOOL WiiDisc::wii_write_data_file(struct ImageFile *iso, int partition, uint64 offset, uint64 size, uint8 *in, FILE * fIn, IWiiDiscProcessHandler* _ProgressBox)
+BOOL WiiDisc::wii_write_data_file(struct ImageFile *iso, int partition, uint64_t offset, uint64_t size, uint8_t *in, FILE * fIn, IWiiDiscProcessHandler* _ProgressBox)
 {
-	uint32 cluster_start, clusters, offset_start;
+	uint32_t cluster_start, clusters, offset_start;
 
-	uint64 i;
+	uint64_t i;
 
-	uint32 nClusterCount;
-	uint32 nWritten = 0;
+	uint32_t nClusterCount;
+	uint32_t nWritten = 0;
 	//MSG msg;
 
 
 	/* Calculate some needed information */
-	cluster_start = (uint32)(offset / (uint64)(SIZE_CLUSTER_DATA));
-	clusters = (uint32)(((offset + size) / (uint64)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
-	offset_start = (uint32)(offset - (cluster_start * (uint64)(SIZE_CLUSTER_DATA)));
+	cluster_start = (uint32_t)(offset / (uint64_t)(SIZE_CLUSTER_DATA));
+	clusters = (uint32_t)(((offset + size) / (uint64_t)(SIZE_CLUSTER_DATA)) - (cluster_start - 1));
+	offset_start = (uint32_t)(offset - (cluster_start * (uint64_t)(SIZE_CLUSTER_DATA)));
 
 
 	// read the H3 and H4
@@ -3081,7 +3081,7 @@ BOOL WiiDisc::wii_write_data_file(struct ImageFile *iso, int partition, uint64 o
 			// max check
 			if (nWritten > size)
 			{
-				nWritten = (uint32)size;
+				nWritten = (uint32_t)size;
 			}
 
 			if (false==wii_write_clusters(iso, partition, cluster_start, in, offset_start, nWritten, fIn))
@@ -3102,7 +3102,7 @@ BOOL WiiDisc::wii_write_data_file(struct ImageFile *iso, int partition, uint64 o
 			// max check
 			if (nWritten > (size-i))
 			{
-				nWritten = (uint32)(size-i);
+				nWritten = (uint32_t)(size-i);
 			}
 
 			if (false==wii_write_clusters(iso, partition, cluster_start + nClusterCount, in, offset_start, nWritten, fIn))
@@ -3154,7 +3154,7 @@ HoRRoR
 
 BOOL WIIDisc::SetBootMode(image_file *image)
 {
-	uint8 cOldValue;
+	uint8_t cOldValue;
 	int i;
 
 	unsigned char cModes[5] = {'R','_','H','0','4'};
@@ -3217,12 +3217,12 @@ BOOL WIIDisc::SetBootMode(image_file *image)
 }
 */
 
-BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint8 * pText)
+BOOL WiiDisc::AddPartition(BOOL bChannel, uint64_t nOffset, uint64_t nDataSize, uint8_t * pText)
 {
 
 	// just try and see if this works at the moment
-	uint8	buffer[16];
-	uint64	WriteLocation;
+	uint8_t	buffer[16];
+	uint64_t	WriteLocation;
 
 	memset(buffer,0,16);
 
@@ -3232,7 +3232,7 @@ BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint
 		// use the channels
 		// update the count of channels in the correct location
 		Write32(buffer, m_imageFile->ChannelCount +1);
-		DiscWriteDirect(m_imageFile, (uint64) 0x40008, buffer, 4);
+		DiscWriteDirect(m_imageFile, (uint64_t) 0x40008, buffer, 4);
 
 		// check to see if we actually have any channels defined and hence a value in the channel table offset
 		if (0==m_imageFile->chan_tbl_offset)
@@ -3240,13 +3240,13 @@ BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint
 			// we need to create the table from scratch
 			m_imageFile->chan_tbl_offset = 0x41000;
 			Write32(buffer, 0x41000 >> 2);
-			DiscWriteDirect(m_imageFile, (uint64) 0x4000C, buffer, 4);
+			DiscWriteDirect(m_imageFile, (uint64_t) 0x4000C, buffer, 4);
 		}
 		// create the updated channel list in the correct location on the disc
-		WriteLocation = m_imageFile->chan_tbl_offset + (uint64)(8)*(uint64)(m_imageFile->ChannelCount);
+		WriteLocation = m_imageFile->chan_tbl_offset + (uint64_t)(8)*(uint64_t)(m_imageFile->ChannelCount);
 		// write out the correct data block
 		// set the buffer for start location and channel name
-		Write32(buffer, (uint32)(nOffset>>2));
+		Write32(buffer, (uint32_t)(nOffset>>2));
 		buffer[4] = pText[0];
 		buffer[5] = pText[1];
 		buffer[6] = pText[2];
@@ -3261,13 +3261,13 @@ BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint
 
 		// update the count of partitions
 		Write32(buffer, m_imageFile->PartitionCount +1);
-		DiscWriteDirect(m_imageFile, (uint64) 0x40000, buffer, 4);
+		DiscWriteDirect(m_imageFile, (uint64_t) 0x40000, buffer, 4);
 
 		// create the partition table entry
-		WriteLocation = m_imageFile->part_tbl_offset + (uint64)(8)*(uint64)(m_imageFile->PartitionCount);
+		WriteLocation = m_imageFile->part_tbl_offset + (uint64_t)(8)*(uint64_t)(m_imageFile->PartitionCount);
 
 		// set the buffer
-		Write32(buffer, (uint32)(nOffset>>2));
+		Write32(buffer, (uint32_t)(nOffset>>2));
 		Write32(buffer+4, 0);
 
 		DiscWriteDirect(m_imageFile, WriteLocation, buffer, 8);
@@ -3280,7 +3280,7 @@ BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint
 	// data offset = 0x2b8
 	Write32(buffer+4, 0x20000 >> 2);
 	// data size = 0x2bc
-	Write32(buffer+8, (uint32)(nDataSize >> 2));
+	Write32(buffer+8, (uint32_t)(nDataSize >> 2));
 	DiscWriteDirect(m_imageFile, nOffset+0x2b4, buffer, 12);
 
 	// Should now create a fake boot.bin etc. to avoid disc reads and allow you to modify the
@@ -3295,9 +3295,9 @@ BOOL WiiDisc::AddPartition(BOOL bChannel, uint64 nOffset, uint64 nDataSize, uint
 // Function to find out the maximum size of a partition    //
 // that can be added to the current image                  //
 /////////////////////////////////////////////////////////////
-uint64 WiiDisc::GetFreeSpaceAtEnd()
+uint64_t WiiDisc::GetFreeSpaceAtEnd()
 {
-	uint64 nRetVal;
+	uint64_t nRetVal;
 
 	// simple enough calculation in that we simply take the last partitions
 	// offset and size and 0x1800 off the image size
@@ -3322,9 +3322,9 @@ uint64 WiiDisc::GetFreeSpaceAtEnd()
 ////////////////////////////////////////////////////////////
 // Gets the start of the partion space                    //
 ////////////////////////////////////////////////////////////
-uint64 WiiDisc::GetFreePartitionStart()
+uint64_t WiiDisc::GetFreePartitionStart()
 {
-	uint64 nRetVal;
+	uint64_t nRetVal;
 
 	if (1==m_imageFile->nparts)
 	{
@@ -3352,12 +3352,12 @@ BOOL WiiDisc::DoTheShuffle()
 {
 
 	BOOL bRetVal = false;
-	uint64 nStoreLocation = 0x50000;
-	uint64 nPartitionStart;
-	uint64 nLength = 0;
-	uint64 nWriteLocation;
+	uint64_t nStoreLocation = 0x50000;
+	uint64_t nPartitionStart;
+	uint64_t nLength = 0;
+	uint64_t nWriteLocation;
 
-	uint8	nBuffer[4];
+	uint8_t	nBuffer[4];
 
 	for (unsigned int i=1; i < m_imageFile->nparts; i++)
 	{
@@ -3379,19 +3379,19 @@ BOOL WiiDisc::DoTheShuffle()
 			// show we have modified something
 
 			bRetVal = true;
-			Write32(nBuffer, (uint32)(nStoreLocation >> 2));
+			Write32(nBuffer, (uint32_t)(nStoreLocation >> 2));
 			// update the correct table
 			if (i > image->PartitionCount)
 			{
 				// use the channel table
 				// create the updated channel list in the correct location on the disc
-				nWriteLocation = image->chan_tbl_offset + (uint64)(8)*(uint64)(i - image->PartitionCount -1);
+				nWriteLocation = image->chan_tbl_offset + (uint64_t)(8)*(uint64_t)(i - image->PartitionCount -1);
 				DiscWriteDirect(image, nWriteLocation, nBuffer, 4);
 			}
 			else
 			{
 				// use the partition table
-				nWriteLocation = image->part_tbl_offset + (uint64)(8)*(uint64)(i-1);
+				nWriteLocation = image->part_tbl_offset + (uint64_t)(8)*(uint64_t)(i-1);
 				DiscWriteDirect(image, nWriteLocation, nBuffer, 4);
 			}
 		}
@@ -3403,24 +3403,24 @@ BOOL WiiDisc::DoTheShuffle()
 //////////////////////////////////////////////////////////////
 // Copy data between two parts of the disc image            //
 //////////////////////////////////////////////////////////////
-BOOL WiiDisc::CopyDiscDataDirect(ImageFile * image, int nPart, uint64 nSource, uint64 nDest, uint64 nLength)
+BOOL WiiDisc::CopyDiscDataDirect(ImageFile * image, int nPart, uint64_t nSource, uint64_t nDest, uint64_t nLength)
 {
 //	MSG msg;
 
 	// optomise for 32k chunks
-	uint64 nCount;
-	uint32 nBlocks = 0;
-	uint32 nBlockCount = 0;
-	uint32 nReadCount = 0;
+	uint64_t nCount;
+	uint32_t nBlocks = 0;
+	uint32_t nBlockCount = 0;
+	uint32_t nReadCount = 0;
 
-	uint8 * pData;
+	uint8_t * pData;
 
 	// try and use 1 meg at a time
-	pData = (uint8 *)malloc(0x100000);
+	pData = (uint8_t *)malloc(0x100000);
 
 	nCount = 0;
 	nBlocks =0;
-	nBlockCount = (uint32)((nLength / 0x100000) + 1);
+	nBlockCount = (uint32_t)((nLength / 0x100000) + 1);
 
 	// now open a progress bar
 	if(m_progressHandler) m_progressHandler->setRange(0, nBlockCount);
@@ -3441,7 +3441,7 @@ BOOL WiiDisc::CopyDiscDataDirect(ImageFile * image, int nPart, uint64 nSource, u
 		nReadCount = 0x100000;
 		if (nReadCount > (nLength-nCount))
 		{
-			nReadCount = (uint32)(nLength - nCount);
+			nReadCount = (uint32_t)(nLength - nCount);
 		}
 
 		io_read(pData, nReadCount, image, nSource);
@@ -3485,18 +3485,18 @@ BOOL WiiDisc::CopyDiscDataDirect(ImageFile * image, int nPart, uint64 nSource, u
 ////////////////////////////////////////////////////////////////////
 // Save a decrypted partition out                                 //
 ////////////////////////////////////////////////////////////////////
-bool WiiDisc::saveDecryptedPartition(const std::string& filename, ImageFile *image, uint32 nPartition)
+bool WiiDisc::saveDecryptedPartition(const std::string& filename, ImageFile *image, uint32_t nPartition)
 {
 //	MSG msg;
 
 	// now open a progress bar
-	uint64	nStartOffset;
-	uint64 nLength;
-	uint64 nOffset = 0;
+	uint64_t	nStartOffset;
+	uint64_t nLength;
+	uint64_t nOffset = 0;
 
-	uint8 * pData;
+	uint8_t * pData;
 	FILE * fOut;
-	uint32 nBlockCount = 0;
+	uint32_t nBlockCount = 0;
 
 	fOut = fopen(filename.data(), "wb");
 
@@ -3510,20 +3510,20 @@ bool WiiDisc::saveDecryptedPartition(const std::string& filename, ImageFile *ima
 	nStartOffset = image->parts[nPartition].offset;
 	nLength = image->parts[nPartition].data_size;
 
-	pData = (uint8 *)malloc(0x20000);
+	pData = (uint8_t *)malloc(0x20000);
 
 	// save the first 0x20000 bytes direct as thats the partition.bin
 	io_read(pData,0x20000, image, nStartOffset);
 	fwrite(pData,1, 0x20000, fOut);
 	if(m_progressHandler)
 	{
-		m_progressHandler->setRange(0, (uint32)(nLength / 0x8000));
+		m_progressHandler->setRange(0, (uint32_t)(nLength / 0x8000));
 		m_progressHandler->setPosition(0);
 		m_progressHandler->setText("Saving partition");
 	}
 	// then step through the clusters
 	nStartOffset = 0;
-	for (uint64 nCount = 0; nCount < nLength; nCount = nCount + 0x8000)
+	for (uint64_t nCount = 0; nCount < nLength; nCount = nCount + 0x8000)
 	{
 		if(m_progressHandler) m_progressHandler->setPosition(nBlockCount);
 		io_read_part(pData, 0x7c00, image, nPartition, nOffset);
@@ -3567,14 +3567,14 @@ bool WiiDisc::saveDecryptedPartition(const std::string& filename, ImageFile *ima
 bool WiiDisc::loadDecryptedPartition(const std::string& name, ImageFile *image, int nPartition)
 {
 	// now open a progress bar
-	uint64	nStartOffset;
-	uint64 nLength;
+	uint64_t	nStartOffset;
+	uint64_t nLength;
 
-	uint8 * pData;
+	uint8_t * pData;
 	FILE * fIn;
-	//uint32 nBlockCount = 0;
+	//uint32_t nBlockCount = 0;
 
-	uint64 nFileSize;
+	uint64_t nFileSize;
 
 	fIn = fopen(name.data(), "rb");
 
@@ -3602,7 +3602,7 @@ bool WiiDisc::loadDecryptedPartition(const std::string& name, ImageFile *image, 
 		return false;
 	}
 
-	pData = (uint8 *)malloc(0x20000);
+	pData = (uint8_t *)malloc(0x20000);
 
 	// save the first 0x20000 bytes direct as thats the partition.bin
 	fread(pData,1,0x20000, fIn);
@@ -3642,28 +3642,28 @@ bool WiiDisc::doPartitionShrink(int partition)
 	ASSERT(0, "Not implemented yet!");
 	return false;
 /*
-	uint64 nClusterSource;
-	uint64 nSourceDataOffset;
-	uint64 nClusterDestination;
-	uint64 nDestinationDataOffset;
+	uint64_t nClusterSource;
+	uint64_t nSourceDataOffset;
+	uint64_t nClusterDestination;
+	uint64_t nDestinationDataOffset;
 
-	uint64 nSourceClusterGroup;
-	uint64 nDestClusterGroup;
-	uint64 nClusterGroups;
+	uint64_t nSourceClusterGroup;
+	uint64_t nDestClusterGroup;
+	uint64_t nClusterGroups;
 
-	uint32 nDifference;
+	uint32_t nDifference;
 
-	uint64 i;
+	uint64_t i;
 
 	// allocate space for the fst.bin
 
-	uint8 * pFST = (uint8 *)malloc((uint32)(image->parts[nPartition].header.fst_size));
+	uint8_t * pFST = (uint8_t *)malloc((uint32_t)(image->parts[nPartition].header.fst_size));
 
 	// allocate space for the data size (as we modify it
-	uint8 nDataSize[4];
+	uint8_t nDataSize[4];
 
 	// read the fst.bin and data size files
-	io_read_part(pFST, (uint32)(image->parts[nPartition].header.fst_size), image, nPartition, image->parts[nPartition].header.fst_offset);
+	io_read_part(pFST, (uint32_t)(image->parts[nPartition].header.fst_size), image, nPartition, image->parts[nPartition].header.fst_offset);
 	io_read(nDataSize, 0x0004, image, image->parts[nPartition].offset + 0x2bC);
 
 	// find the first empty block from main.dol onwards
@@ -3730,10 +3730,10 @@ bool WiiDisc::doPartitionShrink(int partition)
 	DiscWriteDirect(image, image->parts[nPartition].offset + image->parts[nPartition].h3_offset, h3, SIZE_H3);
 
 	// now update the fst table entries
-	nDifference = (uint32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x7c00) >> 2);
+	nDifference = (uint32_t)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x7c00) >> 2);
 
-	uint32 nFSTEntries  = be32(pFST + 8);
-	uint32 nTempOffset;
+	uint32_t nFSTEntries  = be32(pFST + 8);
+	uint32_t nTempOffset;
 
 	for (i = 0; i < nFSTEntries; i++)
 	{
@@ -3752,9 +3752,9 @@ bool WiiDisc::doPartitionShrink(int partition)
 	wii_write_data_file(image, nPartition, image->parts[nPartition].header.fst_offset, image->parts[nPartition].header.fst_size, pFST);
 
 	// update the data size in boot.bin
-	uint32 nSize = be32(nDataSize);
+	uint32_t nSize = be32(nDataSize);
 
-	nDifference = (uint32)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x8000) >> 2);
+	nDifference = (uint32_t)(((nSourceClusterGroup - nDestClusterGroup) * NB_CLUSTER_GROUP * 0x8000) >> 2);
 
 	Write32(nDataSize, nSize - nDifference);
 
@@ -3775,10 +3775,10 @@ bool WiiDisc::doPartitionShrink(int partition)
 // Search for the first block of data that is marked as either used //
 // or unused                                                        //
 //////////////////////////////////////////////////////////////////////
-uint64 WiiDisc::findFirstData(uint64 nStartOffset, uint64 nLength, BOOL bUsed)
+uint64_t WiiDisc::findFirstData(uint64_t nStartOffset, uint64_t nLength, BOOL bUsed)
 {
-	uint64 nBlock = nStartOffset / 0x8000;
-	uint64 nEndBlock = (nStartOffset + nLength - 1) / 0x8000;
+	uint64_t nBlock = nStartOffset / 0x8000;
+	uint64_t nEndBlock = (nStartOffset + nLength - 1) / 0x8000;
 
 	while(nBlock < nEndBlock)
 	{

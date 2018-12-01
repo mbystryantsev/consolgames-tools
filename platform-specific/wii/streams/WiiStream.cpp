@@ -77,11 +77,11 @@ void CWIIScrubberDlg::ParseDiscDetails()
 
 		m_cbDISCFILES.Expand(m_cbDISCFILES.GetFirstVisibleItem(), TVE_EXPAND);
 
-		uint64 nTestCase;
+		uint64_t nTestCase;
 
-		nTestCase = (uint64) pcWiiDisc->CountBlocksUsed();
+		nTestCase = (uint64_t) pcWiiDisc->CountBlocksUsed();
 
-		nTestCase *= (uint64)(0x8000);
+		nTestCase *= (uint64_t)(0x8000);
 
 		// now if the headers button is clicked we need to add on the 1/32k per unmarked cluster
 
@@ -168,8 +168,8 @@ void CWIIScrubberDlg::ParseDiscDetails()
 int WiiStream::read(void* buf, off64_t size)
 {
     char* ptr = (char*)buf;
-    uint32 cache_size = 0, cache_offset = (uint32)(pos % (uint64)(0x7c00)), _size;
-    uint32 block = (uint32)(pos / (uint64)(0x7c00));
+    uint32_t cache_size = 0, cache_offset = (uint32_t)(pos % (uint64_t)(0x7c00)), _size;
+    uint32_t block = (uint32_t)(pos / (uint64_t)(0x7c00));
     size = std::min((__int64)(pImage->parts[part].data_size - pos), (__int64)size);
     if (!pImage->parts[part].is_encrypted)
     {

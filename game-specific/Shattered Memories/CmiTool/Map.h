@@ -31,20 +31,20 @@ public:
 private:
 	struct Header
 	{
-		uint32 signature;
-		uint32 width;
-		uint32 height;
-		uint32 size;
-		uint32 layer1TileCount;
-		uint32 layer0TileCount;
-		uint32 bgLayerWH;
-		uint32 tilesCanvasWH;
+		uint32_t signature;
+		uint32_t width;
+		uint32_t height;
+		uint32_t size;
+		uint32_t layer1TileCount;
+		uint32_t layer0TileCount;
+		uint32_t bgLayerWH;
+		uint32_t tilesCanvasWH;
 	};
 
 private:
-	std::vector<uint32> m_layer1Raster;
-	std::vector<uint32> m_layer0Raster;
-	std::vector<uint32> m_bgRaster;
+	std::vector<uint32_t> m_layer1Raster;
+	std::vector<uint32_t> m_layer0Raster;
+	std::vector<uint32_t> m_bgRaster;
 };
 
 }

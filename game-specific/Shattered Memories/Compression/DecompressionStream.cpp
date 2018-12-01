@@ -3,7 +3,7 @@
 namespace ShatteredMemories
 {
 
-static const uint16 s_modifiedHeader = 0x9C78;
+static const uint16_t s_modifiedHeader = 0x9C78;
 
 DecompressionStream::DecompressionStream(Consolgames::Stream* zlibStream, largesize_t size)
 	: ZlibStream(zlibStream)
@@ -33,7 +33,7 @@ largesize_t DecompressionStream::read(void* buf, largesize_t size)
 			if (m_zStream.total_in == 0)
 			{
 				// Fix header
-				*reinterpret_cast<uint16*>(&m_buf[0]) = s_modifiedHeader;
+				*reinterpret_cast<uint16_t*>(&m_buf[0]) = s_modifiedHeader;
 			}
 			if (m_zStream.avail_in == 0)
 			{

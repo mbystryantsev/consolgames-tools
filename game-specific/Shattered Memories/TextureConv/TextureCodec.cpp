@@ -44,7 +44,7 @@ void copyRect(const nv::Image& src, nv::Image& dest, const Rect& sourceRect, int
 
 }
 
-uint32 TextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const
+uint32_t TextureCodec::encodedRasterSize(int format, int width, int height, int mipmaps) const
 {
 	if (!isFormatSupported(format))
 	{
@@ -63,7 +63,7 @@ uint32 TextureCodec::encodedRasterSize(int format, int width, int height, int mi
 		return 0;
 	}
 
-	uint32 size = 0;
+	uint32_t size = 0;
 	while (mipmaps > 0)
 	{
 		size += encodedRasterSize(format, width, height);
@@ -168,7 +168,7 @@ bool TextureCodec::decode(void* result, const void* image, int format, int width
 	int destX = 0;
 	int destY = 0;
 
-	const uint8* bytes = static_cast<const uint8*>(image);
+	const uint8_t* bytes = static_cast<const uint8_t*>(image);
 	for (int i = 0; i < mipmaps; i++)
 	{
 		const int mipmapWidth = std::max(width, minWidth(format));

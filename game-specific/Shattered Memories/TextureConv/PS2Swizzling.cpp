@@ -17,8 +17,8 @@ namespace
 struct Unswizzle8Func
 {
 	Unswizzle8Func(const void* swizzledData, void* outData)
-		: swizzledData(static_cast<const uint8*>(swizzledData))
-		, outData(static_cast<uint8*>(outData))
+		: swizzledData(static_cast<const uint8_t*>(swizzledData))
+		, outData(static_cast<uint8_t*>(outData))
 	{
 	}
 
@@ -27,15 +27,15 @@ struct Unswizzle8Func
 		outData[rasterIndex] = swizzledData[swizzledIndex];
 	}
 
-	const uint8* const swizzledData;
-	uint8* const outData;
+	const uint8_t* const swizzledData;
+	uint8_t* const outData;
 };
 
 struct Swizzle8Func
 {
 	Swizzle8Func(const void* srcData, void* outSwizzledData)
-		: srcData(static_cast<const uint8*>(srcData))
-		, outSwizzledData(static_cast<uint8*>(outSwizzledData))
+		: srcData(static_cast<const uint8_t*>(srcData))
+		, outSwizzledData(static_cast<uint8_t*>(outSwizzledData))
 	{
 	}
 
@@ -44,16 +44,16 @@ struct Swizzle8Func
 		outSwizzledData[swizzledIndex] = srcData[rasterIndex];
 	}
 
-	const uint8* const srcData;
-	uint8* const outSwizzledData;
+	const uint8_t* const srcData;
+	uint8_t* const outSwizzledData;
 };
 
 
 #pragma pack(push, 1)
 struct PixelPair4bpp
 {
-	uint8 p1 : 4;
-	uint8 p2 : 4;
+	uint8_t p1 : 4;
+	uint8_t p2 : 4;
 };
 #pragma pack(pop)
 
@@ -70,7 +70,7 @@ struct Unswizzle4as8Func
 		const PixelPair4bpp* src =  (const PixelPair4bpp*)swizzledData;
 		PixelPair4bpp* dst = (PixelPair4bpp*)outData;
 
-		const uint8 value = ((swizzledIndex % 2) == 0) ? src[swizzledIndex / 2].p1 : src[swizzledIndex / 2].p2;
+		const uint8_t value = ((swizzledIndex % 2) == 0) ? src[swizzledIndex / 2].p1 : src[swizzledIndex / 2].p2;
 
 		if (odd(rasterIndex))
 		{
@@ -99,7 +99,7 @@ struct Swizzle4as8Func
 		const PixelPair4bpp* src =  (const PixelPair4bpp*)srcData;
 		PixelPair4bpp* dst = (PixelPair4bpp*)outSwizzledData;
 
-		const uint8 value = odd(rasterIndex) ? src[rasterIndex / 2].p2 : src[rasterIndex / 2].p1;
+		const uint8_t value = odd(rasterIndex) ? src[rasterIndex / 2].p2 : src[rasterIndex / 2].p1;
 
 		if (odd(swizzledIndex))
 		{
@@ -232,18 +232,18 @@ void rotPal(void* palette)
 
 void rotatePalette16(void* palette)
 {
-	rotPal<uint16>(palette);
+	rotPal<uint16_t>(palette);
 }
 
 void rotatePalette24(void* palette)
 {
 #pragma pack(push, 1)
-	struct RGB {uint8 r, g, b;};
+	struct RGB {uint8_t r, g, b;};
 #pragma pack(pop)
 	rotPal<RGB>(palette);
 }
 
 void rotatePalette32(void* palette)
 {
-	rotPal<uint32>(palette);
+	rotPal<uint32_t>(palette);
 }

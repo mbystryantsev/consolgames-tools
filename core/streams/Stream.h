@@ -63,17 +63,17 @@ public:
 	void setByteOrder(ByteOrder order);
 	ByteOrder byteOrder() const;
 
-	uint8 readUInt8();
-	uint16 readUInt16();
-	uint32 readUInt32();
-	uint64 readUInt64();
+	uint8_t readUInt8();
+	uint16_t readUInt16();
+	uint32_t readUInt32();
+	uint64_t readUInt64();
 	int readInt();
-	uint32 readUInt();
+	uint32_t readUInt();
 
-	void writeUInt8(uint8 value);
-	void writeUInt16(uint16 value);
-	void writeUInt32(uint32 value);
-	void writeUInt64(uint64 value);
+	void writeUInt8(uint8_t value);
+	void writeUInt16(uint16_t value);
+	void writeUInt32(uint32_t value);
+	void writeUInt64(uint64_t value);
 	void writeInt(int value);
 
 protected:

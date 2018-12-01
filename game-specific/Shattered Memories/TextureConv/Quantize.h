@@ -4,7 +4,7 @@
 #pragma pack(push, 1)
 struct RGBA
 {
-	uint8 r, g, b, a;
+	uint8_t r, g, b, a;
 };
 #pragma pack(pop)
 
@@ -15,17 +15,17 @@ static inline double colorCeil()
 }
 
 template <int bits>
-static inline uint8 expandColorTo32(uint8 color)
+static inline uint8_t expandColorTo32(uint8_t color)
 {
 	const double normalized = static_cast<double>(color) / colorCeil<bits>();
-	return static_cast<uint8>(normalized * 255.0 + 0.5);
+	return static_cast<uint8_t>(normalized * 255.0 + 0.5);
 }
 
 template <int bits>
-static inline uint8 collapseColor32(uint8 color)
+static inline uint8_t collapseColor32(uint8_t color)
 {
 	const double normalized = static_cast<double>(color) / 255.0;
-	return static_cast<uint8>(normalized * colorCeil<bits>() + 0.5);
+	return static_cast<uint8_t>(normalized * colorCeil<bits>() + 0.5);
 }
 
 typedef struct liq_attr liq_attr;

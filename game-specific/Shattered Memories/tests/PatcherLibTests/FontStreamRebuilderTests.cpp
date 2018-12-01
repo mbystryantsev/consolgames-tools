@@ -17,8 +17,8 @@ static bool compareStreams(Stream* s1, Stream* s2)
 		c_bufSize = 1024
 	};
 
-	uint8 buf1[c_bufSize];
-	uint8 buf2[c_bufSize];
+	uint8_t buf1[c_bufSize];
+	uint8_t buf2[c_bufSize];
 
 	while (true)
 	{

@@ -76,73 +76,73 @@ Stream::ByteOrder Stream::byteOrder() const
 	return m_byteOrder;
 }
 
-uint8 Stream::readUInt8()
+uint8_t Stream::readUInt8()
 {
-	return read<uint8>();
+	return read<uint8_t>();
 }
 
-uint16 Stream::readUInt16()
-{
-	if (m_byteOrder != s_nativeByteOrder)
-	{
-		return endian16(read<uint16>());
-	}
-	return read<uint16>();
-}
-
-uint32 Stream::readUInt32()
+uint16_t Stream::readUInt16()
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
-		return endian32(read<uint32>());
+		return endian16(read<uint16_t>());
 	}
-	return read<uint32>();
+	return read<uint16_t>();
 }
 
-uint64 Stream::readUInt64()
+uint32_t Stream::readUInt32()
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
-		return endian64(read<uint64>());
+		return endian32(read<uint32_t>());
 	}
-	return read<uint64>();
+	return read<uint32_t>();
 }
 
-void Stream::writeUInt8(uint8 value)
+uint64_t Stream::readUInt64()
 {
-	write<uint8>(value);	
+	if (m_byteOrder != s_nativeByteOrder)
+	{
+		return endian64(read<uint64_t>());
+	}
+	return read<uint64_t>();
 }
 
-void Stream::writeUInt16(uint16 value)
+void Stream::writeUInt8(uint8_t value)
+{
+	write<uint8_t>(value);
+}
+
+void Stream::writeUInt16(uint16_t value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian16(value);
 	}
-	write<uint16>(value);
+	write<uint16_t>(value);
 }
 
-void Stream::writeUInt32(uint32 value)
+void Stream::writeUInt32(uint32_t value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian32(value);
 	}
-	return write<uint32>(value);	
+	return write<uint32_t>(value);
 }
 
-void Stream::writeUInt64(uint64 value)
+void Stream::writeUInt64(uint64_t value)
 {
 	if (m_byteOrder != s_nativeByteOrder)
 	{
 		value = endian64(value);
 	}
-	return write<uint64>(value);	
+	return write<uint64_t>(value);
 }
 
 void Stream::writeInt(int value)
 {
-	writeUInt32(static_cast<uint32>(value));
+	writeUInt32(static_cast<uint32_t>(value));
 }
 
 bool Stream::isOpen() const
@@ -155,7 +155,7 @@ int Stream::readInt()
 	return static_cast<int>(readUInt());
 }
 
-uint32 Stream::readUInt()
+uint32_t Stream::readUInt()
 {
 	return readUInt32();
 }

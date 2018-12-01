@@ -19,10 +19,10 @@ public:
 		{
 		}
 
-		uint32 signature;
-		uint32 size;
-		uint16 unk1;
-		uint16 unk2;
+		uint32_t signature;
+		uint32_t size;
+		uint16_t unk1;
+		uint16_t unk2;
 	};
 
 	struct MetaInfo
@@ -31,13 +31,13 @@ public:
 		void clear();
 
 		std::string unknown;
-		uint64 unk1;
-		uint32 unk2;
-		uint32 unk3;
+		uint64_t unk1;
+		uint32_t unk2;
+		uint32_t unk3;
 		std::string typeId;
 		std::string targetPath;
 		std::string sourcePath;
-		uint32 unk4;
+		uint32_t unk4;
 	};
 
 public:
@@ -49,36 +49,36 @@ public:
 	bool initSegment();
 	offset_t nextSegmentPosition() const;
 	bool atSegmentEnd() const;
-	uint32 segmentSize() const;
+	uint32_t segmentSize() const;
 
 	bool fetch();
 	bool atEnd() const;
 	const MetaInfo& metaInfo() const;
 	const SegmentInfo& segmentInfo() const;
 
-	uint32 itemSize() const;
+	uint32_t itemSize() const;
 
 private:
 	MetaInfo readMetaInfo();
 	std::string readString(bool& ok);
-	uint32 totalSegmentSize() const;
+	uint32_t totalSegmentSize() const;
 
 private:
 	const Consolgames::Stream::ByteOrder m_byteOrder;
 
-	static const uint32 s_dataStreamId;
-	static const uint32 s_segmentHeaderSize;
+	static const uint32_t s_dataStreamId;
+	static const uint32_t s_segmentHeaderSize;
 
 	MetaInfo m_currentMetaInfo;
 	SegmentInfo m_currentSegmentInfo;
 	Consolgames::Stream* m_stream;
 	std::unique_ptr<Consolgames::Stream> m_streamHolder;
-	uint32 m_segmentSize;
-	uint32 m_position;
-	uint32 m_nextItemPosition;
-	uint32 m_currSegmentPosition;
-	uint32 m_nextSegmentPosition;
-	uint32 m_currentItemSize;
+	uint32_t m_segmentSize;
+	uint32_t m_position;
+	uint32_t m_nextItemPosition;
+	uint32_t m_currSegmentPosition;
+	uint32_t m_nextSegmentPosition;
+	uint32_t m_currentItemSize;
 	offset_t m_startStreamPosition;
 	bool m_isFirstSegment;
 };

@@ -23,7 +23,7 @@ class SectorSource
 {
 public:
 	virtual int  sectorCount() const = 0;
-	virtual bool readSector(uint8* buffer, int lba) = 0;
+	virtual bool readSector(uint8_t* buffer, int lba) = 0;
 	virtual ~SectorSource(){}
 };
 

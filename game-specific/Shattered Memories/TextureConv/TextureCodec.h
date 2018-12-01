@@ -17,14 +17,14 @@ public:
 public:
 	bool decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat, int mipmapsToDecode);
 	bool encode(void* result, const void* image, int format, int width, int height, void* palette, int paletteFormat, int mipmaps);
-	uint32 encodedRasterSize(int format, int width, int height, int mipmaps) const;
+	uint32_t encodedRasterSize(int format, int width, int height, int mipmaps) const;
 
 	virtual bool isFormatSupported(int format) const = 0;
 	virtual bool isPaletteFormatSupported(int format) const = 0;
 	virtual bool isMipmapsSupported(int format) const = 0;
 	virtual int bestSuitablePaletteFormatFor(int textureFormat) const = 0;
-	virtual uint32 encodedRasterSize(int format, int width, int height) const = 0;
-	virtual uint32 encodedPaletteSize(int format, int paletteFormat) const = 0;
+	virtual uint32_t encodedRasterSize(int format, int width, int height) const = 0;
+	virtual uint32_t encodedPaletteSize(int format, int paletteFormat) const = 0;
 	virtual bool decode(void* result, const void* image, int format, int width, int height, const void* palette, int paletteFormat) = 0;
 	virtual int defaultMipmapCount() const = 0;
 	virtual int minWidth(int format) const = 0;

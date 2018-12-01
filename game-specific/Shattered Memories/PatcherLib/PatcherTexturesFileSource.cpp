@@ -24,7 +24,7 @@ PatcherTexturesFileSource::PatcherTexturesFileSource(FileSource* primarySource, 
 {
 }
 
-shared_ptr<Stream> PatcherTexturesFileSource::file(uint32 hash, FileAccessor& accessor)
+shared_ptr<Stream> PatcherTexturesFileSource::file(uint32_t hash, FileAccessor& accessor)
 {
 	if (hash == s_fontStreamNameHash)
 	{
