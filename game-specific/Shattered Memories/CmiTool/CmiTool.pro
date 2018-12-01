@@ -5,4 +5,4 @@ CONFIG -= qt
 SOURCES = $$files(*.cpp)
 HEADERS = $$files(*.h)
 TEMPLATE = app
-LIBS += core.lib Common.lib pnglite.lib zlib.lib libimagequant.a libgcc.a libmingwex.a nvtt.lib libpng.a
+LIBS += core.lib nvtt.lib pnglite.lib libpng.lib libjpeg.lib zlib.lib libimagequant.lib Common.lib
