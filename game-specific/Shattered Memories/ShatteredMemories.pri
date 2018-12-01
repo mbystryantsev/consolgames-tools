@@ -20,6 +20,10 @@ DEFINES += _SCL_SECURE_NO_WARNINGS _CRT_SECURE_NO_WARNINGS
 
 EXTERNALS = $$PWD/../../externals/
 
+*-g++* {
+	QMAKE_CXXFLAGS += -std=c++14
+}
+
 INCLUDEPATH += \
 	$$PWD/Common \
 	$$PWD/CommonQt \

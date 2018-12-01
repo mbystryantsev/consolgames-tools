@@ -163,8 +163,10 @@ public:
 	DLog& operator <<(uint64_t v){std::cout << (modifier == LogModifiers::modHex ? std::hex : std::dec); std::cout << v; return *this;}
 	DLog& operator <<(int v) { return (*this << (int64_t)v); }
 	DLog& operator <<(unsigned int v) { return (*this << (uint64_t)v); }
+#if defined(_MSC_VER)
 	DLog& operator <<(long v) { return (*this << (int64_t)v); }
 	DLog& operator <<(unsigned long v) { return (*this << (uint64_t)v); }
+#endif
 	DLog& operator <<(short v) { return (*this << (int64_t)v); }
 	DLog& operator <<(unsigned short v) { return (*this << (uint64_t)v); }
 	DLog& operator <<(char c){std::cout << c; return *this;}
@@ -191,9 +193,13 @@ public:
 
 const DLog::LogModifiers HEX(DLog::LogModifiers::modHex);
 
+#if defined(_MSC_VER)
 #define DLOG \
 	__if_not_exists(__s_consolgames_log_category){ DLog()} \
 	__if_exists(__s_consolgames_log_category){ (DLog() << __s_consolgames_log_category << ": ") }
+#else
+#define DLOG DLog()
+#endif
 #define LOG_CATEGORY(category) static const char* __s_consolgames_log_category = category;
 
 #if __cplusplus < 201103L && !defined(_MSC_VER)

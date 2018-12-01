@@ -2,6 +2,7 @@
 #include <iostream>
 #include <set>
 #include <list>
+#include <string.h>
 
 using namespace std;
 using namespace Consolgames;
