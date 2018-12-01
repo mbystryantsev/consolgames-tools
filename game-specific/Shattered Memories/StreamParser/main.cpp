@@ -1,12 +1,13 @@
-#include <DataStreamParser.h>
 #include "TextureDictionaryParserWii.h"
 #include "TextureDictionaryParserPS2.h"
 #include "TextureDictionaryParserPSP.h"
+#include <DataStreamParser.h>
 #include <FileStream.h>
 #include <QtFileStream.h>
 #include <iomanip>
 #include <QDir>
 #include <QTextStream>
+#include <QCoreApplication>
 
 using namespace Consolgames;
 using namespace ShatteredMemories;
@@ -95,85 +96,133 @@ bool parseStream(Stream& stream, const QString& name, QTextStream& csv, Platform
 
 			if (atLeastOneParsed && !parser.atSegmentEnd())
 			{
-				std::cout << "WARNING: Segment end is not reached! " << std::hex << stream.position() << " != " << parser.nextSegmentPosition() << std::endl;
+				std::cerr << "WARNING: Segment end is not reached! " << std::hex << stream.position() << " != " << parser.nextSegmentPosition() << std::endl;
 			}
 		}
 	}
 
 	if (atLeastOneParsed && !parser.atEnd())
 	{
-		std::cout << "WARNING: End is not reached! " << std::hex << stream.position() << " != " << stream.size() << std::endl;
+		std::cerr << "WARNING: End is not reached! " << std::hex << stream.position() << " != " << stream.size() << std::endl;
 	}
 
 	return atLeastOneParsed;
 }
 
+static void printUsage(std::ostream& stream)
+{
+	stream <<
+		"Shattered Memories & Origins Stream Parser by consolgames.ru\n"
+		"Usage: \n"
+		"  parse <wii|ps2|psp> <FilesDir> [OutputCSV]\n"
+		"     Parse files for textures and write result into output CSV file or stdout\n"
+		;
+}
+
 int main(int argc, char* argv[])
 {
-	QFile csv("test.csv");
-	VERIFY(csv.open(QIODevice::WriteOnly | QIODevice::Text));
-	QTextStream csvStream(&csv);
+	QCoreApplication app(argc, argv);
 
-	const bool useHashes = false;
+	const QStringList args = QCoreApplication::arguments();
+	const QString act = args.size() >= 2 ? args[1] : QString();
 
-	csvStream << QString(useHashes ? "fileHash" : "fileName") + ";textureName;format;width;height;mipmapCount;rasterPosition;rasterSize;paletteFormat;palettePosition;paletteSize\n";
-
-	QDir dir("D:/rev/shsm/psp/files");
-	//QDir dir("E:/_job/SHSM/ps2/test");
-	const QStringList files = dir.entryList(QDir::Files);
-	foreach (const QString& file, files)
+	if (act == "--help" || act == "help")
 	{
-#if 0
-		if (file == "B1A96880.BIN")
-		{
-			continue;
-		}
-#endif
-
-		/*
-		if (file.right(4).toLower() != ".bin" && file.size() != 8)
-		{
-			continue;
-		}
-
-		bool ok = false;
-		const quint32 hash = file.left(8).toUInt(&ok, 16);
-		if (!ok)
-		{
-			continue;
-		}
-
-		*/
-
-		std::cout << "Trying to parse file: " << file.toLatin1().constData() << std::endl;
-
-		QtFileStream stream(dir.absoluteFilePath(file), QIODevice::ReadOnly);
-		//QtFileStream stream(dir.absoluteFilePath("01CCE413.BIN"), QIODevice::ReadOnly);
-		ASSERT(stream.isOpen());
-
-// 		if (stream.readUInt32() == 0xE0FFD8FF)
-// 		{
-// 			stream.file().close();
-// 			dir.rename(file, file.left(file.length() - 4) + ".jpg");
-// 			DLOG << "Renamed " << file;
-// 			continue;
-// 		}
-		stream.seek(0, Stream::seekSet);
-
-		const Platform platform = PSP;
-
-		bool parsed = parseDictionary(stream, file, csvStream, platform);
-		if (!parsed)
-		{
-			stream.seek(0, Stream::seekSet);
-			parsed = parseStream(stream, file, csvStream, platform);
-		}
-		if (!parsed)
-		{
-			DLOG << "FILE NOT PARSED: " << file;
-		}
-
-		//break;
+		printUsage(std::cout);
 	}
+	else if (act == "parse" && args.size() >= 4 && args.size() <= 5)
+	{
+		const QString& platformStr = args[2];
+		const QString& inDir = args[3];
+		const QString outFile = args.size() >= 5 ? args[4] : "-";
+
+		Platform platform;
+		
+		if (platformStr == "wii")
+		{
+			platform = Wii;
+		}
+		else if (platformStr == "ps2")
+		{
+			platform = PS2;
+		}
+		else if (platformStr == "psp")
+		{
+			platform = PSP;
+		}
+		else
+		{
+			std::cerr << "Invalid platform id, please use \"wii\", \"ps2\" or \"psp\"." << std::endl;
+			return -1;
+		}
+
+		const QDir dir(inDir);
+		if (!dir.exists())
+		{
+			std::cerr << "Input directory not exists!";
+			return -1;
+		}
+
+		std::unique_ptr<QFile> csvFile;
+		std::unique_ptr<QTextStream> csvStream;
+		const bool usingSTDOUT = outFile == "-";
+		if (usingSTDOUT)
+		{
+			csvStream.reset(new QTextStream(stdout, QIODevice::WriteOnly | QIODevice::Text));
+		}
+		else
+		{
+			csvFile.reset(new QFile(outFile));
+			if (!csvFile->open(QIODevice::WriteOnly | QIODevice::Text))
+			{
+				std::cerr << "Unable to open CSV file!";
+				return -1;
+			}
+			csvStream.reset(new QTextStream(csvFile.get()));
+		}
+
+		const bool useHashes = false;
+
+		*csvStream << QString(useHashes ? "fileHash" : "fileName") + ";textureName;format;width;height;mipmapCount;rasterPosition;rasterSize;paletteFormat;palettePosition;paletteSize\n";
+
+		const QStringList files = dir.entryList(QDir::Files);
+		foreach (const QString& file, files)
+		{
+			if (!usingSTDOUT)
+			{
+				std::cout << "Trying to parse file: " << file.toLatin1().constData() << std::endl;
+			}
+
+			QtFileStream stream(dir.absoluteFilePath(file), QIODevice::ReadOnly);
+			ASSERT(stream.isOpen());
+
+	// 		if (stream.readUInt32() == 0xE0FFD8FF)
+	// 		{
+	// 			stream.file().close();
+	// 			dir.rename(file, file.left(file.length() - 4) + ".jpg");
+	// 			DLOG << "Renamed " << file;
+	// 			continue;
+	// 		}
+
+			stream.seek(0, Stream::seekSet);
+
+			bool parsed = parseDictionary(stream, file, *csvStream, platform);
+			if (!parsed)
+			{
+				stream.seek(0, Stream::seekSet);
+				parsed = parseStream(stream, file, *csvStream, platform);
+			}
+			if (!parsed)
+			{
+				std::cerr << "*** FILE NOT PARSED: " << file.toLatin1().constData();
+			}
+		}
+	}
+	else
+	{
+		printUsage(std::cerr);
+		return -1;
+	}
+
     return 0;
 }
