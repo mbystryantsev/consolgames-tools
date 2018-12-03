@@ -29,6 +29,8 @@ isEmpty(NO_PRECOMPILED_HEADER){
 	SOURCES -= pch.h.cpp
 }
 
+SOURCES -= patcher_plugin_import.cpp
+
 RC_FILE = Patcher.rc
  
 TEMPLATE = app
