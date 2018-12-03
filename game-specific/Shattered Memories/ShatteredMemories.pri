@@ -53,13 +53,13 @@ INCLUDEPATH += \
 	$$EXTERNALS/libpng \
 	$$EXTERNALS/libimagequant \
 
+DESTDIR     = $$PWD/out/$$QT_ARCH/$$CONFIG_NAME
+OBJECTS_DIR = $$DESTDIR/imm/$$TARGET/obj
+MOC_DIR     = $$DESTDIR/imm/$$TARGET/moc
+UI_DIR      = $$DESTDIR/imm/$$TARGET/uic
+
 QMAKE_LIBDIR += \
-	$$PWD/Common/$$CONFIG_NAME \
-	$$PWD/CommonQt/$$CONFIG_NAME \
-	$$PWD/Compression/$$CONFIG_NAME \
-	$$PWD/TextLib/$$CONFIG_NAME \
-	$$PWD/PatcherLib/$$CONFIG_NAME \
-	$$PWD/StreamParserLib/$$CONFIG_NAME \
+	$$DESTDIR \
 	$$PWD/externals/core/$$CONFIG_NAME \
 	$$PWD/externals/pnglite/$$CONFIG_NAME \
 	$$PWD/externals/zlib/$$CONFIG_NAME \
@@ -69,6 +69,3 @@ QMAKE_LIBDIR += \
 	$$PWD/externals/libpng/$$CONFIG_NAME \
 	$$PWD/externals/libimagequant/$$CONFIG_NAME \
 	$$PWD/../../libs \
-	$$EXTERNALS/nvidia-texture-tools/gnuwin32/lib \
-
-	

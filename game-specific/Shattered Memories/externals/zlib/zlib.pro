@@ -1,3 +1,5 @@
+include(../externals.pri)
+
 QT -= core gui
 CONFIG += static
 TEMPLATE = lib
