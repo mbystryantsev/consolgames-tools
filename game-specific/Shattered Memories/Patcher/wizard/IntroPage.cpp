@@ -7,12 +7,12 @@ IntroPage::IntroPage() : Page()
 {
 #if !defined(PRODUCTION)
 	m_ui.introLabel->setText(m_ui.introLabel->text() + QString("\r\n\r\n")
-		+ tr("дюммюъ бепяхъ оюрвю опедмюгмювемю рнкэйн дкъ бмсрпеммецн хяонкэгнбюмхъ х реярхпнбюмхъ оепебндю!"));
+		+ tr("п■п░п²п²п░п╞ п▓п∙п═п║п≤п╞ п÷п░п╒п╖п░ п÷п═п∙п■п²п░п≈п²п░п╖п∙п²п░ п╒п·п⌡п╛п п· п■п⌡п╞ п▓п²пёп╒п═п∙п²п²п∙п⌠п· п≤п║п÷п·п⌡п╛п≈п·п▓п░п²п≤п╞ п≤ п╒п∙п║п╒п≤п═п·п▓п░п²п≤п╞ п÷п∙п═п∙п▓п·п■п░!"));
 #endif
 
 	const Configurator& configurator = Configurator::instance();
 	const QString fullGameTitle = configurator.availablePlatforms().size() == 1
-		? QString(tr("%1 ДКЪ %2").arg(GAME_TITLE).arg(Configurator::platformName(*configurator.availablePlatforms().begin())))
+		? QString(tr("%1 п╢п╩я▐ %2").arg(GAME_TITLE).arg(Configurator::platformName(*configurator.availablePlatforms().begin())))
 		: QString(GAME_TITLE);
 
 	const QString windowGameTitle = configurator.availablePlatforms().size() == 1

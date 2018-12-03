@@ -24,7 +24,7 @@ ImagePatchPage::ImagePatchPage() : Page<Ui_ImagePatchPage>()
 	VERIFY(connect(m_ui.selectImageButton, SIGNAL(clicked()), SLOT(onImageSelectPressed())));
 	VERIFY(connect(m_ui.selectTempPathButton, SIGNAL(clicked()), SLOT(onTempPathSelectPressed())));
 	
-	setButtonText(QWizard::NextButton, tr("Начать!"));
+	setButtonText(QWizard::NextButton, tr("РќР°С‡Р°С‚СЊ!"));
 }
 
 int ImagePatchPage::nextId() const 
@@ -47,9 +47,9 @@ bool ImagePatchPage::validatePage()
 	if (m_imageFileChecker->hasError() || m_freeSpaceChecker->hasError())
 	{
 		const int answer = QMessageBox::question(this,
-			tr("Обнаружены ошибки"),
-			tr("Вероятно, указан один или несколько ошибочных параметров.") + QString("\r\n") +
-				tr("Вы уверены, что хотите продолжить процесс несмотря на возможные ошибки?")
+			tr("РћР±РЅР°СЂСѓР¶РµРЅС‹ РѕС€РёР±РєРё"),
+			tr("Р’РµСЂРѕСЏС‚РЅРѕ, СѓРєР°Р·Р°РЅ РѕРґРёРЅ РёР»Рё РЅРµСЃРєРѕР»СЊРєРѕ РѕС€РёР±РѕС‡РЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ.") + QString("\r\n") +
+				tr("Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РїСЂРѕС†РµСЃСЃ РЅРµСЃРјРѕС‚СЂСЏ РЅР° РІРѕР·РјРѕР¶РЅС‹Рµ РѕС€РёР±РєРё?")
 			, QMessageBox::Yes, QMessageBox::No);
 
 		if (answer == QMessageBox::No)
@@ -88,7 +88,7 @@ void ImagePatchPage::processEuristic()
 
 void ImagePatchPage::onImageSelectPressed()
 {
-	const QString filename = QFileDialog::getOpenFileName(this, tr("Выберите бэкап-образ для применения патча..."), m_ui.imagePath->text(), tr("Бэкап-образы Wii (*.iso)"));
+	const QString filename = QFileDialog::getOpenFileName(this, tr("Р’С‹Р±РµСЂРёС‚Рµ Р±СЌРєР°Рї-РѕР±СЂР°Р· РґР»СЏ РїСЂРёРјРµРЅРµРЅРёСЏ РїР°С‚С‡Р°..."), m_ui.imagePath->text(), tr("Р‘СЌРєР°Рї-РѕР±СЂР°Р·С‹ Wii (*.iso)"));
 	if (!filename.isNull())
 	{
 		m_ui.imagePath->setText(QDir::toNativeSeparators(filename));
@@ -97,7 +97,7 @@ void ImagePatchPage::onImageSelectPressed()
 
 void ImagePatchPage::onTempPathSelectPressed()
 {
-	const QString directory = QFileDialog::getExistingDirectory(this, tr("Укажите путь к директории для временных файлов..."), m_ui.tempPath->text());
+	const QString directory = QFileDialog::getExistingDirectory(this, tr("РЈРєР°Р¶РёС‚Рµ РїСѓС‚СЊ Рє РґРёСЂРµРєС‚РѕСЂРёРё РґР»СЏ РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ..."), m_ui.tempPath->text());
 	if (!directory.isNull())
 	{
 		m_ui.tempPath->setText(QDir::toNativeSeparators(directory));
@@ -108,12 +108,12 @@ void ImagePatchPage::onTempPathFreeSpaceError(quint64 space)
 {
 	const quint64 megabytes = space / (1024 * 1024);
 	const double gygabytes = static_cast<double>(megabytes) / 1024.0;
-	showToolTip(m_ui.tempPath, tr("Доступно %1 ГБ из необходимых 3 ГБ!").arg(gygabytes, 0, 'f', 2));
+	showToolTip(m_ui.tempPath, tr("Р”РѕСЃС‚СѓРїРЅРѕ %1 Р“Р‘ РёР· РЅРµРѕР±С…РѕРґРёРјС‹С… 3 Р“Р‘!").arg(gygabytes, 0, 'f', 2));
 }
 
 void ImagePatchPage::onTempPathError()
 {
-	showToolTip(m_ui.tempPath, tr("Указанный путь неверен!"));
+	showToolTip(m_ui.tempPath, tr("РЈРєР°Р·Р°РЅРЅС‹Р№ РїСѓС‚СЊ РЅРµРІРµСЂРµРЅ!"));
 }
 
 void ImagePatchPage::onTempPathResetError()
@@ -125,12 +125,12 @@ void ImagePatchPage::onTempPathResetError()
 
 void ImagePatchPage::onImagePathError()
 {
-	showToolTip(m_ui.imagePath, tr("Указанный путь неверен!"));
+	showToolTip(m_ui.imagePath, tr("РЈРєР°Р·Р°РЅРЅС‹Р№ РїСѓС‚СЊ РЅРµРІРµСЂРµРЅ!"));
 }
 
 void ImagePatchPage::onImagePathAccessError()
 {
-	showToolTip(m_ui.imagePath, tr("Указанный файл недоступен для записи!"));
+	showToolTip(m_ui.imagePath, tr("РЈРєР°Р·Р°РЅРЅС‹Р№ С„Р°Р№Р» РЅРµРґРѕСЃС‚СѓРїРµРЅ РґР»СЏ Р·Р°РїРёСЃРё!"));
 }
 
 void ImagePatchPage::onImagePathResetError()

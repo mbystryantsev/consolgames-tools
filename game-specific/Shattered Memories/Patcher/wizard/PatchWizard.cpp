@@ -23,12 +23,12 @@ PatchWizard::PatchWizard(QWidget* parent)
 		? QString(" (%1)").arg(Configurator::platformAbbr(*configurator.availablePlatforms().begin()))
 		: QString();
 
-	setWindowTitle(tr("Патч-перевод " GAME_TITLE) + platformsStr);
+	setWindowTitle(tr("РџР°С‚С‡-РїРµСЂРµРІРѕРґ " GAME_TITLE) + platformsStr);
 
 	setWizardStyle(ModernStyle);
 	setOption(NoBackButtonOnLastPage, true);
 
-	setButtonText(QWizard::CommitButton, tr("Применить!"));
+	setButtonText(QWizard::CommitButton, tr("РџСЂРёРјРµРЅРёС‚СЊ!"));
 
 	setPixmap(QWizard::WatermarkPixmap, QPixmap(":/watermark.png"));
 

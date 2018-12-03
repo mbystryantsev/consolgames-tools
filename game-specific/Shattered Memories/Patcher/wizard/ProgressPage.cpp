@@ -22,13 +22,13 @@ ProgressPage::ProgressPage()
 {
 	if (s_locInfo.isEmpty())
 	{
-		s_locInfo["initialize"]      = tr("Инициализация");
-		s_locInfo["rebuildArchives"] = tr("Обработка игровых данных");
-		s_locInfo["checkData"]       = tr("Проверка игровых данных");
-		s_locInfo["replaceArchives"] = tr("Замена игровых данных в образе");
-		s_locInfo["checkArchives"]   = tr("Проверка игровых архивов в образе");
-		s_locInfo["checkImage"]      = tr("Проверка образа");
-		s_locInfo["finalize"]        = tr("Удаление временных файлов");
+		s_locInfo["initialize"]      = tr("РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ");
+		s_locInfo["rebuildArchives"] = tr("РћР±СЂР°Р±РѕС‚РєР° РёРіСЂРѕРІС‹С… РґР°РЅРЅС‹С…");
+		s_locInfo["checkData"]       = tr("РџСЂРѕРІРµСЂРєР° РёРіСЂРѕРІС‹С… РґР°РЅРЅС‹С…");
+		s_locInfo["replaceArchives"] = tr("Р—Р°РјРµРЅР° РёРіСЂРѕРІС‹С… РґР°РЅРЅС‹С… РІ РѕР±СЂР°Р·Рµ");
+		s_locInfo["checkArchives"]   = tr("РџСЂРѕРІРµСЂРєР° РёРіСЂРѕРІС‹С… Р°СЂС…РёРІРѕРІ РІ РѕР±СЂР°Р·Рµ");
+		s_locInfo["checkImage"]      = tr("РџСЂРѕРІРµСЂРєР° РѕР±СЂР°Р·Р°");
+		s_locInfo["finalize"]        = tr("РЈРґР°Р»РµРЅРёРµ РІСЂРµРјРµРЅРЅС‹С… С„Р°Р№Р»РѕРІ");
 	}
 
 	VERIFY(connect(&m_patcherController, SIGNAL(completed()), SLOT(onPatchingCompleted())));
@@ -159,16 +159,16 @@ void ProgressPage::onProgress(int, const QString& message)
 void ProgressPage::onCancelPressed()
 {
 	const int answer = QMessageBox::question(this,
-			tr("Запрос отмены"),
-			tr("Отмена может привести к повреждению бэкап-образа, если она выполняется на этапе замены игровых данных.") +
+			tr("Р—Р°РїСЂРѕСЃ РѕС‚РјРµРЅС‹"),
+			tr("РћС‚РјРµРЅР° РјРѕР¶РµС‚ РїСЂРёРІРµСЃС‚Рё Рє РїРѕРІСЂРµР¶РґРµРЅРёСЋ Р±СЌРєР°Рї-РѕР±СЂР°Р·Р°, РµСЃР»Рё РѕРЅР° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РЅР° СЌС‚Р°РїРµ Р·Р°РјРµРЅС‹ РёРіСЂРѕРІС‹С… РґР°РЅРЅС‹С….") +
 			QString("\r\n\r\n") +
-			tr("Вы уверены, что хотите отменить процесс?"),
+			tr("Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ РѕС‚РјРµРЅРёС‚СЊ РїСЂРѕС†РµСЃСЃ?"),
 		QMessageBox::Yes, QMessageBox::No);
 
 	if (answer == QMessageBox::Yes)
 	{
 		wizard()->button(QWizard::CancelButton)->setEnabled(false);
-		m_ui.progressLabel->setText(tr("Остановка..."));
+		m_ui.progressLabel->setText(tr("РћСЃС‚Р°РЅРѕРІРєР°..."));
 		m_patcherController.requestStop();
 	}
 }

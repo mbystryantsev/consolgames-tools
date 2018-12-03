@@ -13,25 +13,25 @@ ErrorInfo ErrorInfo::fromCode(int code)
 {
 	switch (code)
 	{
-	DEF_ERROR(Open_UnableToOpenImage, "Невозможно открыть файл образа.", "Убедитесь, что указан правильный путь к файлу бэкап-образа и он доступен для записи.");
-	DEF_ERROR(Open_InvalidDiscId, "Выбран неверный бэкап-образ.", "Убедитесь, что выбран бэкап-образ игры " GAME_TITLE " для PAL-региона.");
+	DEF_ERROR(Open_UnableToOpenImage, "РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РѕР±СЂР°Р·Р°.", "РЈР±РµРґРёС‚РµСЃСЊ, С‡С‚Рѕ СѓРєР°Р·Р°РЅ РїСЂР°РІРёР»СЊРЅС‹Р№ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ Р±СЌРєР°Рї-РѕР±СЂР°Р·Р° Рё РѕРЅ РґРѕСЃС‚СѓРїРµРЅ РґР»СЏ Р·Р°РїРёСЃРё.");
+	DEF_ERROR(Open_InvalidDiscId, "Р’С‹Р±СЂР°РЅ РЅРµРІРµСЂРЅС‹Р№ Р±СЌРєР°Рї-РѕР±СЂР°Р·.", "РЈР±РµРґРёС‚РµСЃСЊ, С‡С‚Рѕ РІС‹Р±СЂР°РЅ Р±СЌРєР°Рї-РѕР±СЂР°Р· РёРіСЂС‹ " GAME_TITLE " РґР»СЏ PAL-СЂРµРіРёРѕРЅР°.");
 	}
 
 	const PatcherProcessor::ErrorCategory category = PatcherProcessor::errorCategory(static_cast<PatcherProcessor::ErrorCode>(code));
 	switch (category)
 	{
-	DEF_ERROR(category_Init, "Ошибка при инициализации.", "");
-	DEF_ERROR(category_Open, "Невозможно открыть файл образа.", "");
-	DEF_ERROR(category_RebuildArchives, "Ошибка при обработке файлов игры.", "");
-	DEF_ERROR(category_CheckArchives, "Файлы игры не прошли проверку на правильность установки патча.", "");
-	DEF_ERROR(category_ReplaceArchives, "Ошибка при замене данных в бэкап-образе.", "");
-	DEF_ERROR(category_PatchExecutable, "Ошибка при обработке исполняемого файла игры.", "");
-	DEF_ERROR(category_CheckData, "Бэкап-образ не прошёл проверку на правильность установки патча.", "");
-	DEF_ERROR(category_CheckImage, "Бэкап-образ не прошёл проверку на правильность установки патча.", "");
+	DEF_ERROR(category_Init, "РћС€РёР±РєР° РїСЂРё РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.", "");
+	DEF_ERROR(category_Open, "РќРµРІРѕР·РјРѕР¶РЅРѕ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РѕР±СЂР°Р·Р°.", "");
+	DEF_ERROR(category_RebuildArchives, "РћС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ С„Р°Р№Р»РѕРІ РёРіСЂС‹.", "");
+	DEF_ERROR(category_CheckArchives, "Р¤Р°Р№Р»С‹ РёРіСЂС‹ РЅРµ РїСЂРѕС€Р»Рё РїСЂРѕРІРµСЂРєСѓ РЅР° РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ СѓСЃС‚Р°РЅРѕРІРєРё РїР°С‚С‡Р°.", "");
+	DEF_ERROR(category_ReplaceArchives, "РћС€РёР±РєР° РїСЂРё Р·Р°РјРµРЅРµ РґР°РЅРЅС‹С… РІ Р±СЌРєР°Рї-РѕР±СЂР°Р·Рµ.", "");
+	DEF_ERROR(category_PatchExecutable, "РћС€РёР±РєР° РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ РёСЃРїРѕР»РЅСЏРµРјРѕРіРѕ С„Р°Р№Р»Р° РёРіСЂС‹.", "");
+	DEF_ERROR(category_CheckData, "Р‘СЌРєР°Рї-РѕР±СЂР°Р· РЅРµ РїСЂРѕС€С‘Р» РїСЂРѕРІРµСЂРєСѓ РЅР° РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ СѓСЃС‚Р°РЅРѕРІРєРё РїР°С‚С‡Р°.", "");
+	DEF_ERROR(category_CheckImage, "Р‘СЌРєР°Рї-РѕР±СЂР°Р· РЅРµ РїСЂРѕС€С‘Р» РїСЂРѕРІРµСЂРєСѓ РЅР° РїСЂР°РІРёР»СЊРЅРѕСЃС‚СЊ СѓСЃС‚Р°РЅРѕРІРєРё РїР°С‚С‡Р°.", "");
 	}
 
 
-	return ErrorInfo(QObject::tr("Ошибка при установке патча"), QObject::tr(""));
+	return ErrorInfo(QObject::tr("РћС€РёР±РєР° РїСЂРё СѓСЃС‚Р°РЅРѕРІРєРµ РїР°С‚С‡Р°"), QObject::tr(""));
 }
 
 #undef ERROR
