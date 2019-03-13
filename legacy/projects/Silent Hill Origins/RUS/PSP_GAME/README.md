@@ -1,0 +1,1 @@
+Directory for translated files from PSP_GAME directory.

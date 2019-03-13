@@ -1,0 +1,1 @@
+Directory for original files from game archives.

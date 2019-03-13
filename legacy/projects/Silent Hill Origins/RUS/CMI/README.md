@@ -1,0 +1,1 @@
+Directory for translated *.cmi map files.

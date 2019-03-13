@@ -1,0 +1,1 @@
+Directory for translated JPEG-files (splash272.jpg, tip_01.jpg, etc.) and mainmenu.xml.

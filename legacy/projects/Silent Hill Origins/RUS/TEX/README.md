@@ -1,0 +1,1 @@
+Directory for translated BMP files extracted by TXDViewer.

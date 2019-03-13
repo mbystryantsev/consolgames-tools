@@ -1,0 +1,70 @@
+;
+; OPTPiX iMageStudio for PS2 macro file
+;
+
+set macro_version 300
+set macro_for 0
+
+set input_dir RUS\LOCALE\
+set input_subdir 0
+set output_dir RUS\PIC\LOCALE\
+set remap_mode 0
+
+set input_ext tga
+set output_ext bmp
+set opt_bmp_rle 0
+set opt_bmp_tp -1
+set opt_bmp_hc 2
+
+set reduce_mode 0
+set reduce_noise 1
+set reduce_palbits 0
+set reduce_pm_mask 0
+set reduce_premask 0
+set reduce_palmask 0
+set reduce_trpal 0
+set reduce_endzero 0
+set reduce_endzero2 0
+set reduce_save_pal 0
+set reduce_save_pal_type 2
+set reduce_color 0
+set reduce_ncolor 256
+set reduce_tint 20
+set reduce_hue 20
+set reduce_optlevel 11
+set reduce_lpf 0
+set reduce_area 0
+set reduce_extpal 1
+set reduce_extpalsel 2
+set reduce_extpalcol 256
+set reduce_palfile RUS\SRC\LocalePalette.bap
+set reduce_compal 0
+set reduce_svcompal 0
+set reduce_svcompal_type 2
+set reduce_psmode 0
+set reduce_psorg 5
+set reduce_psgamma 5
+set reduce_psntsc 5
+set reduce_pstflag 0
+set reduce_pszflag 0
+set reduce_psrgbmode 0
+set reduce_pscolor_r 0
+set reduce_pscolor_g 0
+set reduce_pscolor_b 0
+set reduce_sorttype 0
+set reduce_sortrgb 0
+set reduce_sortrgbtype 0
+set reduce_remove_duppal 1
+set reduce_palxchg1 0
+set reduce_palxchg_s1 0
+set reduce_palxchg_d1 0
+set reduce_palxchg2 0
+set reduce_palxchg_s2 0
+set reduce_palxchg_d2 0
+set reduce_use_alpha 1
+set reduce_alpha_mix 8
+set reduce_alpha_mask 1
+set reduce_alpha_slope 0
+set reduce_alpha_dither 1
+reduce
+
