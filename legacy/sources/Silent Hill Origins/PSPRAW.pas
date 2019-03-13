@@ -1,21 +1,26 @@
 unit PSPRAW;
 
 interface
-uses DIB, Windows, SysUtils, Graphics;
+uses DIB_classic, Windows, SysUtils, Graphics, PS2Swizzle;
 
 
-  Type
-    TCharName = Array[0..63] of Char;
-	  TFHead = Packed Record
+Type
+  TCharName = Array[0..63] of Char;
+	TFHead = Packed Record
     Unknown0: Array[0..3] of DWord;
     Size: DWord;
-	  Unknown: Array[0..4] of DWord;
+	  Unknown: Array[0..3] of DWord;
+    PlatformID: DWord;
 	  Width : Word;
 	  Height: Word;
     Bpp: Byte;
     Unk1: Byte;
     Unk2: Word;
-    Unknown2: Array[0..23] of DWord;
+    Unknown2: Array[0..19] of DWord;
+    Unk3:    DWord;
+    Unk4:    DWord;
+    NameLen: DWord; // PS2 Only
+    NameUnk: DWord; // PS2 Only
     Name: TCharName;
     Pos: DWord;
   end;
@@ -267,34 +272,77 @@ begin
 end;
 
 
+Procedure FlipHalfBytes(Data: Pointer; Size: Integer);
+var B: ^Byte;
+begin
+  B := Data;
+  While Size > 0 do
+  begin
+    B^ := (B^ SHL 4) or (B^ SHR 4);
+    Inc(B);
+    Dec(Size);
+  end;
+end;
 
 
 Procedure LoadTexture(const F: File; var FHead: TFHead; var Pic: TDIB;
 var Pos: Integer; SkipImage: Boolean = False);
-var Pal: Array of DWord; Buf: Pointer;
+var Pal: Array of DWord; Buf, Buf2: Pointer; PalOffset, n: Integer;
 begin
     FHead.Pos:=Pos;
     Seek(F, Pos);// Inc(Pos,208);
-    BlockRead(F, FHead, 208);
+    //BlockRead(F, FHead, 208);
+    BlockRead(F, FHead, 40);
+    If FHead.PlatformID = $325350 Then // PS2
+    begin
+      BlockRead(F, FHead.Unk3, 16);
+      BlockRead(F, FHead.Name, FHead.NameLen);
+      Seek(F, Pos + FHead.NameLen + $60);
+      BlockRead(F, FHead.Width, 2);
+      BlockRead(F, n, 2);
+      BlockRead(F, FHead.Height, 2);
+      BlockRead(F, n, 2);
+      BlockRead(F, FHead.Bpp, 1);
+      //Seek(F, Pos + FHead.NameLen + $4C);
+      //BlockRead(F, PalOffset, 4);
+    end else
+    begin
+      BlockRead(F, FHead.Width, 208 - 40);
+    end;
     If SkipImage Then
     begin
       Inc(Pos,FHead.Size+12);
       Exit;
     end;
 
-    If FHead.Bpp<=8 then
+    If FHead.PlatformID <> $325350 Then
     begin
-      Seek(F,Pos+208);
-      //Inc(Pos,(1 SHL FHead.Bpp)*4);
-      SetLength(Pal, 1 SHL FHead.Bpp);
-      BlockRead(F, Pal[0], (1 SHL FHead.Bpp)*4);
-      Seek(F, Pos+(1 SHL FHead.Bpp)*4+208);
+      If FHead.Bpp<=8 then
+      begin
+        Seek(F,Pos+208);
+        //Inc(Pos,(1 SHL FHead.Bpp)*4);
+        SetLength(Pal, 1 SHL FHead.Bpp);
+        BlockRead(F, Pal[0], (1 SHL FHead.Bpp)*4);
+        Seek(F, Pos+(1 SHL FHead.Bpp)*4+208);
+      end else
+      begin
+        Seek(F,Pos+208);
+      end;
     end else
     begin
-      Seek(F,Pos+208);
+    If FHead.Bpp <= 8 Then
+      begin
+        SetLength(Pal, 1 SHL FHead.Bpp);
+        Seek(F, Pos + $14C + FHead.NameLen + (FHead.Width * FHead.Height * FHead.Bpp) div 8);
+        BlockRead(F, Pal[0], Length(Pal) * 4);
+        If FHead.Bpp = 8 Then
+          RotatePalette(Pal[0]);
+      end;
+      Seek(F, Pos + $FC + FHead.NameLen);
     end;
 
-    {If not Assigned(Pic) then} Pic:=TDIB.Create;
+    {If not Assigned(Pic) then}
+    Pic:=TDIB.Create;
     //If FHead.Bpp<=8 then
     //  Pic.PixelFormat:=MakeDibPixelFormat(8,8,8)
     If FHead.Bpp=16 Then
@@ -306,7 +354,28 @@ begin
     GetMem(Buf,(FHead.Height * FHead.Width * FHead.Bpp) div 8);
     BlockRead(F, Buf^,(FHead.Height * FHead.Width * FHead.Bpp) div 8);
     //If FHead.Bpp>8 then Flip(Buf,FHead.Height * FHead.Width);
-    RawToDib(Pic, Buf);
+    If FHead.PlatformID = $325350 Then
+    begin
+      If FHead.Bpp <= 8 Then
+      begin
+        GetMem(Buf2, (FHead.Height * FHead.Width * FHead.Bpp) div 8);
+        Case FHead.Bpp of
+          4:
+          begin
+            Unswizzle4X(Buf^, Buf2^, FHead.Width, FHead.Height);
+            FlipHalfBytes(Buf2, FHead.Height * FHead.Width div 2);
+          end;
+          8: Unswizzle8(Buf^, Buf2^, FHead.Width, FHead.Height);
+        end;
+        FreeMem(Buf);
+        Buf := Buf2;
+      end;
+      For n := 0 To FHead.Height - 1 do
+        Move(Pointer(DWord(Buf) + Pic.WidthBytes * n)^, Pic.ScanLine[n]^, Pic.WidthBytes);
+    end else
+    begin
+      RawToDib(Pic, Buf);
+    end;
     If FHead.Bpp<=8 then SetPal(Pic, Pal); //!!!
     FreeMem(Buf);
     //Inc(Pos,(FHead.Height * FHead.Width * FHead.Bpp) div 8);

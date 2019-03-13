@@ -1,223 +1,105 @@
- program SHPack;
+program SHPack;
 
 {$APPTYPE CONSOLE}
 
 uses
-  SysUtils, SHPacker, Windows, Classes, StrUtils;
+  SysUtils,
+  SH0_ARC in 'SH0_ARC.pas';
 
-var Head: THeader; Folders: Array of String;
-
-Procedure Patch();
-var F, FW: File; Buf: Pointer; B: ^Byte; W: ^Word; List: TStringList;
-n,m,Pos: Integer; H: ^TFileHeader; Name: Array of String;
-Size: Integer; P: Boolean; S, FileName: String;
+Procedure CreateError(S: String);
 begin
-  AssignFile(F, ParamStr(3));
-  Reset(F,1);
-  BlockRead(F, Head, 20);
-  If Head.Sign[0]+Head.Sign[1]+Head.Sign[2]+Head.Sign[3]<>'A2.0' then
-    WriteLn('Warning! Header incorrect!');
-  SetLength(Head.FHead, Head.Count);
-  GetMem(Buf, Head.HeadSize-20);
-  Seek(F,20);
-  BlockRead(F, Buf^, Head.HeadSize-20);
-  H:=Addr(Buf^);
-  For n:=0 to Head.Count-1 do
-  begin
-    Head.FHead[n]:=H^;
-    Inc(H);
-  end;
-  FreeMem(Buf);
-  GetMem(Buf, Head.NamesSize);
-  Seek(F, Head.NamesPos);
-  BlockRead(F, Buf^, Head.NamesSize);
-  SetLength(Name, Head.Count);
-
-  For n:=0 to Head.Count-1 do
-  begin
-    B:=Addr(Buf^);
-    Inc(B, Head.FHead[n].NamePos);
-    Name[n]:='';
-    While B^>0 do
-    begin
-      Name[n]:=Name[n]+Char(B^);
-      Inc(B);
-    end;
-  end;
-  FreeMem(Buf);
-
-  List:=TStringList.Create;
-  List.LoadFromFile(ParamStr(2));
-  For n:=0 To List.Count-1 do
-  begin
-    S:=List.Strings[n];
-    If (Length(S)>2) and (S[Length(S)-1]=' ') Then
-    begin
-      P:=True;
-      SetLength(S,Length(S)-2);
-    end;
-    FileName:='';
-    For m:=0 To High(Folders) do
-    begin
-      If FileExists(Format('%s\%s',[Folders[m],S])) Then
-      begin
-        FileName:=Format('%s\%s',[Folders[m],S]);
-        WriteLn(S);
-        break;
-      end;
-    end;
-    If FileName<>'' Then
-    begin
-      For m:=0 To Head.Count -1 do
-      begin
-        If Name[m]=S Then break;
-      end;
-      If m<Head.Count Then
-      begin
-        AssignFile(FW,FileName);
-        Reset(FW,1);
-        Size:=FileSize(FW);
-        GetMem(Buf,Size);
-        BlockRead(FW,Buf^,Size);
-        CloseFile(FW);
-        Size:=Pack(Buf, Size);
-        If Size<=RoundBy(Head.FHead[m].FileSize,16) Then
-          Pos:=Head.FHead[m].FilePos
-        else
-          Pos:=RoundBy(FileSize(F),16);
-        With Head.FHead[m] do
-        begin
-          FilePos := Pos;
-          FileSize:= Size;
-          Seek(F,FilePos);
-        end;
-        BlockWrite(F,Buf^,Size);
-        FreeMem(Buf);
-      end;
-    end;
-  end;
-  Seek(F,20);
-  BlockWrite(F,Head.FHead[0],Head.Count*SizeOf(TFileHeader));
-  CloseFile(F);
-  List.Free;
+  WriteLn(Format('***ERROR: %s',[S]));
 end;
 
-
-var  List: TStringList; Buf: Pointer;
-n, m, Size, Pos, NPos: Integer; S,S1: String; F, FW: File; Names: Array of Char;
-ErrorCount: Integer; WBuf: Pointer; FSize: Integer;
-FileName: String;
-Label NN;
+Procedure Progress(Cur, Max: Integer; S: String);
 begin
-  WriteLn('Silent Hill Origins Packer v0.1 by HoRRoR <ho-rr-or@mail.ru>');
+  WriteLn(Format('[%d/%d] %s', [Cur + 1, Max, S]));
+end;
+
+var Folders, S, SS, FromDir: String; n,m, I: Integer;
+SubFolders:  Boolean = False; Patch:     Boolean = False;
+Compression: Boolean = False; SavePaths: Boolean = False;
+ShatteredMemories: Boolean = False;
+Align: Integer = 2048; Code: Integer;
+InFile, OutFile: String;
+begin
+// SHPack [-patch] LIST.LST SH.ARC [InFolder1, InFolder1, ..., InFolderN]
+  //WriteLn(IntToHex(CalcHash(PChar('Boot.Arc')), 8));
+  WriteLn('Silent Hill Origins ARC builder v2.0 by HoRRoR <ho-rr-or@mail.ru>');
   WriteLn('http://consolgames.ru/');
-  If (ParamCount < 2) {or not FileExists(ParamStr(1))} then
-  Exit;
-
-
-  If ParamStr(1)='-patch' Then m:=4 else m:=3;
-  If ParamStr(1)='-patch' Then SetLength(Folders,ParamCount-3)
-  else SetLength(Folders,ParamCount-2);
-  For n:=m To ParamCount do
+  If ParamCount < 2 Then
   begin
-    Folders[n-m]:=ParamStr(n);
-  end;
-  If ParamStr(1)='-patch' Then
-  begin
-    If Length(Folders)<=0 Then Exit;
-    Patch;
+    WriteLn('Usage:');
+    WriteLn('SHPack [-patch] [Keys] <LST/FOLDER> <ARC> [InDir1, InDir1, ..., InDirN]');
+    WriteLn('Keys:');
+    WriteLn('  -p:  Save paths in file names');
+    WriteLn('  -s:  Include subfolders');
+    WriteLn('  -c:  Use compression');
+    WriteLn('  -aN: Set align (default: 2048)');
+    WriteLn('  -sm: Shattered Memories');
     Exit;
   end;
-
-  //AssignFile(FW, 'SH.ARC');
-  AssignFile(FW, ParamStr(2));
-  Rewrite(FW,1);
-  List:=TStringList.Create;
-  //List.LoadFromFile('HTEST\LIST.LST');
-  List.LoadFromFile(ParamStr(1));
-  Pos:=RoundBy(20+(16*List.Count),16);
-  SetLength(Head.FHead, List.Count);
-  Head.Count:=List.Count;
-  Head.Sign:='A2.0';
-  Head.HeadSize:=Pos;
-  NPos:=0;
-  SetLength(Folders,Length(Folders)+1);
-  Folders[High(Folders)]:=ExtractFilePath(ParamStr(1));
-  For n:=0 to List.Count-1 do
+  Patch       := ParamStr(1)='-patch';
+  For i := 1 To ParamCount do
   begin
-    S:=LeftStr(List.Strings[n], Length(List.Strings[n])-2);
-    For m:=0 To High(Folders) do
+    S := ParamStr(i);
+    If (S[1] = '-') Then
     begin
-      If FileExists(Format('%s\%s',[Folders[m],S])) Then
-      begin
-        FileName:=Format('%s\%s',[Folders[m],S]);
-        break;
-      end;
-    end;
-    //FileName:=Format('%s\%s',ExtractFilePath(ParamStr(1)),S);
-
-    If m<Length(Folders) then
-    begin
-      Write(Format('[%d/%d] %s',[n+1,List.Count,S]));
-      Head.FHead[n].NamePos:=NPos;
-      Head.FHead[n].FilePos:=Pos;
-      S1:=ExtractFileName(S);
-      Inc(NPos, Length(S1)+1);
-      SetLength(Names, NPos);
-      //If RightStr(S,3)='Eng' Then ReadLn;
-      For m:=0 to Length(S1) do
-      begin
-        Names[NPos-Length(S1)-1+m]:=S1[m+1];
-      end;
-      Names[NPos-1]:=#0;
-      //Assign(F, ExtractFilePath(ParamStr(1))+'\'+S);
-      Assign(F, FileName);
-      Reset(F,1);
-      FSize:=FileSize(F);
-      WriteLn(Format(' - %d bytes',[FSize]));
-      GetMem(Buf, FSize);
-      BlockRead(F, Buf^, FSize);
-      If n=0 Then GetMem(WBuf,FSize) else ReallocMem(WBuf,FSize);
-      Move(Buf^,WBuf^,FSize);
-      If RightStr(List.Strings[n],1)='p' then
-      begin
-        Size:=Pack(Buf, FSize);
-        Head.FHead[n].FullSize:=FSize;
-        If Size>=FSize Then
+      Case S[2] of
+        'p': SavePaths   := True;
+        's':
         begin
-          ReallocMem(Buf,FSize);
-          Move(WBuf^,Buf^,FSize);
-          GoTo NN;
+          If S = '-s' Then
+            SubFolders  := True
+          else If S = '-sm' Then
+            ShatteredMemories := True;
         end;
-      end else
-      begin
-        NN:
-        Size:=FSize;
-        Head.FHead[n].FullSize:=0;
+        'c': Compression := True;
+        'a':
+        begin
+          SetLength(SS, Length(S) - 2);
+          Move(S[3], SS[1], Length(SS));
+          Val(SS, Align, Code);
+        end;
       end;
-      Head.FHead[n].FileSize:=Size;
-      Close(F);
-      Seek(FW, Pos);
-      BlockWrite(FW, Buf^, Size);
-      FreeMem(Buf);
-      Pos:=RoundBy(Pos + Size, 16)
+    end else
+      break;
+  end;
+  InFile := ParamStr(i);
+  OutFile := ParamStr(i + 1);
+  //I       := Byte(SavePaths) + Byte(SubFolders) + Byte(Compression);
+  Folders := '';
+  FromDir := '';
+  //If Patch or SavePaths Then m:=4 else m:=3;
+  For n := i + 2 To ParamCount do
+  begin
+    Folders := Folders + ParamStr(n);
+    If n < ParamCount Then Folders := Folders + ';';
+  end;
+  If Patch Then
+  begin
+    If ARC_Patch(InFile, OutFile, Folders, @Progress, @CreateError)=0 Then
+      WriteLn('Archive successfully patched ;)')
+    else
+      WriteLn('Archive patched with errors :(');
+  end else
+  begin
+    If DirectoryExists(InFile) Then
+      FromDir := InFile;
+    If FromDir <> '' Then
+    begin
+      If ARC_Build(FromDir, SubFolders, OutFile, Compression, Align, ShatteredMemories, SavePaths,
+        @Progress, @CreateError) = 0 Then
+          WriteLn('Archive successfully builded ;)')
+        else
+          WriteLn('Archive builded with errors :(');
     end else
     begin
-      WriteLn(S+' - not found!');
-      Inc(ErrorCount);
+      If ARC_Build(InFile, OutFile, Folders, Align, ShatteredMemories, SavePaths,
+        @Progress, @CreateError)=0 Then
+          WriteLn('Archive successfully builded ;)')
+        else
+          WriteLn('Archive builded with errors :(');
     end;
   end;
-  Head.NamesPos:=Pos;
-  Head.NamesSize:=Length(Names);
-  Seek(FW,0);
-  BlockWrite(FW,Head,20);
-  Seek(FW, 20);
-  BlockWrite(FW, Head.FHead[0], Head.HeadSize-20);
-  Seek(FW, Pos);
-  BlockWrite(FW, Names[0], Length(Names));
-  CloseFile(FW);
-  WriteLn(Format('Completed! Errors: %d',[ErrorCount]));
-
-
-
 end.

@@ -3,7 +3,9 @@ program SHTDX;
 uses
   Forms,
   TDXViewer in 'TDXViewer.pas' {Form1},
-  FontGim in 'FontGim.pas';
+  {FontGim in 'FontGim.pas',}
+  DIB_classic in 'DIB_classic.pas',
+  PSPRAW in 'PSPRAW.pas';
 
 {$R *.res}
 

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ExtCtrls, DIB, PSPRAW, ComCtrls, Menus,
+  Dialogs, StdCtrls, Buttons, ExtCtrls, DIB_classic, PSPRAW, ComCtrls, Menus,
   ToolWin, ExtDlgs, StrUtils, ActnList, PFolderDialog, PFolderDialogWCB;
 
 type
@@ -143,7 +143,7 @@ end;
 
 
 procedure TForm1.OpenTXD(Sender: TObject;  OFile: String; Pos: Integer);
-var  F: File; Buf: Pointer; Pal: Array of DWord;
+var  F: File; Buf: Pointer;// Pal: Array of DWord;
 n: Integer;
 begin
   AssignFile(F, OFile);
@@ -152,7 +152,7 @@ begin
   BlockRead(F, Head, 16);
 
   Inc(Pos,16);
-  SetLength(Pal,16);
+  //SetLength(Pal,16);
   n:=0;
   List.Clear;
   While (pos+208<Head.Size) {and (n<100)} do
@@ -176,7 +176,7 @@ end;
 
 procedure TForm1.ListClick(Sender: TObject);
 begin
-  //Pic[List.ItemIndex].SaveToFile('test.bmp');
+  //Pic[List.ItemIndex].SaveToFile('D:\test.bmp');
   If NotShow Then Exit;
   Img.Picture.Graphic := Pic[List.ItemIndex];
   Img.Height:=Pic[List.ItemIndex].Height;
@@ -259,7 +259,7 @@ end;
 
 procedure TForm1.About1Click(Sender: TObject);
 begin
-  MessageDlg('Silent Hill Origins TXD Viewer v0.8 by HoRRoR <ho-rr-or@mail.ru>'#13#10+
+  MessageDlg('Silent Hill Origins TXD Viewer v1.0 by HoRRoR <ho-rr-or@mail.ru>'#13#10+
   'http://consolgames.ru/',
   mtInformation,[mbOk],0);
 end;
@@ -548,12 +548,12 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  CopyIfExists('_SH\RUS\TEX','_SH\arc','_SH\RUS\TXD');
+  CopyIfExists('F:\_job\_SH\RUS\TEX','F:\_job\_SH\arc','F:\_job\_SH\RUS\TXD');
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
-  ReplacePics('_SH\RUS\TEX','_SH\RUS\TXD');
+  ReplacePics('F:\_job\_SH\RUS\TEX','F:\_job\_SH\RUS\TXD');
 end;
 
 procedure TForm1.eReplaceTexturesExecute(Sender: TObject);
